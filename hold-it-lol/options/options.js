@@ -60,7 +60,7 @@ const tabs = [
     {
         title: 'Music Packs',
         items: [
-            { key: 'ost-pw', title: 'Phoenix Wright: Ace attorney', description: '' },
+            { key: 'ost-pw', title: 'Phoenix Wright: Ace attorney', description: 'Note: these songs do not loop; most of them end in a fade-out.' },
             { key: 'ost-jfa', title: 'Justice for All', description: '' },
             { key: 'ost-t&t', title: 'Trials and Tribulations', description: '' },
             { key: 'ost-aj', title: 'Apollo Justice: Ace attorney', description: '' },
