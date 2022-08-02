@@ -909,7 +909,7 @@ function main() {
                     useTN = data.frame.text.includes('[##tn]') ? !useTN : useTN;
                     if (!useTN) return;
 
-                    if (socketStates.options['tn-toggle-on-screen'] && socketStates['prev-message'] !== undefined) {
+                    if (socketStates['prev-message'] !== undefined) {
                         const prevFrame = socketStates['prev-message'].frame;
                         if (prevFrame.text.match(/\[#evd[0-9]*?\]/g) || prevFrame.characterId !== data.frame.characterId || (prevFrame.pairId === data.frame.pairId && data.frame.pairId !== null)) return;
                     }

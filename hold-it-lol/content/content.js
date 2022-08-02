@@ -806,16 +806,6 @@ function onLoad(options) {
             addPatternInput(pattern);
         }
         addPatternInput('');
-
-        const optionsRow = createRow(tnDiv);
-        optionsRow.appendChild(iconToggleButton(function() {
-            optionSet('tn-toggle-on-screen', !options['tn-toggle-on-screen']);
-            window.postMessage([
-                'set_options',
-                options
-            ]);
-            return options['tn-toggle-on-screen'];
-        }, 'Only TN when character is on screen', '', '', options['tn-toggle-on-screen'] !== undefined ? options['tn-toggle-on-screen'] : true));
     }
 
 
