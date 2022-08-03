@@ -376,6 +376,20 @@ function main() {
             });
         }
 
+        
+        if (socketStates.options['now-playing']) {
+            frameInstance.$watch('musicPlayer.currentMusicUrl', function(url) {
+                const musicObj = Object.values(frameInstance.$parent.$parent.musicCache).find(music => music.url === url);
+                const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
+                if (musicObj && musicObj.name) {
+                    musicSpan.textContent = musicObj.name ? '"' + musicObj.name + '"' : 'Unnamed';
+                    musicSpan.innerHTML = 'Now Playing: <b>' + musicSpan.innerHTML + '</b>';
+                } else {
+                    musicSpan.innerHTML = 'Now Playing: …';
+                }
+            });
+        }
+
         if (socketStates.options['tts']) {
             const dialogueBox = document.querySelector('.v-main div.chat-box');
             let lastProcessedFrame;
@@ -794,33 +808,6 @@ function main() {
                     if (pairIs2) frameInstance.pairConfig.characterId2 = muteCharacter.characterId;
                     else frameInstance.pairConfig.characterId = muteCharacter.characterId;
                 });
-            }
-            if (socketStates.options['now-playing']) {
-                const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
-                const match = data.frame.text.match(/\[#bgm(?:[0-9]*?|s|d)\]/g);
-                if (match !== null) {
-                    const tag = match[match.length - 1].match(/\[#bgm(.*?)\]/)[1];
-                    if (tag == 's') {
-                        musicSpan.innerHTML = 'Now Playing: …';
-                    } else if (tag == 'd') {
-                        musicSpan.innerHTML = 'Now Playing: 😵‍💫';
-                    } else if (parseInt(tag) !== NaN) {
-                        const url = 'https://api.objection.lol/assets/music/get?id=' + tag;
-                        httpGetAsync(url).then(function (response) {
-                            const music = JSON.parse(response);
-                            // const audioElement = document.createElement('audio');
-                            // audioElement.src = music.url;
-                            // socketStates['now-playing-duration'] = Math.round(audioElement.duration);
-
-                            musicSpan.textContent = music.name ? '"' + music.name + '"' : 'Unnamed';
-
-                            function updateNowPlaying() {
-                                musicSpan.innerHTML = 'Now Playing: <b>' + musicSpan.innerHTML + '</b>';
-                            }
-                            updateNowPlaying();
-                        })
-                    }
-                }
             }
             socketStates['prev-message'] = data;
 
