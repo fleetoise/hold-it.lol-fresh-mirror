@@ -177,7 +177,7 @@ function kindaRandomChoice(array, seed = null) {
 function onLoad(options) {
 
 
-    console.log('holdit.lol v0.7 beta - running onLoad()');
+    console.log('holdit.lol v0.7.1 beta - running onLoad()');
     
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
