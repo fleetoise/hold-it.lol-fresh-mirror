@@ -1,7 +1,8 @@
 'use strict';
+
 // Beware: spaghetti code, all mushed into a single file oh noes
 
-
+const { injectScript, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure } = hilUtils;
 
 const DEFAULT_TRANSITION = 'transition: .28s cubic-bezier(.4,0,.2,1);';
 
@@ -9,6 +10,7 @@ const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
 const SELECTORS_MENU_HOVER = ['.menuable__content__active', 'div.v-sheet.secondary', 'button.v-app-bar__nav-icon', '.mb-2.col-sm-4.col-md-6.col-lg-3.col-6'];
 const PAUSE_PUNCTUATION = '.,!?:;';
 const URL_REGEX = /((?:http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+(?:[\-\.]{1}[a-z0-9]+)*\.[a-z]{1,5}(?::[0-9]{1,5})?(?:\/.*?)?\w)(\W*?(?:\s|$))/gi;
+
 
 const TAG_PAUSE_100 = '[#p100]';
 const TAG_MUSIC_FADE_OUT = '[#bgmfo]';
@@ -40,28 +42,6 @@ let optionsLoaded = new Promise(function(resolve, reject) {
 });
 
 
-function clickOff() { app.firstElementChild.click(); }
-
-function testRegex(str, re) {
-    const match = str.match(re);
-    return match !== null && match[0] == match.input;
-}
-
-function httpGetAsync(url) {
-    return new Promise((resolve, reject) => {
-        const XMLHttp = new XMLHttpRequest();
-        XMLHttp.onreadystatechange = function () {
-            if (XMLHttp.readyState == 4 && XMLHttp.status == 200) resolve(XMLHttp.responseText);
-        }
-        XMLHttp.open("GET", url, true);
-        XMLHttp.send(null);
-    });
-}
-
-function getLabel(innerText) {
-    return [].find.call(document.querySelectorAll('label'), label => label.innerText === innerText);
-}
-
 function setValue(elem, text) {
     elem.value = text;
     elem.dispatchEvent(new Event('input'));
@@ -85,69 +65,6 @@ function insertTag(tag) {
     textArea.focus();
 }
 
-function getInputContent() {
-    return app.querySelector('.menuable__content__active:not([role="menu"])');
-}
-
-function createIcon(iconClass, fontPx = 24, styleText = '', classText = '') {
-    const icon = document.createElement('i');
-    icon.className = classText + ' hil-themed v-icon notranslate mdi ' + theme;
-    icon.classList.add('mdi-' + iconClass);
-    if (fontPx && fontPx !== 24) icon.style.cssText = 'font-size: ' + fontPx + 'px;'
-    if (styleText) icon.style.cssText += styleText;
-    return icon;
-}
-
-function createButton(listener, text, classText, styleText) {
-    const button = document.createElement('button');
-    button.className = 'v-btn v-btn--has-bg v-size--default hil-row-btn hil-themed ' + theme;
-    if (classText) button.className += ' ' + classText;
-    if (styleText) button.style.cssText = styleText;
-    button.innerText = text;
-
-    if (listener) button.addEventListener('click', listener);
-
-    return button
-}
-function primaryButton(listener, classText, styleText, child) {
-    const button = document.createElement('button');
-    button.className = 'v-btn v-btn--depressed v-size--small primary ' + theme;
-    if (classText) button.className += ' ' + classText;
-    if (styleText) button.style.cssText += styleText;
-    if (child) button.appendChild(child);
-
-    if (listener) button.addEventListener('click', listener);
-
-    return button;
-}
-function iconToggleButton(listenerCheck, text, classText, styleText, defaultEnabled = false) {
-    function toggle(enabled){
-        if (enabled) {
-            button.classList.add('success');
-            button.firstElementChild.classList.remove('mdi-close');
-            button.firstElementChild.classList.add('mdi-check');
-        } else {
-            button.classList.remove('success');
-            button.firstElementChild.classList.add('mdi-close');
-            button.firstElementChild.classList.remove('mdi-check');
-        }
-    }
-    const button = createButton(function() {
-        const enabled = listenerCheck();
-        toggle(enabled);
-    }, text, classText, styleText);
-    button.prepend(createIcon('close', 18, 'margin-right: 8px;'));
-    if (defaultEnabled) toggle(true);
-    return button;
-}
-
-function injectScript(src) {
-    const script = document.createElement('script');
-    script.src = src;
-    script.dataset.hilIgnore = '1';
-    (document.head || document.documentElement).appendChild(script);
-}
-
 // function updateSelectionState() {
 //     currentSelectionState.baseNodeDiv = sel.baseNode && (sel.baseNode.nodeType == 1 ? sel.baseNode : sel.baseNode.parentElement);
 //     currentSelectionState.baseOffset = sel.baseOffset;
@@ -164,14 +81,6 @@ function optionSet(key, value) {
     });
 }
 
-function kindaRandomChoice(array, seed = null) {
-    if (seed === null) seed = Math.random();
-    const x = Math.sin(seed++) * 10000; 
-    const random = x - Math.floor(x);
-    const i = Math.floor(random * array.length);
-    return array[i];
-}
-
 
 
 function onLoad(options) {
@@ -180,7 +89,10 @@ function onLoad(options) {
     console.log('holdit.lol v0.7.1 beta - running onLoad()');
     
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) {
+        injectScript(chrome.runtime.getURL('content/utils.js'));
+        injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+    }
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 

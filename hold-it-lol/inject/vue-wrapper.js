@@ -1,5 +1,7 @@
 "use strict";
 
+const { compareShallow, getLabel, createIcon, createTooltip } = hilUtils;
+
 function main() {
 
     const socketStates = {
@@ -17,6 +19,7 @@ function main() {
         fallback: { characterId: 669439, poseId: 8525809 },
     }
 
+    const app = document.querySelector('#app');
     const appState = app.__vue__.$store.state;
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
     const roomInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
@@ -42,40 +45,6 @@ function main() {
         } else {
             return 'theme--light';
         }
-    }
-
-
-    function compareShallow(a, b, keys) {
-        for (const key of keys) {
-            if (a[key] !== b[key]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    function httpGetAsync(url) {
-        return new Promise((resolve, reject) => {
-            const XMLHttp = new XMLHttpRequest();
-            XMLHttp.onreadystatechange = function () {
-                if (XMLHttp.readyState == 4 && XMLHttp.status == 200) resolve(XMLHttp.responseText);
-            }
-            XMLHttp.open("GET", url, true);
-            XMLHttp.send(null);
-        });
-    }
-
-    function getLabel(innerText) {
-        return [].find.call(document.querySelectorAll('label'), label => label.innerText === innerText);
-    }
-
-    function createIcon(iconClass, fontPx = 24, styleText = '', classText = '') {
-        const icon = document.createElement('i');
-        icon.className = classText + ' hil-themed v-icon notranslate mdi ' + getTheme();
-        icon.classList.add('mdi-' + iconClass);
-        if (fontPx && fontPx !== 24) icon.style.cssText = 'font-size: ' + fontPx + 'px;'
-        if (styleText) icon.style.cssText += styleText;
-        return icon;
     }
 
     function getPresetCharacterFromPose(poseId) {
@@ -288,21 +257,6 @@ function main() {
         }
     }
 
-    function createTooltip(text, anchorElement) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
-        tooltip.textContent = text;
-        tooltip.realign = function (newText = null) {
-            if (anchorElement === undefined) throw Error('Tooltip has no anchor anchorElement');
-            if (newText !== null) tooltip.textContent = newText;
-            const rect = anchorElement.getClientRects()[0];
-            anchorElement.tooltip.style.left = (rect.x + rect.width / 2 - anchorElement.tooltip.clientWidth / 2) + 'px';
-            anchorElement.tooltip.style.top = (rect.y + rect.height + 10) + 'px';
-        }
-        app.appendChild(tooltip);
-        return tooltip;
-    }
-
     function getIDFromUsername(username, userList = muteInputInstance.items) {
         return userList.find(user => user.username === username)?.id;
     }
@@ -375,7 +329,6 @@ function main() {
                 localStorage['hil-last-cc-json'] = JSON.stringify(characterInstance.currentCharacter);
             });
         }
-
         
         if (socketStates.options['now-playing']) {
             frameInstance.$watch('musicPlayer.currentMusicUrl', function(url) {
@@ -448,7 +401,7 @@ function main() {
                     return getIDFromUsername(usernameGetter());
                 }
 
-                const isMod = roomInstance.users.find(user => user.id === initialId).isMod;
+                const isMod = roomInstance.users.find(user => user.id === initialId)?.isMod;
                 const isMuted = muteInputInstance.selectedItems.find(item => item.username === usernameGetter());
 
                 container.appendChild(userActionButton(function () {
