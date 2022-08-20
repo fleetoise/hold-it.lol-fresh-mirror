@@ -2122,7 +2122,7 @@ function onLoad(options) {
                         <button class="v-btn v-btn--has-bg hil-icon-button hil-icon-button-corner hil-themed ${getTheme()}">
                             <i class="v-icon notranslate mdi mdi-archive hil-themed ${getTheme()}"></i>
                         </button>
-                        <button class="v-btn v-btn--has-bg hil-icon-button hil-icon-button-corner hil-hide hil-themed ${getTheme()}" style="right:0">
+                        <button class="v-btn v-btn--has-bg hil-icon-button hil-icon-button-corner hil-hide hil-themed ${getTheme()}" style="right:0;left:unset;">
                             <i class="v-icon notranslate mdi mdi-delete hil-themed ${getTheme()}"></i>
                         </button>
                     </div>`
