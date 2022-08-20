@@ -2463,7 +2463,16 @@ window.addEventListener('message', function(event) {
 });
 
 
-window.addEventListener('load', tryMain);
+window.addEventListener('load', function() {
+    if (!tryMain()) {
+        new MutationObserver(function(mutations, observer) {
+            if (tryMain()) observer.disconnect();
+        }).observe(document.getElementById('app'), {
+            childList: true,
+            subtree: true,
+        });
+    }
+});
 
 chrome.runtime.onMessage.addListener(function(event) {
     const [ action, data ] = event;
@@ -2476,6 +2485,12 @@ function tryMain() {
     if (document.querySelector('.frameTextarea')) {
         optionsLoaded.then(function(options) {
             onLoad(options);
-        })
+        });
+        return true;
     }
+    return false;
+}
+
+window.onload = function() {
+    console.log('HIL - ONLOAD');
 }

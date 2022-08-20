@@ -85,4 +85,4 @@ If you have any questions, problems or suggestions regarding the extension, you 
 
 Known bug warnings (as of v0.7.1 beta):
 
-- Due to the way the extension loads, spectating breaks some UI elements if you join after spectating; you'll be prompted to reload and join without spectating.
+- Due to the way the extension loads, spectating breaks some UI elements; you'll be prompted to reload and join without spectating.
