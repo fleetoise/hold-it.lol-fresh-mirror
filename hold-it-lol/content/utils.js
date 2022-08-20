@@ -169,3 +169,5 @@ hilUtils.sliderListener = function(event, sliderContainer, min, max, callback) {
         document.removeEventListener('mousemove', adjust);
     }, { once: true });
 }
+
+window.postMessage(['utils_loaded']);

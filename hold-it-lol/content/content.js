@@ -91,7 +91,12 @@ function onLoad(options) {
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
-        injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+        window.addEventListener('message', function listener(event) {
+            const [action] = event.data;
+            if (action !== 'utils_loaded') return;
+            injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+            window.removeEventListener('message', listener);
+        });
     }
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
