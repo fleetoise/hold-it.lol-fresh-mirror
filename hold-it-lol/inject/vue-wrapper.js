@@ -28,7 +28,8 @@ function main() {
     const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
     const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
     const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
-    const frameInstance = document.querySelector('.court-container').parentElement.parentElement.__vue__;
+    const courtContainer = document.querySelector('.court-container');
+    const frameInstance = courtContainer.parentElement.parentElement.__vue__;
     const chatInstance = document.querySelector('.chat').parentElement.__vue__;
     const getLastTabInstance = () => document.querySelector('.v-window.v-item-group.v-tabs-items').firstElementChild.lastElementChild.firstElementChild.__vue__;
     let muteInputInstance;
@@ -783,6 +784,36 @@ function main() {
                 newEvent.srcKey = event.srcKey;
                 newEvent.hilIgnore = true;
                 shortcutDiv.dispatchEvent(newEvent);
+            });
+        }
+
+        if (socketStates.options['unblur-low-res']) {
+            function checkImage(node) {
+                if (!(node.nodeType === 1 && node.nodeName === 'IMG')) return;
+                if (!(node.classList.contains('character') || node.classList.contains('image-sd') || node.classList.contains('custom-bubble'))) return;
+                const img = node;
+                if (img.naturalHeight <= 300) {
+                    img.classList.add('hil-pixel-img');
+                } else {
+                    img.classList.remove('hil-pixel-img');
+                }
+            }
+
+            new MutationObserver(function (mutations) {
+                for (let mutation of mutations) {
+                    if (mutation.type === 'attributes') {
+                        checkImage(mutation.target);
+                    } else {
+                        for (let node of mutation.addedNodes) {
+                            checkImage(node);
+                        }
+                    }
+                }
+            }).observe(courtContainer, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['src'],
             });
         }
 

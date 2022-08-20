@@ -605,6 +605,12 @@ th {
     height: 100%;
 }
 
+.hil-pixel-img {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
 .hil-hide {
     opacity: 0!important;
     visibility: hidden!important;
