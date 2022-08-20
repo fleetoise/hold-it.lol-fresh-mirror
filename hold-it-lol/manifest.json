@@ -10,7 +10,10 @@
         "tts"
     ],
     "host_permissions": [
-        "*://objection.lol/courtroom/*"
+        "*://objection.lol/courtroom/*",
+        "*://cdn.discordapp.com/*",
+        "*://www.court-records.net/*",
+        "*://user-images.githubusercontent.com/*"
     ],
     "content_scripts": [
         {

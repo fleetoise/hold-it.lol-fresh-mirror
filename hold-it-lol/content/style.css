@@ -2,10 +2,13 @@
     --default-transition: .28s cubic-bezier(.4, 0, .2, 1);
     --color-testimony-dark: #552a2e;
     --color-testimony-light: #be747b;
+    --color-primary: #2096f3;
     --color-d-bg-primary: #121212;
     --color-d-bg-secondary: #1e1e1e;
+    --color-d-bg-tertiary: #272727;
     --color-l-bg-primary: #fff;
     --color-l-bg-secondary: #fff;
+    --color-l-bg-tertiary: #d8d8d8;
 }
 
 body.theme--dark {
@@ -187,21 +190,38 @@ div.v-input--is-dirty div.hil-toggle-thumb-lock {
 
 button.hil-icon-button {
     border-radius: 100%;
-    height: 38px;
-    width: 38px;
-    margin-left: 4px;
     background-color: #292929!important;
-    opacity: 0;
-    visibility: hidden;
     transition: var(--default-transition);
+    aspect-ratio: 1;
 }
 
-div.v-list-item:hover button.hil-icon-button {
+button.hil-icon-button-hover {
+    height: 38px;
+    margin-left: 4px;
+    opacity: 0;
+    visibility: hidden;
+}
+div.v-list-item:hover button.hil-icon-button-hover {
     opacity: 1;
     visibility: visible;
 }
-button.hil-icon-button i {
+button.hil-icon-button-hover i {
     opacity: 0.7;
+}
+
+button.hil-icon-button-corner {
+    height: 24px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    opacity: 0;
+}
+button.hil-icon-button-corner i {
+    font-size: 20px!important;
+}
+div:hover > button.hil-icon-button-corner {
+    opacity: 1;
 }
 
 div.hil-user-action-buttons {
@@ -220,7 +240,7 @@ div.hil-user-action-icons i {
 
 div.hil-small-tooltip {
     line-height: 12px;
-    opacity: 0.85;
+    opacity: 0.9;
     z-index: 2000;
     transition: var(--default-transition);
     transition-property: opacity, visibility;
@@ -302,6 +322,287 @@ th {
     background-color: transparent !important;
     min-width: 20px;
     min-height: 20px;
+}
+
+.hil-pose-edit-icon {
+    width: 48px;
+    height: 48px;
+    margin-left: auto;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.hil-pose-edit-icon:hover {
+    background-color: #77777720;
+}
+
+.hil-pose-edit-icon:active {
+    background-color: #77777740;
+}
+
+.hil-pose-edit-card {
+    position: absolute;
+    width: 400px;
+    height: fit-content;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
+    line-height: 1.2;
+    font-size: 1rem;
+    font-family: Roboto,sans-serif;
+    transition: var(--default-transition);
+}
+
+.hil-pose-edit-card.theme--dark {
+    background: var(--color-d-bg-secondary);
+}
+
+.hil-pose-edit-card.theme--light {
+    background: var(--color-l-bg-secondary);
+}
+
+.hil-pose-edit-card .hil-pose-title {
+    margin: 12px 0;
+}
+
+.hil-pose-edit-card .hil-close-button {
+    padding: 18px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: -18px;
+    align-self: center;
+    transition: var(--default-transition);
+}
+
+.hil-pose-edit-card .hil-close-button:hover {
+    background-color: #77777720;
+}
+
+.hil-pose-edit-card .hil-close-button:active {
+    background-color: #77777740;
+}
+
+.hil-pose-edit-card .hil-swiper-container > .hil-swiper > * {
+    position: relative;
+    cursor: pointer;
+    transition: var(--default-transition);
+    transition-property: background-color, visibility, opacity;
+}
+
+.hil-pose-edit-card .hil-swiper-container.theme--dark > .hil-swiper > * {
+    background-color: var(--color-d-bg-tertiary);
+}
+
+.hil-pose-edit-card .hil-swiper-container.theme--light > .hil-swiper > * {
+    background-color: var(--color-l-bg-tertiary);
+}
+
+.hil-pose-edit-card > div {
+    margin: 0 16px;
+}
+
+.hil-pose-edit-card hr {
+    margin-bottom: 12px;
+}
+
+.hil-pose-edit-card .hil-canvas-column canvas {
+    width: 72px;
+    height: 72px;
+    border: #7775 2px solid;
+    cursor: move;
+}
+
+.hil-pose-edit-card .v-progress-circular {
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-100%);
+}
+
+.hil-pose-edit-card .hil-canvas-column {
+    width: 72px;
+    margin-left: 16px;
+}
+
+.hil-pose-edit-card .hil-canvas-column > :nth-child(2) {
+    line-height: 2;
+    transition: var(--default-transition);
+    margin-left: -4px;
+    opacity: 0.7;
+}
+
+.hil-pose-edit-card .hil-canvas-column > :nth-child(2) > div > i {
+    opacity: 0.7;
+}
+
+.hil-pose-edit-card .v-input__control {
+    margin: 16px 0 8px 0;
+}
+
+.hil-pose-edit-card .v-slider__thumb-label {
+    height: 28px;
+    width: 28px;
+}
+
+.hil-pose-edit-card .v-slider__track-background {
+    width: 100%;
+}
+
+.hil-pose-edit-card .hil-slider-divider {
+    width: 1.5%;
+    transform: translateX(-50%);
+}
+
+.hil-pose-edit-card.theme--dark .hil-slider-divider {
+    background: var(--color-d-bg-secondary)!important; 
+}
+
+.hil-pose-edit-card.theme--light .hil-slider-divider {
+    background: var(--color-l-bg-secondary)!important;
+}
+
+.hil-pose-edit-card .hil-swiper-container {
+    height: 48px;
+    margin-bottom: 20px;
+}
+
+.hil-pose-edit-card > div.v-messages {
+    margin: 0 16px 8px 16px;
+}
+
+.hil-pose-edit-card .v-messages {
+    margin: 8px 0;
+}
+
+.hil-pose-edit-card .hil-icon-frames canvas {
+    height: 100%;
+}
+
+.hil-pose-edit-card .hil-icon-overlays > div,.hil-pose-edit-card .hil-icon-underlays > div {
+    transition-property: background-color, opacity, visibility!important;
+}
+
+.hil-pose-edit-card .hil-icon-overlays > div.hil-layer-icon,.hil-pose-edit-card .hil-icon-underlays > div.hil-layer-icon {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 1;
+}
+
+.hil-pose-edit-card .hil-icon-overlays > div.hil-layer-icon > img,.hil-pose-edit-card .hil-icon-underlays > div.hil-layer-icon > img {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.hil-pose-edit-card i.hil-add-button {
+    background-color: transparent!important;
+    font-size: 42px;
+    opacity: 0.6;
+    transition: var(--default-transition)!important;
+}
+
+.hil-pose-edit-card i.hil-add-button:hover {
+    opacity: 0.8;
+}
+
+.hil-pose-edit-card i.hil-add-button:active {
+    opacity: 1;
+}
+
+.hil-pose-edit-card i.hil-add-button.hil-activated {
+    transform: rotate(15deg);
+}
+
+.hil-pose-edit-card .hil-swiper > .hil-selected {
+    outline: 2px solid #7f3f45;
+}
+
+@keyframes hil-pose-edit-image-shake {
+    5% {
+        transform: translate(-0.3%, 0.35%) rotate(-0.631deg) scale(0.875)
+    }
+    10% {
+        transform: translate(0.2%, -1.2%) rotate(-1.263deg) scale(0.85)
+    }
+    15% {
+        transform: translate(-1.2%, -0.6%) rotate(-0.631deg) scale(0.825)
+    }
+    20% {
+        transform: translate(-0.8%, -1.6%) rotate(3.578deg) scale(0.8)
+    }
+    25% {
+        transform: translate(-2.25%, -2.5%) rotate(-4.473deg) scale(0.775)
+    }
+    30% {
+        transform: translate(-2.7%, -4.5%) rotate(0.315deg) scale(0.75)
+    }
+    35% {
+        transform: translate(-3.85%, 1.75%) rotate(-5.157deg) scale(0.725)
+    }
+    40% {
+        transform: translate(-2.0%, -1.2%) rotate(7.578deg) scale(0.7)
+    }
+    45% {
+        transform: translate(5.4%, 3.15%) rotate(-8.052deg) scale(0.675)
+    }
+    50% {
+        transform: translate(4.0%, 6.5%) rotate(-8.947deg) scale(0.65)
+    }
+    55% {
+        transform: translate(-3.85%, 7.7%) rotate(-3.473deg) scale(0.625)
+    }
+    60% {
+        transform: translate(-1.2%, 6.0%) rotate(10.105deg) scale(0.6)
+    }
+    65% {
+        transform: translate(-2.6%, -7.8%) rotate(-11.631deg) scale(0.575)
+    }
+    70% {
+        transform: translate(-8.4%, -7.7%) rotate(5.894deg) scale(0.55)
+    }
+    75% {
+        transform: translate(-6.75%, 3.75%) rotate(-14.210deg) scale(0.525)
+    }
+    80% {
+        transform: translate(-4.0%, -7.2%) rotate(16.842deg) scale(0.5)
+    }
+    85% {
+        transform: translate(-3.4%, -8.5%) rotate(-6.263deg) scale(0.475)
+    }
+    90% {
+        transform: translate(13.5%, 10.8%) rotate(14.052deg) scale(0.45)
+    }
+    95% {
+        transform: translate(14.25%, -13.3%) rotate(20deg) scale(0.425)
+    }
+    100% {
+        transform: scale(0.4)
+    }
+}
+
+.hil-pose-edit-image-shake {
+    animation-name: hil-pose-edit-image-shake;
+    animation-duration: 3s;
+    animation-fill-mode: forwards;
+}
+
+.hil-swiper-container {
+    overflow: hidden;
+}
+
+.hil-swiper {
+    height: 100%;
+    padding: 2px 4px;
+    transition: transform ease-out 0ms;
+    display: flex;
+    gap: 4px;
+}
+
+.hil-swiper > * {
+    height: 100%;
 }
 
 .hil-hide {

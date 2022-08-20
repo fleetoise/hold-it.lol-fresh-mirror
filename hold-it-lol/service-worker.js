@@ -34,6 +34,26 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     } else if (action === 'tts-speak') {
         const { text, voiceName, pitch } = data;
         chrome.tts.speak(text, {voiceName, pitch});
+    } else if (action === 'fetch-image') {
+        try {
+            fetch(data).then(response => response.arrayBuffer()).then(function(response) {
+                const type = data.slice(data.lastIndexOf('.') + 1);
+                // Source: https://stackoverflow.com/questions/20035615/using-raw-image-data-from-ajax-request-for-data-uri
+                const arr = new Uint8Array(response);
+                let raw = '';
+                let i,j,subArray,chunk = 5000;
+                for (i = 0, j = arr.length; i < j; i += chunk) {
+                    subArray = arr.subarray(i, i+chunk);
+                    raw += String.fromCharCode.apply(null, subArray);
+                }
+                const b64 = btoa(raw);
+                const dataURL = "data:image/" + type + ";base64," + b64;
+                sendResponse(dataURL);
+            });
+        } catch {
+            sendResponse(null);
+        }
+        return true;
     }
 });
 

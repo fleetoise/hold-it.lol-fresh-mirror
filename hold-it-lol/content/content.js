@@ -2,7 +2,7 @@
 
 // Beware: spaghetti code, all mushed into a single file oh noes
 
-const { injectScript, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure } = hilUtils;
+const { injectScript, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure, setSlider, sliderListener } = hilUtils;
 
 const DEFAULT_TRANSITION = 'transition: .28s cubic-bezier(.4,0,.2,1);';
 
@@ -1156,7 +1156,7 @@ function onLoad(options) {
                 for (let child of table.querySelectorAll(':scope > :not(tr):not(td):not(th)')) child.remove();
             }
             for (let node of pasteArea.childNodes) {
-                if (node.nodeType == 1 && node.nodeName == 'TABLE') continue;
+                if (node.nodeType === 1 && node.nodeName === 'TABLE') continue;
                 node.remove();
             }
             for (let elem of pasteArea.querySelectorAll('.hil-evd-warning')) elem.classList.remove('hil-evd-warning');
@@ -1471,7 +1471,7 @@ function onLoad(options) {
                         const input = label.parentElement.querySelector('input');
                         input.value = data.linkUrl;
                         input.dispatchEvent(new Event('input'));
-                        setTimeout(() => label.parentElement.parentElement.parentElement.parentElement.previousElementSibling.querySelector('input').focus(), 25); // TODO
+                        setTimeout(() => label.parentElement.parentElement.parentElement.parentElement.previousElementSibling.querySelector('input').focus(), 25);
                     }
                 }, 250);
             }
@@ -1624,6 +1624,816 @@ function onLoad(options) {
         const reloadDataButton = [...document.querySelectorAll('.v-btn__content')].find(span => span.textContent === ' Reload Data ').parentElement;
         reloadDataButton.style.setProperty('margin-right', '16px')
         reloadDataButton.parentElement.appendChild(reloadCCButton);
+    }
+
+    if (options['pose-icon-maker']) {
+        const AnimType = {
+            IDLE: 0,
+            SPEAK: 1,
+            PRE: 2,
+        };
+        const CharacterAlignment = {
+            CENTER: 0,
+            LEFT: 1,
+            RIGHT: 2,
+        }
+        
+        let iconRenders = {};
+        chrome.storage.local.get('icon-renders', function(storage) {
+            iconRenders = storage['icon-renders'] || {};
+        });
+        chrome.storage.local.get('icon-editor', function(storage) {
+            storage = verifyStructure(storage['icon-editor'], {
+                characters: {},
+                underlays: {},
+                overlays: {},
+            });
+            window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
+        });
+
+        new MutationObserver(function(mutations) {
+            for (let mutation of mutations) {
+                if (mutation.attributeName !== 'data-pose-id') continue;
+                if (!(mutation.target.nodeType === 1 && mutation.target.nodeName === 'IMG')) continue;
+                const poseId = mutation.target.dataset.poseId;
+                if (iconRenders[poseId]) mutation.target.src = iconRenders[poseId];
+            }
+        }).observe(document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['data-pose-id']
+        });
+
+        const editButton = htmlToElement(`<i
+            class="v-icon notranslate mdi mdi-pencil hil-pose-edit-icon hil-hide hil-themed ${getTheme()}"
+        >`);
+        
+        const tooltip = createTooltip('Pose Icon Editor', editButton);
+        editButton.addEventListener('mouseenter', function () {
+            tooltip.realign();
+            tooltip.classList.remove('hil-hide');
+        });
+        editButton.addEventListener('mouseleave', () => tooltip.classList.add('hil-hide'));
+
+        const charIconRow = document.querySelector('.row.mt-2.no-gutters .col-sm-3.col-2');
+        charIconRow.style.setProperty('display', 'flex');
+        charIconRow.appendChild(editButton);
+
+        const editCard = htmlToElement(/*html*/`
+            <div class="hil-hide hil-pose-edit-card hil-themed ${getTheme()}">
+                <div class="d-flex">
+                    <div class="headline hil-pose-title">Icon: </div>
+                    <div class="hil-close-button">Close</div>
+                </div>
+                <hr class="v-divider hil-themed ${getTheme()}">
+                <div class="v-input__control hil-hide">
+                    <div class="v-slider v-slider--horizontal hil-themed ${getTheme()}">
+                        ${''/*<input value="8" id="input-451" disabled="disabled" readonly="readonly" tabindex="-1">*/}
+                        <div class="v-slider__track-container">
+                            <div class="v-slider__track-background"></div>
+                            <div class="v-slider__track-fill primary" style="width: 0%;"></div>
+                        </div>
+                        <div class="v-slider__thumb-container primary--text" style="left: 0%;">
+                            <div class="v-slider__thumb primary"></div>
+                            <div class="v-slider__thumb-label primary">
+                                <span>0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="v-messages v-messages__message hil-hide hil-themed ${getTheme()}">Idle animation</div>
+                <hr class="v-divider hil-themed ${getTheme()}">
+                <div class="hil-edit-columns d-flex hil-hide">
+                    <div style="width: 100%; overflow: hidden;">
+                        <div class="hil-themed ${getTheme()}">Frame</div>
+                        <div class="v-messages v-messages__message hil-themed ${getTheme()}"><b>0</b> total icons are affected by this frame</div>
+                        <div class="hil-swiper-container hil-themed ${getTheme()}" style="height: 60px;">
+                            <div class="hil-swiper hil-icon-frames">
+                                <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}" style="font-size: 64px;"></i>
+                            </div>
+                        </div>
+                        <div class="mb-2 hil-themed ${getTheme()}">Overlays</div>
+                        <div class="hil-swiper-container hil-themed ${getTheme()}">
+                            <div class="hil-swiper hil-icon-overlays">
+                                <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
+                                <i class="v-icon mdi mdi-archive hil-add-button hil-themed ${getTheme()}"></i>
+                                <input class="d-none" type="file" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="mb-2 hil-themed ${getTheme()}">Underlays</div>
+                        <div class="hil-swiper-container hil-themed ${getTheme()}">
+                            <div class="hil-swiper hil-icon-underlays">
+                                <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
+                                <i class="v-icon mdi mdi-archive hil-add-button hil-themed ${getTheme()}"></i>
+                                <input class="d-none" type="file" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hil-canvas-column" style="margin-left: 16px;">
+                        <canvas></canvas>
+                        <div class="hil-hide">
+                            <div><i class="v-icon mdi mdi-cursor-move" style="opacity: 0.6;"></i> Drag</div>
+                            <div><i class="v-icon mdi mdi-resize" style="opacity: 0.6;"></i> Scroll</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="v-progress-circular v-progress-circular--indeterminate">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
+                        <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
+                    </svg>
+                </div>
+            </div>
+        `);
+
+        editButton.addEventListener('click', function() {
+            const closeButton = editCard.querySelector('.hil-close-button');
+            closeButton.addEventListener('click', () => editCard.classList.add('hil-hide'));
+
+            for (let swiperContainer of editCard.querySelectorAll('.hil-swiper-container')) {
+                const swiper = swiperContainer.querySelector('.hil-swiper');
+                let translateX = 0;
+                function setX(x) {
+                    translateX = x;
+                    swiper.style.setProperty('transform', 'translateX(' + translateX + 'px)');
+                }
+                function enableDuration() {
+                    swiper.style.setProperty('transition-duration', '300ms');
+                    setTimeout(
+                        () => swiper.style.removeProperty('transition-duration'),
+                        300
+                    );
+                }
+
+                const moveListener = function(event) {
+                    setX(translateX + event.movementX);
+                }
+                swiperContainer.addEventListener('mousedown', function(event) {
+                    event.preventDefault();
+                    document.addEventListener('mousemove', moveListener);
+                    document.addEventListener('mouseup', function() {
+                        document.removeEventListener('mousemove', moveListener);
+                        if (translateX > 0) {
+                            setX(0);
+                            enableDuration();
+                        } else if (translateX < swiperContainer.clientWidth - swiper.scrollWidth) {
+                            setX(swiperContainer.clientWidth - swiper.scrollWidth);
+                            enableDuration();
+                        }
+                    }, { once: true });
+                });
+            }
+
+            const poseNameDiv = editCard.querySelector('.hil-pose-title');
+            const slider = editCard.querySelector('.v-slider');
+            const loadIcon = editCard.querySelector('.v-progress-circular');
+            const editColumns = editCard.querySelector('.hil-edit-columns');
+            const frameDiv = editCard.querySelector('.hil-icon-frames');
+            const overlayDiv = editCard.querySelector('.hil-icon-overlays');
+            const underlayDiv = editCard.querySelector('.hil-icon-underlays');
+            const messageAnim = editCard.querySelector(':scope > .v-messages');
+            const messageFrameUses = editCard.querySelector('.hil-edit-columns .v-messages');
+            const helpLines = editCard.querySelector('.hil-canvas-column > :nth-child(2)');
+
+            const iconCanvas = editCard.querySelector('.hil-canvas-column canvas');
+            iconCanvas.width = 64;
+            iconCanvas.height = 64;
+
+            iconCanvas.addEventListener('mouseenter', () => helpLines.classList.remove('hil-hide'));
+            iconCanvas.addEventListener('mouseleave', () => helpLines.classList.add('hil-hide'));
+
+            function canvasDragListener(event) {
+                const characterData = editorCache.storageCache.characters[openedCharacterId];
+                const frameId = editorCache[openedPoseId].data.frame;
+                const frame = characterData.frames[frameId];
+                const img = editorCache[openedPoseId].selectedImage;
+
+                const prevLeft = frame.left;
+                const prevTop = frame.top;
+                frame.left -= event.movementX / img.naturalWidth;
+                frame.top -= event.movementY / img.naturalHeight;
+                if (frame.left < 0) frame.left = 0;
+                if (frame.top < 0) frame.top = 0;
+                const limitLeft = (img.naturalWidth - frame.height * img.naturalHeight) / img.naturalWidth;
+                if (prevLeft >= limitLeft && event.movementX <= 0) frame.left = prevLeft;
+                if (prevLeft < limitLeft && frame.left > limitLeft) frame.left = limitLeft;
+                if (prevTop >= 1 - frame.height && event.movementY <= 0) frame.top = prevTop;
+                if (prevTop < 1 - frame.height && frame.top > 1 - frame.height) frame.top = 1 - frame.height;
+
+                drawIcon(iconCanvas, openedPoseId);
+                const frameCanvas = document.querySelector('.hil-icon-frames canvas[data-frame-id="' + frameId + '"]');
+                if (frameCanvas) {
+                    updateFrameCanvas(editorCache[openedPoseId].selectedImage, frameCanvas);
+                }
+                setTimeoutSave();
+            }
+            iconCanvas.addEventListener('mousedown', function(event) {
+                if (event.button !== 0) return;
+
+                iconCanvas.style.setProperty('cursor', 'none');
+                iconCanvas.nextElementSibling.style.setProperty('opacity', '1');
+                iconCanvas.requestPointerLock();
+                iconCanvas.addEventListener('mousemove', canvasDragListener);
+                
+                document.addEventListener('mouseup', function() {
+                    iconCanvas.style.removeProperty('cursor');
+                    iconCanvas.nextElementSibling.style.removeProperty('opacity');
+                    document.exitPointerLock();
+                    iconCanvas.removeEventListener('mousemove', canvasDragListener)
+                }, { once: true });
+            });
+            iconCanvas.addEventListener('mousewheel', function(event) {
+                event.preventDefault();
+                const characterData = editorCache.storageCache.characters[openedCharacterId];
+                const frameId = editorCache[openedPoseId].data.frame;
+                const frame = characterData.frames[frameId];
+                const img = editorCache[openedPoseId].selectedImage;
+
+                const prevHeight = frame.height;
+                frame.height += event.deltaY / 5000;
+                if (frame.height > 1) frame.height = 1;
+                else if (frame.height < 0.01) frame.height = 0.01;
+
+                const delta = frame.height - prevHeight;
+                frame.left -= delta / 2 * img.naturalHeight / img.naturalWidth;
+                frame.top -= delta / 2;
+                const limitLeft = (img.naturalWidth - frame.height * img.naturalHeight) / img.naturalWidth;
+                if (frame.left < 0) frame.left = 0;
+                else if (frame.left > limitLeft) frame.left -= delta / 2 * img.naturalHeight / img.naturalWidth;
+                if (frame.top < 0) frame.top = 0;
+                else if (frame.top > 1 - frame.height) frame.top -= delta / 2;
+
+                if (prevHeight !== frame.height) {
+                    drawIcon(iconCanvas, openedPoseId);
+                    const frameCanvas = document.querySelector('.hil-icon-frames canvas[data-frame-id="' + frameId + '"]');
+                    if (frameCanvas) {
+                        updateFrameCanvas(editorCache[openedPoseId].selectedImage, frameCanvas);
+                    }
+                    setTimeoutSave();
+                    
+                    iconCanvas.style.setProperty('cursor', 'none');
+                    iconCanvas.nextElementSibling.style.setProperty('opacity', '1');
+                    setTimeout(function() {
+                        iconCanvas.style.removeProperty('cursor');
+                        iconCanvas.nextElementSibling.style.removeProperty('opacity');
+                    }, 500);
+                }
+            });
+
+            app.appendChild(editCard);
+            
+            let editorCache = {};
+            let openedCharacterId;
+            let openedPoseId;
+            let loadingPoseId;
+            let saveTimeout = null;
+            function saveFunc(poseId, characterId) {
+                saveTimeout = null;
+                editorCache.saving = true;
+                chrome.storage.local.get('icon-editor', function(storage) {
+                    storage = verifyStructure(storage['icon-editor'], {
+                        characters: {},
+                        underlays: {},
+                        overlays: {},
+                    });
+                    storage.characters[characterId] = verifyStructure(storage.characters[characterId], {
+                        icons: {},
+                        frames: {},
+                    });
+                    storage.overlays = {...storage.overlays, ...editorCache.storageCache.overlays};
+                    storage.underlays = {...storage.underlays, ...editorCache.storageCache.underlays};
+                    for (let obj in [storage.overlays, storage.underlays]) {
+                        for (let key of Object.keys(obj)) {
+                            if (!obj[key]) delete obj[key];
+                        }
+                    }
+
+                    const iconData = editorCache[poseId].data;
+                    storage.characters[characterId].icons[poseId] = iconData;
+                    storage.characters[characterId].frames = {...storage.characters[characterId].frames, ...editorCache.storageCache.characters[characterId].frames};
+                    
+                    const usedFrameIDs = {};
+                    for (let iconData of Object.values(storage.characters[characterId].icons)) {
+                        const frameId = iconData.frame;
+                        usedFrameIDs[frameId] = true;
+                    }
+                    for (let id of Object.keys(storage.characters[characterId].frames)) {
+                        if (!storage.characters[characterId].frames[id].hidden) continue;
+                        if (!(id in usedFrameIDs)) delete storage.characters[characterId].frames[id];
+                    }
+
+                    editorCache.storageCache = storage;
+                    chrome.storage.local.set({'icon-editor': storage}, function() {
+                        editorCache.saving = false;
+                    });
+                });
+                chrome.storage.local.get('icon-renders', function(storage) {
+                    const renderStorage = storage['icon-renders'] || {};
+                    renderStorage[poseId] = iconRenders[poseId];
+                    chrome.storage.local.set({'icon-renders': renderStorage});
+                });
+            }
+            function setTimeoutSave() {
+                clearTimeout(saveTimeout);
+                const poseId = openedPoseId;
+                const characterId = openedCharacterId;
+                saveTimeout = setTimeout(() => saveFunc(poseId, characterId), 5000);
+            }
+
+            async function drawIcon(canvas, poseId) {
+                const img = editorCache[poseId].selectedImage;
+                if (img) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    const characterData = Object.values(editorCache.storageCache.characters).find(character => poseId in character.icons);
+                    const frame = characterData.frames[
+                        editorCache[poseId].data.frame
+                    ];
+                    const frameLeft = img.naturalWidth * Number(frame.left);
+                    const frameTop = img.naturalHeight * Number(frame.top);
+                    const frameHeight = img.naturalHeight * Number(frame.height);
+                    const scaler = canvas.height / frameHeight;
+                    
+                    ctx.imageSmoothingQuality = "high";
+                    for (let id of editorCache[poseId].data.underlays) {
+                        const layer = editorCache.storageCache.underlays[id];
+                        if (layer === undefined) continue;
+                        const layerImg = new Image();
+                        const promise = new Promise(resolve => layerImg.onload = resolve);
+                        layerImg.src = layer.src;
+                        await promise;
+                        ctx.drawImage(layerImg, canvas.width - layerImg.naturalWidth, canvas.height - layerImg.naturalHeight);
+                    }
+                    ctx.drawImage(img, -frameLeft * scaler, -frameTop * scaler, img.naturalWidth * scaler, img.naturalHeight * scaler);
+                    for (let id of editorCache[poseId].data.overlays) {
+                        const layer = editorCache.storageCache.overlays[id];
+                        if (layer === undefined) continue;
+                        const layerImg = new Image();
+                        const promise = new Promise(resolve => layerImg.onload = resolve);
+                        layerImg.src = layer.src;
+                        await promise;
+                        ctx.drawImage(layerImg, canvas.width - layerImg.naturalWidth, canvas.height - layerImg.naturalHeight);
+                    }
+
+                    iconRenders[poseId] = canvas.toDataURL();
+                    const icon = document.querySelector('img.p-image[data-pose-id="' + poseId + '"]');
+                    if (icon) icon.src = iconRenders[poseId];
+                }
+            }
+
+            function updateFrameCanvas(img, canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.height = img.naturalHeight;
+                canvas.width = img.naturalWidth;
+
+                ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                ctx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
+
+                const frame = editorCache.storageCache.characters[openedCharacterId].frames[canvas.dataset.frameId];
+                const frameLeft = img.naturalWidth * Number(frame.left);
+                const frameTop = img.naturalHeight * Number(frame.top);
+                const frameHeight = img.naturalHeight * Number(frame.height);
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillStyle = "#000";
+                ctx.fillRect(frameLeft, frameTop, frameHeight, frameHeight);
+
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.drawImage(img, 0, 0);
+
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = "#2096f3";
+                ctx.lineWidth = canvas.height * 0.05;
+                ctx.strokeRect(frameLeft - ctx.lineWidth * 0.5, frameTop - ctx.lineWidth * 0.5, frameHeight + ctx.lineWidth, frameHeight + ctx.lineWidth);
+            }
+
+            function onSliderSet(frameTimestamp) {
+                const currentId = openedPoseId;
+                let animTimestamp = frameTimestamp;
+                if (frameTimestamp <= editorCache[openedPoseId].preFrames.length) {
+                    messageAnim.innerHTML = '<b>Pre</b> animation';
+                    editorCache[openedPoseId].data.animType = AnimType.PRE;
+                } else if (frameTimestamp <= editorCache[openedPoseId].preFrames.length + editorCache[openedPoseId].idleFrames.length) {
+                    messageAnim.innerHTML = '<b>Idle</b> animation';
+                    editorCache[openedPoseId].data.animType = AnimType.IDLE;
+                    animTimestamp -= editorCache[openedPoseId].preFrames.length;
+                } else {
+                    messageAnim.innerHTML = '<b>Talking</b> animation';
+                    editorCache[openedPoseId].data.animType = AnimType.SPEAK;
+                    animTimestamp -= editorCache[openedPoseId].preFrames.length;
+                    animTimestamp -= editorCache[openedPoseId].idleFrames.length;
+                }
+                editorCache[openedPoseId].data.animTimestamp = animTimestamp;
+
+                const img = new Image();
+                img.onload = function() {
+                    editorCache[currentId].selectedImage = img;
+                    for (let canvas of frameDiv.querySelectorAll('canvas')) {
+                        updateFrameCanvas(editorCache[currentId].selectedImage, canvas);
+                    }
+                    drawIcon(iconCanvas, currentId);
+                }
+                img.src = editorCache[currentId].allFrames[frameTimestamp - 1];
+                setTimeoutSave();
+            }
+            slider.addEventListener('mousedown', function (event) {
+                if (editorCache[openedPoseId].frameMax) sliderListener(event, slider.parentElement, 1, editorCache[openedPoseId].frameMax, onSliderSet);
+            });
+
+            function addDivider(leftPercent) {
+                const divider = htmlToElement(`<div class="v-slider__track-fill hil-slider-divider" style="left: ${leftPercent}%;"></div>`);
+                slider.querySelector('.v-slider__track-container').appendChild(divider);
+                return divider;
+            }
+
+            function addFrame(frameId) {
+                const frameContainer = htmlToElement(`
+                    <div>
+                        <canvas data-frame-id="${frameId}" height="192" width="256"></canvas>
+                        <button class="v-btn v-btn--has-bg hil-icon-button hil-icon-button-corner hil-themed ${getTheme()}">
+                            <i class="v-icon notranslate mdi mdi-delete hil-themed ${getTheme()}"></i>
+                        </button>
+                    </div>
+                `);
+                const frameCanvas = frameContainer.querySelector('canvas');
+                frameCanvas.addEventListener('click', function() {
+                    editorCache[openedPoseId].data.frame = frameId;
+                    frameDiv.querySelector('.hil-selected')?.classList.remove('hil-selected');
+                    frameContainer.classList.add('hil-selected');
+                    drawIcon(iconCanvas, openedPoseId);
+
+                    let count = 0;
+                    for (let pose of Object.values(editorCache.storageCache.characters[openedCharacterId].icons)) {
+                        if (pose.frame === frameId) count += 1;
+                    }
+                    if (count === 1) messageFrameUses.innerHTML = '<b>1</b> icon is affected by this frame';
+                    else messageFrameUses.innerHTML = '<b>' + count + '</b> total icons are affected by this frame';
+                    setTimeoutSave();
+                });
+                
+                let deleteTimeout;
+                frameContainer.querySelector('.mdi-delete').addEventListener('mousedown', function() {
+                    frameCanvas.classList.add('hil-pose-edit-image-shake');
+
+                    function documentListener() {
+                        clearTimeout(deleteTimeout);
+                        frameCanvas.classList.remove('hil-pose-edit-image-shake');
+                    }
+                    document.addEventListener('mouseup', documentListener, { once: true });
+
+                    deleteTimeout = setTimeout(function() {
+                        document.removeEventListener('mouseup', documentListener);
+                        editorCache.storageCache.characters[openedCharacterId].frames[frameId].hidden = true;
+                        setTimeoutSave();
+                        frameContainer.classList.add('hil-hide');
+                        setTimeout(function() {
+                            frameContainer.classList.add('d-none');
+                            frameContainer.classList.remove('hil-hide');
+                        }, 280);
+                    }, 3000);
+                });
+                frameDiv.insertBefore(frameContainer, frameDiv.querySelector(':scope > i'));
+                return frameCanvas;
+            }
+
+            frameDiv.querySelector('.mdi-plus-box').addEventListener('click', function() {
+                const frames = editorCache.storageCache.characters[openedCharacterId].frames;
+                const currentFrameId = editorCache[openedPoseId].data.frame;
+                for (let i = 0; i < 100000; i++) {
+                    if (i in frames) continue;
+                    frames[i] = JSON.parse(JSON.stringify(frames[currentFrameId]));
+                    const frameCanvas = addFrame(i);
+                    updateFrameCanvas(editorCache[openedPoseId].selectedImage, frameCanvas);
+                    frameCanvas.click();
+                    break;
+                }
+            });
+            
+            function addLayerIcon(layerId, layer, layerType) {
+                const iconContainer = htmlToElement(
+                    `<div class="hil-layer-icon" data-id="${layerId}">
+                        <img src="${layer.src}">
+                        <button class="v-btn v-btn--has-bg hil-icon-button hil-icon-button-corner hil-themed ${getTheme()}">
+                            <i class="v-icon notranslate mdi mdi-archive hil-themed ${getTheme()}"></i>
+                        </button>
+                        <button class="v-btn v-btn--has-bg hil-icon-button hil-icon-button-corner hil-hide hil-themed ${getTheme()}" style="right:0">
+                            <i class="v-icon notranslate mdi mdi-delete hil-themed ${getTheme()}"></i>
+                        </button>
+                    </div>`
+                );
+                iconContainer.addEventListener('click', function() {
+                    iconContainer.classList.toggle('hil-selected');
+                    if (iconContainer.classList.contains('hil-selected')) {
+                        if (!editorCache[openedPoseId].data[layerType].includes(layerId)) editorCache[openedPoseId].data[layerType].push(layerId);
+                    } else {
+                        const index = editorCache[openedPoseId].data[layerType].indexOf(layerId);
+                        if (index >= 0) editorCache[openedPoseId].data[layerType].splice(index, 1)
+                    }
+                    drawIcon(iconCanvas, openedPoseId);
+                    setTimeoutSave();
+                });
+                if (editorCache[openedPoseId]?.data[layerType].includes(layerId)) iconContainer.classList.add('hil-selected');
+                
+                const archiveButton = iconContainer.querySelector('.mdi-archive').parentElement;
+                archiveButton.addEventListener('click', function(event) {
+                    const layerParent = iconContainer.parentElement;
+                    const hidden = !editorCache.storageCache[layerType][layerId].hidden;
+                    editorCache.storageCache[layerType][layerId].hidden = hidden;
+                    if (hidden) {
+                        archiveButton.classList.remove('mdi-archive');
+                        archiveButton.classList.add('mdi-archive-off');
+                        iconContainer.classList.add('hil-layer-hidden');
+                        if (!layerParent.querySelector(':scope > .mdi-archive').classList.contains('hil-activated')) iconContainer.classList.add('hil-hide');
+                        layerParent.appendChild(iconContainer);
+                        iconContainer.querySelector('.mdi-delete').parentElement.classList.remove('hil-hide');
+                    } else {
+                        archiveButton.classList.add('mdi-archive');
+                        archiveButton.classList.remove('mdi-archive-off');
+                        iconContainer.classList.remove('hil-layer-hidden');
+                        iconContainer.classList.remove('hil-hide');
+                        layerParent.prepend(iconContainer);
+                        iconContainer.querySelector('.mdi-delete').parentElement.classList.add('hil-hide');
+                    }
+                    event.stopPropagation();
+                });
+
+                let deleteTimeout;
+                iconContainer.querySelector('.mdi-delete').parentElement.addEventListener('mousedown', function() {
+                    iconContainer.querySelector('img').classList.add('hil-pose-edit-image-shake');
+
+                    function documentListener() {
+                        clearTimeout(deleteTimeout);
+                        iconContainer.querySelector('img').classList.remove('hil-pose-edit-image-shake');
+                    }
+                    document.addEventListener('mouseup', documentListener, { once: true });
+
+                    deleteTimeout = setTimeout(function() {
+                        document.removeEventListener('mouseup', documentListener);
+                        if (iconContainer.classList.contains('hil-selected')) iconContainer.click();
+                        editorCache.storageCache[layerType][layerId] = undefined;
+                        drawIcon(iconCanvas, openedPoseId);
+                        setTimeoutSave();
+                        iconContainer.classList.add('hil-hide');
+                        setTimeout(function() {
+                            iconContainer.remove();
+                        }, 280);
+                    }, 3000);
+                });
+
+                return iconContainer;
+            }
+
+            for (let [ layerParent, layerType ] of [[overlayDiv, 'overlays'], [underlayDiv, 'underlays']]) {
+                layerParent.querySelector('.mdi-plus-box').addEventListener('click', function() {
+                    layerParent.querySelector('input').click();
+                });
+                const archiveButton = layerParent.querySelector(':scope > .mdi-archive');
+                archiveButton.addEventListener('click', function() {
+                    archiveButton.classList.toggle('hil-activated');
+                    const func = archiveButton.classList.contains('hil-activated') ? 'remove' : 'add';
+                    layerParent.querySelectorAll('.hil-layer-hidden').forEach(elem => elem.classList[func]('hil-hide'));
+                });
+                const input = layerParent.querySelector('input');
+                input.addEventListener('change', function() {
+                    if (!editorCache.storageCache) return;
+                    if (!input.files || !input.files[0]) return;
+    
+                    const reader = new FileReader();
+                      
+                    reader.addEventListener("load", function(event) {
+                        const src = event.target.result;
+                        if (src.slice(0, 11) !== 'data:image/') return;
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = 64;
+                            canvas.height = 64;
+                            let scaler;
+                            if (img.naturalWidth > img.naturalHeight) {
+                                scaler = canvas.height / img.naturalWidth;
+                            } else {
+                                scaler = canvas.height / img.naturalHeight;
+                            }
+                            const width = img.naturalWidth * scaler;
+                            const height = img.naturalHeight * scaler
+                            ctx.imageSmoothingQuality = "high";
+                            ctx.drawImage(img, canvas.width - width, canvas.height - height, width, height);
+
+                            const layerSrc = canvas.toDataURL();
+                            const layerId = Date.now() - 1660899999999;
+                            editorCache.storageCache[layerType][layerId] = {
+                                src: layerSrc,
+                                hidden: false,
+                            }
+                            setTimeoutSave();
+                            const icon = addLayerIcon(layerId, editorCache.storageCache[layerType][layerId], layerType);
+                            layerParent.prepend(icon);
+                        }
+                        img.src = src;
+                    }); 
+                      
+                    reader.readAsDataURL(input.files[0]);
+                });
+            }
+
+            const imageCache = {};
+            async function fetchImage(url) {
+                if (!url) {
+                    return null;
+                } else if (url in imageCache) {
+                    return imageCache[url];
+                } else {
+                    const b64image = await chrome.runtime.sendMessage(["fetch-image", url]);
+                    imageCache[url] = b64image;
+                    return b64image;
+                }
+            }
+
+            window.addEventListener('message', function(event) {
+                const [action, pose] = event.data;
+                if (action !== 'set_pose') return;
+                if (editCard.classList.contains('hil-hide')) return;
+                
+                poseNameDiv.innerText = 'Icon: ' + pose.name;
+
+                editColumns.classList.add('hil-hide');
+                slider.parentElement.classList.add('hil-hide');
+                messageAnim.classList.add('hil-hide');
+                loadIcon.classList.remove('hil-hide');
+
+                loadingPoseId = pose.id;
+
+                if (openedPoseId !== pose.id && saveTimeout) {
+                    clearTimeout(saveTimeout);
+                    saveFunc(openedPoseId, openedCharacterId);
+                }
+
+                chrome.storage.local.get('icon-editor', function(storage) {
+                    if (loadingPoseId !== pose.id) return;
+
+                    if (editorCache.saving) {
+                        storage = editorCache.storageCache;
+                    } else {
+                        const exists = storage['icon-editor'];
+                        storage = verifyStructure(storage['icon-editor'], {
+                            characters: {},
+                            underlays: {},
+                            overlays: {},
+                        });
+                        if (!exists) {
+                            storage.overlays = {
+                                0: {
+                                    "src": "data:image/png;base64,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"
+                                }
+                            };
+                        }
+                    }
+
+                    if (editorCache.storageCache === undefined) {
+                        for (let [ layerStorage, layerParent, layerType ] of [[storage.overlays, overlayDiv, 'overlays'], [storage.underlays, underlayDiv, 'underlays']]) {
+                            const ids = Object.keys(layerStorage).sort();
+                            for (let id of ids.reverse()) {
+                                const layer = layerStorage[id];
+                                if (layer.hidden) continue;
+                                const icon = addLayerIcon(id, layer, layerType);
+                                layerParent.prepend(icon);
+                            }
+                            for (let id of ids) {
+                                const layer = layerStorage[id];
+                                if (!layer.hidden) continue;
+                                const icon = addLayerIcon(id, layer, layerType);
+                                icon.classList.add('hil-layer-hidden');
+                                icon.classList.add('hil-hide');
+                                const archiveButton = icon.querySelector('.mdi-archive').parentElement;
+                                archiveButton.classList.remove('mdi-archive');
+                                archiveButton.classList.add('mdi-archive-off');
+                                icon.querySelector('.mdi-delete').parentElement.classList.remove('hil-hide');
+                                layerParent.appendChild(icon);
+                            }
+                        }
+                    }
+
+                    let characterData = storage.characters[pose.characterId];
+                    if (characterData === undefined) {
+                        characterData = {
+                            icons: {},
+                            frames: {
+                                0: {
+                                    top: 0.1,
+                                    left: 0.1,
+                                    height: 0.8,
+                                },
+                            },
+                        }
+                        storage.characters[pose.characterId] = characterData;
+                    }
+                    window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
+
+                    if (openedCharacterId !== pose.characterId) {
+                        for (let child of frameDiv.querySelectorAll(':scope > :not(i)')) {
+                            child.remove();
+                        }
+                        for (let id in characterData.frames) {
+                            const frameCanvas = addFrame(Number(id));
+                            if (characterData.frames[id].hidden) frameCanvas.parentElement.classList.add('d-none');
+                        }
+                        frameDiv.appendChild(frameDiv.querySelector(':scope > i'));
+                    }
+                    
+                    let iconData = characterData.icons[pose.id];
+                    if (iconData === undefined) {
+                        iconData = {
+                            frame: editorCache[openedPoseId]?.data.frame || 0,
+                            overlays: [],
+                            underlays: [],
+                            animTimestamp: 1,
+                            animType: AnimType.IDLE,
+                        }
+                        characterData.icons[pose.id] = iconData;
+                    }
+                    if (!(pose.id in editorCache)) editorCache[pose.id] = {};
+                    editorCache[pose.id].data = iconData;
+                    editorCache.storageCache = storage;
+
+                    for (let [ layerParent, layerType ] of [[overlayDiv, 'overlays'], [underlayDiv, 'underlays']]) {
+                        for (let layerDiv of layerParent.children) {
+                            if (iconData[layerType].includes(layerDiv.dataset.id)) {
+                                layerDiv.classList.add('hil-selected');
+                            } else {
+                                layerDiv.classList.remove('hil-selected');
+                            }
+                        }
+                    }
+
+                    const promises = [fetchImage(pose.idleImageUrl), fetchImage(pose.speakImageUrl)];
+                    for (let state of pose.states) {
+                        promises.push(
+                            fetchImage(state.imageUrl)
+                        );
+                    }
+                    Promise.allSettled(promises).then(function(images) {
+                        if (loadingPoseId !== pose.id) return;
+                        openedPoseId = pose.id;
+                        openedCharacterId = pose.characterId;
+                        frameDiv.querySelector('canvas[data-frame-id="' + iconData.frame + '"]')?.click();
+
+                        editorCache[pose.id].preFrames = [];
+                        editorCache[pose.id].idleFrames = [];
+                        editorCache[pose.id].talkFrames = [];
+                        for (let i = 0; i < images.length; i++) {
+                            let frameList = editorCache[pose.id].preFrames;
+                            if (i === 0) frameList = editorCache[pose.id].idleFrames;
+                            else if (i === 1) frameList = editorCache[pose.id].talkFrames;
+
+                            const image = images[i].value;
+                            if (image) frameList.push(image);
+                        }
+                        editorCache[pose.id].frameMax = editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length + editorCache[pose.id].talkFrames.length;
+                        editorCache[pose.id].allFrames = editorCache[pose.id].preFrames.concat(editorCache[pose.id].idleFrames).concat(editorCache[pose.id].talkFrames);
+                        let frameTimestamp = iconData.animTimestamp;
+                        if (iconData.animType === AnimType.IDLE) frameTimestamp += editorCache[pose.id].preFrames.length;
+                        if (iconData.animType === AnimType.SPEAK) frameTimestamp += editorCache[pose.id].idleFrames.length;
+                        setSlider(slider, frameTimestamp, 1, editorCache[pose.id].frameMax);
+                        onSliderSet(frameTimestamp);
+
+                        slider.querySelectorAll('.hil-slider-divider').forEach(elem => elem.remove());
+                        if (editorCache[pose.id].preFrames.length > 0) {
+                            addDivider(editorCache[pose.id].preFrames.length / editorCache[pose.id].frameMax * 100);
+                        }
+                        if (editorCache[pose.id].talkFrames.length > 0) {
+                            addDivider((editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length) / editorCache[pose.id].frameMax * 100);
+                        }
+
+                        loadIcon.classList.add('hil-hide');
+                        slider.parentElement.classList.remove('hil-hide');
+                        messageAnim.classList.remove('hil-hide');
+                        editColumns.classList.remove('hil-hide');
+
+                    });
+                });
+
+            });
+
+        }, { once: true });
+        
+        editButton.addEventListener('click', function() {
+            window.postMessage(['get_current_pose']);
+            if (editCard.classList.contains('hil-hide')) {
+                const poseSelector = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement;
+                const rect = poseSelector.getClientRects()[0];
+                editCard.style.left = rect.x + rect.width + 10 + 'px';
+                if (rect.y + editCard.clientHeight < document.body.clientHeight) {
+                    editCard.style.top = rect.y + 'px';
+                } else {
+                    editCard.style.top = document.body.clientHeight - editCard.clientHeight + 'px';
+                }
+                editCard.classList.remove('hil-hide');
+            } else {
+                editCard.classList.add('hil-hide');
+            }
+        });
     }
 
 

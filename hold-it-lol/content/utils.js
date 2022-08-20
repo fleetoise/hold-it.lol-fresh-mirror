@@ -124,6 +124,7 @@ hilUtils.htmlToElement = function(html) {
 }
 
 hilUtils.verifyStructure = function(obj, structure) {
+    if (!obj) obj = {};
     for (let key in structure) {
         let type = obj[key]?.constructor;
         const structureType = structure[key]?.constructor;
@@ -139,4 +140,32 @@ hilUtils.verifyStructure = function(obj, structure) {
         }
     }
     return obj;
+}
+
+hilUtils.setSlider = function(sliderContainer, value, min, max) {
+    if (value > max) value = max;
+    else if (value < min) value = min;
+    const percentage = (value-min)/(max-min) * 100;
+    sliderContainer.querySelector('.v-slider__track-fill').style.width = percentage + '%';
+    sliderContainer.querySelector('.v-slider__thumb-container').style.left = percentage + '%';
+    sliderContainer.querySelector('.v-slider__thumb-label span').textContent = value;
+}
+
+hilUtils.sliderListener = function(event, sliderContainer, min, max, callback) {
+    sliderContainer.querySelector('.v-slider__thumb-container').classList.add('v-slider__thumb-container--active');
+    const adjust = function(e) {
+        const sliderRect = sliderContainer.querySelector('.v-slider').getClientRects()[0];
+        const sliderPosition = (e.clientX - sliderRect.x) / sliderRect.width;
+        let value = Math.round(sliderPosition * (max - min) + min);
+        if (value > max) value = max;
+        else if (value < min) value = min;
+        hilUtils.setSlider(sliderContainer, value, min, max);
+        if (callback) callback(value);
+    }
+    adjust(event);
+    document.addEventListener('mousemove', adjust);
+    document.addEventListener('mouseup', function () {
+        sliderContainer.querySelector('.v-slider__thumb-container').classList.remove('v-slider__thumb-container--active');
+        document.removeEventListener('mousemove', adjust);
+    }, { once: true });
 }

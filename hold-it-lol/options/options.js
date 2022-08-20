@@ -9,6 +9,7 @@ const tabs = [
             { key: 'auto-record', title: 'Auto-recording', description: 'Automatically start recording joined courtrooms (saving is manual).', preview: 'previews/placeholder.png' },
             { key: 'save-last-character', title: 'Remember last character', description: 'The last character you used (with the extension on) is selected by default in the next court.', preview: 'previews/placeholder.png' },
             { key: 'disable-testimony-shortcut', title: 'Disable T key', description: 'Turn off the "T" hotkey that toggles "give testimony".', preview: 'previews/placeholder.png' },
+            // { key: 'unblur-low-res', title: 'Unblur pixel characters', description: 'Makes character poses with low resolutions sharp instead of blurry.', preview: 'previews/placeholder.png' },
             // { key: 'merge-characters', title: 'Merge characters', description: 'Merge poses from multiple characters to work like a single character.', preview: 'previews/placeholder.png' },
             { key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close formatting menus after you\'ve used them.', preview: 'previews/placeholder.png' },
             { key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them instead of clicking.', preview: 'previews/placeholder.png' },
@@ -30,11 +31,15 @@ const tabs = [
         title: 'Interface',
         items: [
             { key: 'old-toggles', title: 'Classic toggles', description: 'Toggles like "Pre-animate" are accessible outside of a menu (as it was in the past).', preview: 'previews/placeholder.png' },
+            // { key: 'old-bubbles', title: 'Classic bubble buttons', description: 'Speech bubbles are selected from a column of buttons instead of a dropdown (as it was in the past).', preview: 'previews/placeholder.png' },
             { key: 'convert-chat-urls', title: 'Clickable chat links', description: 'URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.', preview: 'previews/placeholder.png' },
+            // { key: 'chat-timestamps', title: 'Chat timestamps', description: 'Shows the time at which a message was sent in the chat log.', preview: 'previews/placeholder.png' },
+            // { key: 'chat-backlog-indicator', title: 'Show message backlog', description: 'Shows the amount of messages currently waiting to be displayed.', preview: 'previews/placeholder.png' },
             { key: 'volume-sliders', title: 'Separate volume sliders', description: 'Adjust the volume of music and sound effects separately.', preview: 'previews/placeholder.png' },
             { key: 'fullscreen-evidence', title: 'Full screen in record', description: 'Mention full-screen evidence from the court record.', preview: 'previews/placeholder.png' },
             { key: 'spectator-preload', title: '"Preload Resources" while spectating', description: 'Toggle "Preload Resources" while spectating.', preview: 'previews/placeholder.png' },
             { key: 'reload-ccs', title: 'Reload custom characters', description: 'Reload others\' custom characters from Settings to see their changes without reloading the page.', preview: 'previews/placeholder.png' },
+            // { key: 'drag-pair-offset', title: 'Drag paired character', description: 'Drag your character around the frame to offset them in pairing.', preview: 'previews/placeholder.png' },
         ],
     },
     {
@@ -54,7 +59,7 @@ const tabs = [
             { key: 'now-playing', title: '"Now playing..." display', description: 'Shows the name given to the currently playing track.', preview: 'previews/placeholder.png' },
             //{key: 'dual-wield', title: 'Dual wield', description: 'Control two paired characters at the same time.', preview: 'previews/placeholder.png'},
             { key: 'tts', title: 'Text-to-speech', description: 'Plays messages using wacky text-to-speech voices.', preview: 'previews/placeholder.png' },
-            //{ key: 'pose-icon-maker', title: 'Pose icons for all characters', description: 'All characters have pose icons. Hold "SHIFT"', preview: 'previews/placeholder.png' },
+            { key: 'pose-icon-maker', title: 'Pose icons for all characters', description: 'Add pose icons to characters that lack them using an in-courtroom editor.', preview: 'previews/placeholder.png' },
         ],
     },
     {

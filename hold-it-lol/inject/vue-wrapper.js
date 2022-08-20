@@ -1,6 +1,6 @@
 "use strict";
 
-const { compareShallow, getLabel, createIcon, createTooltip } = hilUtils;
+const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener } = hilUtils;
 
 function main() {
 
@@ -75,6 +75,21 @@ function main() {
             muteCharacter = muteCharacters.fallback;
         }
         return muteCharacter
+    }
+
+    function getIDFromUsername(username, userList = muteInputInstance.items) {
+        return userList.find(user => user.username === username)?.id;
+    }
+
+    function updateCustomPoseIconCCs() {
+        if (socketStates['customIconCharacters'] === undefined) return;
+        for (let id of socketStates['customIconCharacters']) {
+            const character = characterListInstance.customList.find(character => character.id === Number(id));
+            if (character === undefined) continue;
+            if (character.poses[0] === undefined) continue;
+            if (character.poses[0].iconUrl) continue;
+            character.poses[0].iconUrl = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
+        }
     }
 
     function preloadHiddenCharacters() {
@@ -257,10 +272,6 @@ function main() {
         }
     }
 
-    function getIDFromUsername(username, userList = muteInputInstance.items) {
-        return userList.find(user => user.username === username)?.id;
-    }
-
 
     window.postMessage(['wrapper_loaded']);
     window.addEventListener('message', function (event) {
@@ -292,6 +303,9 @@ function main() {
                     delete frameInstance.customCharacters[id];
                 }
             };
+        } else if (action === 'set_custom_icon_characters') {
+            socketStates['customIconCharacters'] = data;
+            updateCustomPoseIconCCs();
         }
     });
 
@@ -372,7 +386,7 @@ function main() {
         if (socketStates.options['list-moderation'] || socketStates.options['chat-moderation']) {
             function userActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
                 const button = document.createElement('button');
-                button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-themed ' + getTheme();
+                button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-icon-button-hover hil-themed ' + getTheme();
                 if (cssText) button.style.cssText = cssText;
 
                 button.appendChild(createIcon(iconName));
@@ -479,7 +493,7 @@ function main() {
                 }
 
                 container.removeWithTooltips = function () {
-                    container.querySelectorAll('.hil-icon-button').forEach(button => button.tooltip?.remove());
+                    container.querySelectorAll('.hil-icon-button-hover').forEach(button => button.tooltip?.remove());
                     container.remove();
                 }
                 return container;
@@ -621,36 +635,12 @@ function main() {
                     let bgmVolume = 'hil-bgm-volume' in localStorage ? parseInt(localStorage['hil-bgm-volume']) : 99;
                     let bgsVolume = 'hil-bgs-volume' in localStorage ? parseInt(localStorage['hil-bgs-volume']) : 99;
 
-                    function setSlider(value, sliderContainer, callback = null) {
-                        if (value > 99) value = 99;
-                        else if (value < 0) value = 0;
-                        sliderContainer.querySelector('.v-slider__track-fill').style.width = value + '%';
-                        sliderContainer.querySelector('.v-slider__thumb-container').style.left = value + '%';
-                        sliderContainer.querySelector('.v-slider__thumb-label > div > span').textContent = value;
-                        if (callback) callback(value);
-                    }
-                    function sliderEvent(event, sliderContainer, callback) {
-                        const sliderRect = sliderContainer.querySelector('.v-slider').getClientRects()[0];
-                        let value = Math.round((event.clientX - sliderRect.x) / sliderRect.width * 100);
-                        setSlider(value, sliderContainer, callback);
-                    }
-                    function mouseDownListener(event, sliderContainer, callback) {
-                        sliderContainer.querySelector('.v-slider__thumb-container').classList.add('v-slider__thumb-container--active');
-                        const adjust = e => sliderEvent(e, sliderContainer, callback);
-                        adjust(event);
-                        document.addEventListener('mousemove', adjust);
-                        document.addEventListener('mouseup', function () {
-                            sliderContainer.querySelector('.v-slider__thumb-container').classList.remove('v-slider__thumb-container--active');
-                            document.removeEventListener('mousemove', adjust);
-                        }, { once: true });
-                    }
-
                     function howlIsMusic(howl) {
                         return howl._loop || howl._src.slice(0, 13) === '/audio/music/';
                     }
 
                     bgmSliderContainer.querySelector('.v-slider').addEventListener('mousedown', function (event) {
-                        mouseDownListener(event, bgmSliderContainer, function (value) {
+                        sliderListener(event, bgmSliderContainer, 0, 99, function (value) {
                             bgmVolume = value;
                             localStorage['hil-bgm-volume'] = value;
                             for (let howl of Howler._howls) {
@@ -659,10 +649,10 @@ function main() {
                             }
                         })
                     });
-                    setSlider(bgmVolume, bgmSliderContainer);
+                    setSlider(bgmSliderContainer, bgmVolume, 0, 99);
 
                     bgsSliderContainer.querySelector('.v-slider').addEventListener('mousedown', function (event) {
-                        mouseDownListener(event, bgsSliderContainer, function (value) {
+                        sliderListener(event, bgsSliderContainer, 0, 99, function (value) {
                             bgsVolume = value;
                             localStorage['hil-bgs-volume'] = value;
                             for (let howl of Howler._howls) {
@@ -671,7 +661,7 @@ function main() {
                             }
                         })
                     });
-                    setSlider(bgsVolume, bgsSliderContainer);
+                    setSlider(bgsSliderContainer, bgsVolume, 0, 99);
 
                     Howler._howls.push = function (...args) {
                         Array.prototype.push.call(Howler._howls, ...args);
@@ -695,6 +685,93 @@ function main() {
                 const action = event.data[0];
                 if (action === 'room_spectated') processVolumeSliders();
             })
+        }
+
+        if (socketStates.options['pose-icon-maker']) {
+            function checkIfIconsEditable() {
+                const editButton = document.querySelector('.hil-pose-edit-icon');
+                if (characterInstance.currentCharacter.id > 1000 && characterInstance.currentCharacter.poses.find(pose => !pose.iconUrl)) {
+                    editButton.classList.remove('hil-hide');
+                } else {
+                    editButton.classList.add('hil-hide');
+                    const editCard = document.querySelector('.hil-pose-edit-card');
+                    if (editCard) document.querySelector('.hil-pose-edit-card').classList.add('hil-hide');
+                }
+            }
+            checkIfIconsEditable();
+            characterInstance.$watch('currentCharacter', checkIfIconsEditable);
+
+            let resolvedCharacters = {};
+            function onPoseSet() {
+                const characterId = characterInstance.currentCharacter.id;
+                const characterResolved = new Promise(function(resolve, reject) {
+                    if (characterId in resolvedCharacters) {
+                        resolve(resolvedCharacters[characterId]);
+                        return;
+                    }
+                    
+                    const character = frameInstance.customCharacters[characterId];
+                    if (character) {
+                        for (let pose of character.poses) {
+                            if (pose.states.length === 0) continue;
+                            resolvedCharacters[characterId] = character;
+                            resolve(character);
+                            return;
+                        }
+                    }
+                        
+                    fetch('https://api.objection.lol/character/getcharacters', {
+                        method: "POST",
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify({
+                            ids: [characterId]
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(function([ character ]) {
+                        resolvedCharacters[characterId] = character;
+                        resolve(character);
+                    });
+                });
+
+                characterResolved.then(function(character) {
+                    if (character === undefined) return;
+                    const currentPose = character.poses.find(
+                        pose => pose.id === poseInstance.currentPoseId
+                    );
+                    if (currentPose === undefined) return;
+                    window.postMessage([
+                        'set_pose',
+                        currentPose,
+                    ]);
+                });
+            }
+            onPoseSet();
+            poseInstance.$watch('currentPoseId', onPoseSet);
+
+            window.addEventListener('message', function (event) {
+                const [action, data] = event.data;
+                if (action === 'get_current_pose') {
+                    onPoseSet();
+                }
+            });
+
+            characterListInstance.$watch('customList', function() {
+                updateCustomPoseIconCCs();
+            }, { deep: true });
+
+            new MutationObserver(function(mutations) {
+                for (let mutation of mutations) {
+                    for (let node of mutation.addedNodes) {
+                        if (!(node.nodeType === 1 && node.nodeName === 'IMG')) continue;
+                        const poseId = node.parentElement.__vue__.poseId;
+                        node.dataset.poseId = poseId;
+                    }
+                }
+            }).observe(poseInstance.$el, {
+                childList: true,
+                subtree: true,
+            });
         }
 
         if (socketStates.options['disable-testimony-shortcut']) {
