@@ -2490,7 +2490,3 @@ function tryMain() {
     }
     return false;
 }
-
-window.onload = function() {
-    console.log('HIL - ONLOAD');
-}
