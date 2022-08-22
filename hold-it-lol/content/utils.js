@@ -34,7 +34,7 @@ hilUtils.getInputContent = function() {
 
 hilUtils.createButton = function(listener, text, classText, styleText) {
     const button = document.createElement('button');
-    button.className = 'v-btn v-btn--has-bg v-size--default hil-row-btn hil-themed ' + theme;
+    button.className = 'v-btn v-btn--has-bg v-size--default hil-row-btn hil-themed ' + hilUtils.getTheme();
     if (classText) button.className += ' ' + classText;
     if (styleText) button.style.cssText = styleText;
     button.innerText = text;
@@ -46,7 +46,7 @@ hilUtils.createButton = function(listener, text, classText, styleText) {
 
 hilUtils.primaryButton = function(listener, classText, styleText, child) {
     const button = document.createElement('button');
-    button.className = 'v-btn v-btn--depressed v-size--small primary ' + theme;
+    button.className = 'v-btn v-btn--depressed v-size--small primary ' + hilUtils.getTheme();
     if (classText) button.className += ' ' + classText;
     if (styleText) button.style.cssText += styleText;
     if (child) button.appendChild(child);

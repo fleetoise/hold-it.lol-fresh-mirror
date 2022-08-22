@@ -536,6 +536,16 @@ th {
     outline: 2px solid #7f3f45;
 }
 
+.hil-pose-edit-card .hil-icon-export-buttons {
+    display: flex;
+    height: 2rem;
+    gap: 4px;
+}
+
+.hil-pose-edit-card .hil-icon-export-buttons button {
+    flex: auto;
+}
+
 @keyframes hil-pose-edit-image-shake {
     5% {
         transform: translate(-0.3%, 0.35%) rotate(-0.631deg) scale(0.875)
