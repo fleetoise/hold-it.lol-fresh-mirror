@@ -473,7 +473,7 @@ function main() {
                         if (!muted) socketStates['mutedCharUsers'][id] = true;
 
                         for (const mutedId in socketStates['mutedCharUsers']) {
-                            if (muteInputInstance.items.find(item => item.id === Number(mutedId))) continue;
+                            if (muteInputInstance.items.find(item => item.id === mutedId)) continue;
                             delete socketStates['mutedCharUsers'][mutedId];
                         }
 
