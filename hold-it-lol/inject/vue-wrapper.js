@@ -89,7 +89,7 @@ function main() {
             if (character === undefined) continue;
             if (character.poses[0] === undefined) continue;
             if (character.poses[0].iconUrl) continue;
-            character.poses[0].iconUrl = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
+            character.poses[0].iconUrl = hilUtils.transparentSvg;
         }
     }
 

@@ -40,6 +40,7 @@ let optionsLoaded = new Promise(function(resolve, reject) {
         resolve(options);
     });
 });
+let wrapperLoaded;
 
 
 function setValue(elem, text) {
@@ -1653,7 +1654,9 @@ function onLoad(options) {
                 underlays: {},
                 overlays: {},
             });
-            window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
+            wrapperLoaded.then(function() {
+                window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
+            });
         });
 
         new MutationObserver(function(mutations) {
@@ -1689,6 +1692,7 @@ function onLoad(options) {
             <div class="hil-hide hil-pose-edit-card hil-themed ${getTheme()}">
                 <div class="d-flex">
                     <div class="headline hil-pose-title">Icon: </div>
+                    <i class="mdi mdi-delete headline hil-pose-icon-delete"></i>
                     <div class="hil-close-button">Close</div>
                 </div>
                 <hr class="v-divider hil-themed ${getTheme()}">
@@ -1914,7 +1918,11 @@ function onLoad(options) {
                     }
 
                     const iconData = editorCache[poseId].data;
-                    storage.characters[characterId].icons[poseId] = iconData;
+                    if (iconData) {
+                        storage.characters[characterId].icons[poseId] = iconData;
+                    } else {
+                        delete storage.characters[characterId].icons[poseId];
+                    }
                     storage.characters[characterId].frames = {...storage.characters[characterId].frames, ...editorCache.storageCache.characters[characterId].frames};
                     
                     const usedFrameIDs = {};
@@ -1935,6 +1943,7 @@ function onLoad(options) {
                 chrome.storage.local.get('icon-renders', function(storage) {
                     const renderStorage = storage['icon-renders'] || {};
                     renderStorage[poseId] = iconRenders[poseId];
+                    if (renderStorage[poseId] === undefined) delete renderStorage[poseId];
                     chrome.storage.local.set({'icon-renders': renderStorage});
                 });
             }
@@ -1944,6 +1953,27 @@ function onLoad(options) {
                 const characterId = openedCharacterId;
                 saveTimeout = setTimeout(() => saveFunc(poseId, characterId), 5000);
             }
+
+            editCard.querySelector('i.hil-pose-icon-delete').addEventListener('click', function() {
+                if (openedPoseId) {
+                    editorCache[openedPoseId].data = undefined;
+                    iconRenders[openedPoseId] = undefined;
+                    const poseIcon = document.querySelector('.p-image[data-pose-id="' + openedPoseId + '"]');
+                    if (poseIcon) poseIcon.src = hilUtils.transparentSvg;
+                }
+                for (let poseId in editorCache.storageCache.characters[openedCharacterId].icons) {
+                    if (Number(poseId) === openedPoseId) continue;
+                    const icon = document.querySelector('.p-image[data-pose-id="' + poseId + '"]');
+                    if (icon) {
+                        icon.click();
+                        return;
+                    }
+                }
+
+                clearTimeout(saveTimeout);
+                saveFunc(openedPoseId, openedCharacterId);
+                editCard.classList.add('hil-hide');
+            });
 
             async function drawIcon(canvas, poseId) {
                 const img = editorCache[poseId].selectedImage;
@@ -1988,6 +2018,9 @@ function onLoad(options) {
             }
 
             function updateFrameCanvas(img, canvas) {
+                const frame = editorCache.storageCache.characters[openedCharacterId].frames[canvas.dataset.frameId];
+                if (!frame || frame.hidden) return;
+
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 canvas.height = img.naturalHeight;
@@ -1996,7 +2029,6 @@ function onLoad(options) {
                 ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
                 ctx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
 
-                const frame = editorCache.storageCache.characters[openedCharacterId].frames[canvas.dataset.frameId];
                 const frameLeft = img.naturalWidth * Number(frame.left);
                 const frameTop = img.naturalHeight * Number(frame.top);
                 const frameHeight = img.naturalHeight * Number(frame.height);
@@ -2108,6 +2140,7 @@ function onLoad(options) {
                 for (let i = 0; i < 100000; i++) {
                     if (i in frames) continue;
                     frames[i] = JSON.parse(JSON.stringify(frames[currentFrameId]));
+                    delete frames[i].hidden;
                     const frameCanvas = addFrame(i);
                     updateFrameCanvas(editorCache[openedPoseId].selectedImage, frameCanvas);
                     frameCanvas.click();
@@ -2350,7 +2383,7 @@ function onLoad(options) {
                     let iconData = characterData.icons[pose.id];
                     if (iconData === undefined) {
                         iconData = {
-                            frame: editorCache[openedPoseId]?.data.frame || 0,
+                            frame: editorCache[openedPoseId]?.data?.frame || 0,
                             overlays: [],
                             underlays: [],
                             animTimestamp: 1,
@@ -2449,17 +2482,21 @@ function onLoad(options) {
 
 
 
-window.addEventListener('message', function(event) {
-    const [action, data] = event.data;
-    
-    if (action === 'wrapper_loaded') {
-        optionsLoaded.then(function(options) {
-            window.postMessage([
-                'set_options',
-                options
-            ]);
-        });
-    }
+wrapperLoaded = new Promise(function(resolve) {
+    window.addEventListener('message', function listener(event) {
+        const [action] = event.data;
+        
+        if (action === 'wrapper_loaded') {
+            resolve();
+            optionsLoaded.then(function(options) {
+                window.postMessage([
+                    'set_options',
+                    options
+                ]);
+            });
+            window.removeEventListener('message', listener);
+        }
+    });
 });
 
 
