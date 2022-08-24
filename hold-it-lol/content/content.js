@@ -90,11 +90,11 @@ function onLoad(options) {
     console.log('holdit.lol v0.7.1 beta - running onLoad()');
     
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) {
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         window.addEventListener('message', function listener(event) {
             const [action] = event.data;
-            if (action !== 'utils_loaded') return;
+            if (action !== 'loaded_utils') return;
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
             window.removeEventListener('message', listener);
         });
@@ -1755,10 +1755,10 @@ function onLoad(options) {
                 </div>
             </div>
         `);
+        let exportCard;
 
         editButton.addEventListener('click', function() {
-            const closeButton = editCard.querySelector('.hil-close-button');
-            closeButton.addEventListener('click', () => editCard.classList.add('hil-hide'));
+            editCard.querySelector('.hil-close-button').addEventListener('click', () => editCard.classList.add('hil-hide'));
 
             for (let swiperContainer of editCard.querySelectorAll('.hil-swiper-container')) {
                 const swiper = swiperContainer.querySelector('.hil-swiper');
@@ -1796,7 +1796,7 @@ function onLoad(options) {
 
             const poseNameDiv = editCard.querySelector('.hil-pose-title');
             const slider = editCard.querySelector('.v-slider');
-            const loadIcon = editCard.querySelector('.v-progress-circular');
+            const poseLoadIcon = editCard.querySelector('.v-progress-circular');
             const editColumns = editCard.querySelector('.hil-edit-columns');
             const frameDiv = editCard.querySelector('.hil-icon-frames');
             const overlayDiv = editCard.querySelector('.hil-icon-overlays');
@@ -1895,6 +1895,7 @@ function onLoad(options) {
             
             let editorCache = {};
             let openedCharacterId;
+            let openedCharacter = {};
             let openedPoseId;
             let loadingPoseId;
             let saveTimeout = null;
@@ -1976,19 +1977,6 @@ function onLoad(options) {
                 saveFunc(openedPoseId, openedCharacterId);
                 editCard.classList.add('hil-hide');
             });
-
-            exportButtons.appendChild(createButton(
-                function() {
-
-                },
-                'Export One',
-            ));
-            exportButtons.appendChild(createButton(
-                function() {
-
-                },
-                'Export All',
-            ));
 
             async function drawIcon(canvas, poseId) {
                 const img = editorCache[poseId].selectedImage;
@@ -2314,7 +2302,7 @@ function onLoad(options) {
                 editColumns.classList.add('hil-hide');
                 slider.parentElement.classList.add('hil-hide');
                 messageAnim.classList.add('hil-hide');
-                loadIcon.classList.remove('hil-hide');
+                poseLoadIcon.classList.remove('hil-hide');
 
                 loadingPoseId = pose.id;
 
@@ -2453,6 +2441,7 @@ function onLoad(options) {
                         if (loadingPoseId !== pose.id) return;
                         openedPoseId = pose.id;
                         openedCharacterId = pose.characterId;
+                        openedCharacter = pose.character;
                         frameDiv.querySelector('canvas[data-frame-id="' + iconData.frame + '"]')?.click();
 
                         editorCache[pose.id].preFrames = [];
@@ -2482,7 +2471,7 @@ function onLoad(options) {
                             addDivider((editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length) / editorCache[pose.id].frameMax * 100);
                         }
 
-                        loadIcon.classList.add('hil-hide');
+                        poseLoadIcon.classList.add('hil-hide');
                         slider.parentElement.classList.remove('hil-hide');
                         messageAnim.classList.remove('hil-hide');
                         editColumns.classList.remove('hil-hide');
@@ -2491,6 +2480,166 @@ function onLoad(options) {
                 });
 
             });
+
+            exportCard = htmlToElement(/*html*/`
+                <div class="hil-hide hil-pose-edit-card hil-icon-export-card hil-themed ${getTheme()}">
+                    <div class="d-flex">
+                        <div class="headline hil-pose-title">Export Options</div>
+                        <div class="hil-close-button">Close</div>
+                    </div>
+                    <hr class="v-divider hil-themed ${getTheme()}">
+                    <div class="mb-2 hil-hide-on-load hil-export-method-dropdown">
+                        <label for="hil-export-method" class="hil-dropdown-label v-label v-label--active hil-themed ${getTheme()}">Export method</label>
+                        <i class="v-icon notranslate mdi mdi-menu-down hil-themed ${getTheme()}"></i>
+                        <select id="hil-export-method" class="hil-dropdown hil-themed ${getTheme()}">
+                            <option value="zip">Download in ZIP</option>
+                            <option value="discord">Host on discord</option>
+                        </select>
+                    </div>
+                    <div class="v-messages v-messages__message hil-hide-on-load hil-themed ${getTheme()}">To import the icons back, keep the file names the same</div>
+                    <div id="hil-discord-webhook" class="hil-export-textbox hil-hide-on-load d-none">
+                        <label for="hil-export-method" class="hil-dropdown-label v-label v-label--active hil-themed theme--dark">Webhook URL</label>
+                        <input class="mt-4 hil-row-textbox v-size--default v-sheet--outlined hil-themed hil-themed-text ${getTheme()}" placeholder="Paste URL here...">
+                        <div class="v-messages v-messages__message hil-themed ${getTheme()}">Open the settings of your hosting channel > Integrations > Webhooks > New Webhook > Copy Webhook URL</div>
+                    </div>
+                    <div class="my-4 hil-hide-on-load hil-icon-export-buttons"></div>
+                    <div class="v-progress-circular v-progress-circular--indeterminate">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
+                            <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
+                        </svg>
+                    </div>
+                </div>
+            `);
+
+            exportCard.querySelector('.hil-close-button').addEventListener('click', () => exportCard.classList.add('hil-hide'));
+
+            exportButtons.appendChild(createButton(
+                function() {
+                    if (!openedPoseId) return;
+                    const a = document.createElement('a');
+                    a.href = iconRenders[openedPoseId];
+                    a.download = openedPoseId + '.png';
+                    a.click();
+                },
+                'Export One',
+            ));
+            exportButtons.appendChild(createButton(
+                function() {
+                    if (!(openedCharacterId && editorCache.storageCache?.characters[openedCharacterId]?.icons)) return;
+                    editCard.classList.add('hil-hide');
+                    exportCard.style.left = editCard.style.left;
+                    exportCard.style.top = editCard.style.top;
+                    exportCard.classList.remove('hil-hide');
+                    exportCard.classList.remove('hil-export-loading');
+                },
+                'Export All',
+            ));
+            
+            const methodDropdown = exportCard.querySelector('.hil-export-method-dropdown select');
+            const messageFileName = exportCard.querySelector('.v-messages');
+            const discordInput = exportCard.querySelector('#hil-discord-webhook');
+            methodDropdown.addEventListener('input', function() {
+                if (methodDropdown.value === 'zip') {
+                    messageFileName.classList.remove('d-none');
+                    discordInput.classList.add('d-none');
+                } else if (methodDropdown.value === 'discord') {
+                    messageFileName.classList.add('d-none');
+                    discordInput.classList.remove('d-none');
+                } else {
+                    messageFileName.classList.add('d-none');
+                    discordInput.classList.add('d-none');
+                }
+            });
+
+            exportCard.querySelector('.hil-icon-export-buttons').appendChild(createButton(
+                function() {
+                    if (!(openedCharacterId && editorCache.storageCache?.characters[openedCharacterId]?.icons)) return;
+                    const poseIds = {};
+                    for (let poseId in editorCache.storageCache.characters[openedCharacterId].icons) {
+                        if (!iconRenders[poseId]) continue;
+                        poseIds[poseId] = iconRenders[poseId];
+                    }
+
+                    if (methodDropdown.value === 'zip') {
+                        exportCard.classList.add('hil-export-loading');
+                        function exportZip() {
+                            window.postMessage(['zip_pose_icons', Object.keys(poseIds)]);
+                        }
+
+                        if (!states.jsZipLoaded) {
+                            states.jsZipLoaded = true;
+                            injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
+                            window.addEventListener('message', function listener(event) {
+                                const [action] = event.data;
+                                if (action !== 'loaded_jszip') return;
+                                window.removeEventListener('message', listener);
+                                exportZip();
+                            });
+                        } else {
+                            exportZip();
+                        }
+                    } else if (methodDropdown.value === 'discord') {
+                        let url;
+                        try {
+                            url = new URL(discordInput.querySelector('input').value);
+                        } catch {}
+                        if (url.hostname !== 'discord.com' || url.pathname.slice(0, 14) !== '/api/webhooks/') return;
+
+                        exportCard.classList.add('hil-export-loading');
+
+                        function dataURLtoFile(dataurl, filename) {
+                            // Source: https://stackoverflow.com/questions/35940290
+                            let arr = dataurl.split(','),
+                                mime = arr[0].match(/:(.*?);/)[1],
+                                bstr = atob(arr[1]), 
+                                n = bstr.length, 
+                                u8arr = new Uint8Array(n);
+                                
+                            while(n--){
+                                u8arr[n] = bstr.charCodeAt(n);
+                            }
+                            
+                            return new File([u8arr], filename, {type:mime});
+                        }
+
+                        const attachmentLists = [];
+                        const chunkCount = Math.ceil(Object.keys(poseIds).length / 10);
+                        let messagesProcessed = 0;
+                        let urlList = '';
+                        for (let chunk = 0; chunk < chunkCount; chunk++) {
+                            const formData = new FormData();
+                            for (let i = 0; i < 10; i++) {
+                                const id = Object.keys(poseIds)[i + chunk * 10];
+                                if (!id) break;
+                                const img = poseIds[id];
+                                const file = dataURLtoFile(img, id + '.png');
+                                formData.append("file[" + i + "]", file);
+                            }
+                            formData.append("content", "Pose icons: " + openedCharacter.name);
+
+                            fetch(url.href + '?wait=true', {
+                                method: 'post',
+                                body: formData
+                            })
+                            .then(response => response.text())
+                            .then(function(response) {
+                                messagesProcessed += 1;
+                                const message = JSON.parse(response);
+                                attachmentLists.push(message.attachments);
+                                if (messagesProcessed >= chunkCount) {
+                                    attachmentLists.forEach(list => list.forEach(function(attachment) {
+                                        urlList += attachment.url + '\n';
+                                    }));
+                                    window.postMessage(['set_pose_icon_url_list', urlList]);
+                                }
+                            });
+                        }
+                    }
+                },
+                'Export',
+            ));
+
+            app.appendChild(exportCard);
 
         }, { once: true });
         
@@ -2509,6 +2658,64 @@ function onLoad(options) {
             } else {
                 editCard.classList.add('hil-hide');
             }
+            exportCard.classList.add('hil-hide');
+        });
+          
+        new MutationObserver(function(mutationRecord) {
+            for (let mutation of mutationRecord) {
+                for (let elem of mutation.target.querySelectorAll('.v-window-item:not([data-hil-processed])')) {
+                    elem.dataset.hilProcessed = '1';
+                    const index = Array.from(elem.parentElement.childNodes).indexOf(elem);
+                    const toolbar = elem.parentElement.parentElement.parentElement.querySelector('.v-toolbar__title');
+                    if (!toolbar) continue;
+                    const label = toolbar.textContent;
+                    if (label === 'My Assets' && index === 1) {
+                        // TODO
+                    } else if (label === 'Manage Character' && index === 1) {
+                        const col = elem.querySelector('.col');
+
+                        const importDiv = htmlToElement(/*html*/`
+                            <div class="mb-4 d-none" style="transition:var(--default-transition)">
+                                <textarea class="hil-pose-icon-import" placeholder="Paste your list of pose icons here, one URL per line." style="width: 100%;height: 150px;resize: none;padding: 5px 5px 1px;color: #fff;border: thin solid rgba(255, 255, 255, 0.12);border-radius: 0px !important;"></textarea>
+                            </div>
+                        `);
+                        const textArea = importDiv.querySelector('textarea');
+
+                        importDiv.appendChild(hilUtils.createButton(
+                            function() {
+                                const urls = {};
+                                for (let value of textArea.value.split('\n')) {
+                                    let url;
+                                    try {
+                                        url = new URL(value).href;
+                                    } catch {}
+                                    if (!url) continue;
+                                    const id = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+                                    urls[id] = url;
+                                }
+                                window.postMessage(['import_pose_icons', urls]);
+                            },
+                            'Import icon URLs',
+                            'primary mb-2',
+                            'width:100%'
+                        ));
+
+                        col.prepend(importDiv);
+
+                        col.prepend(hilUtils.createButton(
+                            function() {
+                                importDiv.classList.toggle('d-none');
+                            },
+                            'Pose icon importing',
+                            'mb-4',
+                            'height:22.25px!important;width:100%;'
+                        ));
+                    }
+                }
+            }
+        }).observe(app, {
+            childList: true,
+            subtree: true,
         });
     }
 

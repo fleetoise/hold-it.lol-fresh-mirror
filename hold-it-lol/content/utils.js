@@ -172,4 +172,4 @@ hilUtils.sliderListener = function(event, sliderContainer, min, max, callback) {
 
 hilUtils.transparentSvg = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
 
-window.postMessage(['utils_loaded']);
+window.postMessage(['loaded_utils']);

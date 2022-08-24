@@ -307,6 +307,56 @@ function main() {
         } else if (action === 'set_custom_icon_characters') {
             socketStates['customIconCharacters'] = data;
             updateCustomPoseIconCCs();
+        } else if (action === 'zip_pose_icons') {
+            const zip = new JSZip();
+            for (let poseId of data) {
+                const icon = document.querySelector('img.p-image[data-pose-id="' + poseId + '"]');
+                if (!icon) continue;
+                zip.file(
+                    poseId + ".png",
+                    icon.src.slice(22),
+                    {base64: true}
+                );
+            }
+
+            zip.generateAsync({type:"blob"}).then(function (blob) {
+                const a = document.createElement('a');
+                const url = window.URL.createObjectURL(blob);
+                a.href = url;
+                a.download = 'icons.zip';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
+        } else if (action === 'set_pose_icon_url_list') {
+            characterListInstance.showAssets();
+            setTimeout(function() {
+                const component = app.__vue__.$children.find(function(component) {
+                    const tag = component.$vnode.tag;
+                    const name = tag.slice(tag.lastIndexOf('-'));
+                    return name === '-assetsManager';
+                });
+                if (component) {
+                    component.setManageCharacter(characterInstance.currentCharacter);
+                    setTimeout(function() {
+                        document.querySelectorAll('.v-slide-group__content.v-tabs-bar__content .v-tab')[1].click();
+                        setTimeout(function() {
+                            const textArea = document.querySelector('textarea.hil-pose-icon-import');
+                            textArea.value = data;
+                            textArea.parentElement.classList.remove('d-none');
+                        }, 0);
+                    }, 0);
+                }
+            }, 0);
+        } else if (action === 'import_pose_icons') {
+            const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
+            const char = manageCharacterInstance.editingCharacter;
+            if (!char) return;
+            for (let pose of char.poses) {
+                pose.iconUrl = data[pose.id];
+                const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
+                edit(pose);
+            }
+            manageCharacterInstance.goBack();
         }
     });
 
@@ -741,6 +791,9 @@ function main() {
                         pose => pose.id === poseInstance.currentPoseId
                     );
                     if (currentPose === undefined) return;
+                    currentPose.character = {
+                        name: character.name,
+                    }
                     window.postMessage([
                         'set_pose',
                         currentPose,

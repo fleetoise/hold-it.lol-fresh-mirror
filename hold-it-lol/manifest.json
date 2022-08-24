@@ -39,6 +39,7 @@
             "resources": [
                 "inject/vue-wrapper.js",
                 "inject/closest-match/closest-match.js",
+                "inject/jsZip.min.js",
                 "content/utils.js"
             ]
         }

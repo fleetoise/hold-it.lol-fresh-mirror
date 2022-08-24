@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         try {
             fetch(data).then(response => response.arrayBuffer()).then(function(response) {
                 const type = data.slice(data.lastIndexOf('.') + 1);
-                // Source: https://stackoverflow.com/questions/20035615/using-raw-image-data-from-ajax-request-for-data-uri
+                // Source: https://stackoverflow.com/questions/20035615
                 const arr = new Uint8Array(response);
                 let raw = '';
                 let i,j,subArray,chunk = 5000;
