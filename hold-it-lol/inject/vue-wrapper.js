@@ -1,6 +1,6 @@
 "use strict";
 
-const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener } = hilUtils;
+const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement } = hilUtils;
 
 function main() {
 
@@ -350,16 +350,8 @@ function main() {
                     }, 0);
                 }
             }, 0);
-        } else if (action === 'import_pose_icons') {
-            const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
-            const char = manageCharacterInstance.editingCharacter;
-            if (!char) return;
-            for (let pose of char.poses) {
-                pose.iconUrl = data[pose.id];
-                const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
-                edit(pose);
-            }
-            manageCharacterInstance.goBack();
+        } else if (action === 'warn_unexported_icons') {
+            socketStates['lastShareContent'].textContent += '(Warning: Has un-exported custom icons)';
         }
     });
 
@@ -826,6 +818,83 @@ function main() {
                     }
                 }
             }).observe(poseInstance.$el, {
+                childList: true,
+                subtree: true,
+            });
+
+            new MutationObserver(function(mutationRecord) {
+                for (let mutation of mutationRecord) {
+                    for (let node of mutation.addedNodes) {
+                        if (!(node.nodeType === 1 && node.nodeName === 'DIV' && node.matches('.v-alert'))) continue;
+                        const content = node.querySelector('.v-alert__content');
+                        socketStates['lastShareContent'] = content;
+                        
+                        let iconlessPoseIds = {};
+                        for (let pose of node.__vue__.$parent.selectedCharacter.poses) {
+                            if (!pose.iconUrl) iconlessPoseIds[pose.id] = true;
+                        }
+                        window.postMessage(['check_iconless_pose_ids', iconlessPoseIds]);
+                        break;
+                    }
+                    for (let elem of mutation.target.querySelectorAll('.v-window-item:not([data-hil-processed])')) {
+                        elem.dataset.hilProcessed = '1';
+                        const toolbar = elem.parentElement.parentElement.parentElement.querySelector('.v-toolbar__title');
+                        if (!toolbar) continue;
+                        const label = toolbar.textContent;
+                        const index = Array.from(elem.parentElement.childNodes).indexOf(elem);
+                        if (label === 'Manage Character' && index === 1) {
+                            const col = elem.querySelector('.col');
+    
+                            const importDiv = htmlToElement(/*html*/`
+                                <div class="mb-4 d-none" style="transition:var(--default-transition)">
+                                    <textarea class="hil-pose-icon-import" placeholder="Paste your list of pose icons here, one URL per line." style="width: 100%;height: 150px;resize: none;padding: 5px 5px 1px;color: #fff;border: thin solid rgba(255, 255, 255, 0.12);border-radius: 0px !important;white-space: nowrap;"></textarea>
+                                </div>
+                            `);
+                            const textArea = importDiv.querySelector('textarea');
+    
+                            importDiv.appendChild(hilUtils.createButton(
+                                function() {
+                                    const urls = {};
+                                    for (let value of textArea.value.split('\n')) {
+                                        let url;
+                                        try {
+                                            url = new URL(value).href;
+                                        } catch {}
+                                        if (!url) continue;
+                                        const id = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+                                        urls[id] = url;
+                                    }
+                                    window.postMessage(['import_pose_icons', urls]);
+                                    
+                                    const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
+                                    const char = manageCharacterInstance.editingCharacter;
+                                    if (!char) return;
+                                    for (let pose of char.poses) {
+                                        pose.iconUrl = data[pose.id];
+                                        const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
+                                        edit(pose);
+                                    }
+                                    manageCharacterInstance.goBack();
+                                },
+                                'Import icon URLs',
+                                'primary mb-2',
+                                'width:100%'
+                            ));
+    
+                            col.prepend(importDiv);
+    
+                            col.prepend(hilUtils.createButton(
+                                function() {
+                                    importDiv.classList.toggle('d-none');
+                                },
+                                'Pose icon importing',
+                                'mb-4',
+                                'height:22.25px!important;width:100%;'
+                            ));
+                        }
+                    }
+                }
+            }).observe(app, {
                 childList: true,
                 subtree: true,
             });

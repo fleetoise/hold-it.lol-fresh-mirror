@@ -2661,62 +2661,15 @@ function onLoad(options) {
             }
             exportCard.classList.add('hil-hide');
         });
-          
-        new MutationObserver(function(mutationRecord) {
-            for (let mutation of mutationRecord) {
-                for (let elem of mutation.target.querySelectorAll('.v-window-item:not([data-hil-processed])')) {
-                    elem.dataset.hilProcessed = '1';
-                    const index = Array.from(elem.parentElement.childNodes).indexOf(elem);
-                    const toolbar = elem.parentElement.parentElement.parentElement.querySelector('.v-toolbar__title');
-                    if (!toolbar) continue;
-                    const label = toolbar.textContent;
-                    if (label === 'My Assets' && index === 1) {
-                        // TODO
-                    } else if (label === 'Manage Character' && index === 1) {
-                        const col = elem.querySelector('.col');
 
-                        const importDiv = htmlToElement(/*html*/`
-                            <div class="mb-4 d-none" style="transition:var(--default-transition)">
-                                <textarea class="hil-pose-icon-import" placeholder="Paste your list of pose icons here, one URL per line." style="width: 100%;height: 150px;resize: none;padding: 5px 5px 1px;color: #fff;border: thin solid rgba(255, 255, 255, 0.12);border-radius: 0px !important;"></textarea>
-                            </div>
-                        `);
-                        const textArea = importDiv.querySelector('textarea');
-
-                        importDiv.appendChild(hilUtils.createButton(
-                            function() {
-                                const urls = {};
-                                for (let value of textArea.value.split('\n')) {
-                                    let url;
-                                    try {
-                                        url = new URL(value).href;
-                                    } catch {}
-                                    if (!url) continue;
-                                    const id = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-                                    urls[id] = url;
-                                }
-                                window.postMessage(['import_pose_icons', urls]);
-                            },
-                            'Import icon URLs',
-                            'primary mb-2',
-                            'width:100%'
-                        ));
-
-                        col.prepend(importDiv);
-
-                        col.prepend(hilUtils.createButton(
-                            function() {
-                                importDiv.classList.toggle('d-none');
-                            },
-                            'Pose icon importing',
-                            'mb-4',
-                            'height:22.25px!important;width:100%;'
-                        ));
-                    }
-                }
+        window.addEventListener('message', function(event) {
+            const [action, data] = event.data;
+            if (action !== 'check_iconless_pose_ids') return;
+            for (let poseId in data) {
+                if (!(poseId in iconRenders)) continue;
+                window.postMessage(['warn_unexported_icons']);
+                break;
             }
-        }).observe(app, {
-            childList: true,
-            subtree: true,
         });
     }
 
