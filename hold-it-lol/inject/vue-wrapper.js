@@ -403,8 +403,8 @@ function main() {
                 const musicObj = Object.values(frameInstance.$parent.$parent.musicCache).find(music => music.url === url);
                 const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
                 if (musicObj && musicObj.name) {
-                    musicSpan.textContent = musicObj.name ? '"' + musicObj.name + '"' : 'Unnamed';
-                    musicSpan.innerHTML = 'Now Playing: <b>' + musicSpan.innerHTML + '</b>';
+                    const text = musicObj.name ? '"' + musicObj.name + '"' : 'Unnamed';
+                    musicSpan.innerHTML = 'Now Playing: <b><a target="_blank" href="' + musicObj.url + '">' + text + '</a></b>';
                 } else {
                     musicSpan.innerHTML = 'Now Playing: …';
                 }
