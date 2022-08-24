@@ -2631,6 +2631,7 @@ function onLoad(options) {
                                         urlList += attachment.url + '\n';
                                     }));
                                     window.postMessage(['set_pose_icon_url_list', urlList]);
+                                    exportCard.classList.add('hil-hide');
                                 }
                             });
                         }

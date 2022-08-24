@@ -327,6 +327,8 @@ function main() {
                 a.click();
                 window.URL.revokeObjectURL(url);
             });
+
+            document.querySelector('.hil-icon-export-card').classList.add('hil-hide');
         } else if (action === 'set_pose_icon_url_list') {
             characterListInstance.showAssets();
             setTimeout(function() {
@@ -338,7 +340,8 @@ function main() {
                 if (component) {
                     component.setManageCharacter(characterInstance.currentCharacter);
                     setTimeout(function() {
-                        document.querySelectorAll('.v-slide-group__content.v-tabs-bar__content .v-tab')[1].click();
+                        const tabs = document.querySelectorAll('.v-slide-group__content.v-tabs-bar__content .v-tab');
+                        Array.from(tabs).find(tab => tab.textContent === 'Poses').click();
                         setTimeout(function() {
                             const textArea = document.querySelector('textarea.hil-pose-icon-import');
                             textArea.value = data;
