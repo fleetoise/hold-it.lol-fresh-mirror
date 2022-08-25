@@ -1460,7 +1460,7 @@ function onLoad(options) {
     }
 
 
-    if (options['convert-chat-urls']) {
+    if (options['convert-chat-urls'] || options['now-playing']) {
         chrome.runtime.sendMessage(["create-asset-context-menu"]);
         chrome.runtime.onMessage.addListener(function(event) {
             const [ action, data ] = event;

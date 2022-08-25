@@ -36,7 +36,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         chrome.tts.speak(text, {voiceName, pitch});
     } else if (action === 'fetch-image') {
         try {
-            fetch(data).then(response => response.arrayBuffer()).then(function(response) {
+            fetch(data)
+            .then(response => response.arrayBuffer()).then(function(response) {
                 const type = data.slice(data.lastIndexOf('.') + 1);
                 // Source: https://stackoverflow.com/questions/20035615
                 const arr = new Uint8Array(response);
