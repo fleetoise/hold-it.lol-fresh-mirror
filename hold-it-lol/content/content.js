@@ -2033,7 +2033,10 @@ function onLoad(options) {
 
                     iconRenders[poseId] = canvas.toDataURL();
                     const icon = document.querySelector('img.p-image[data-pose-id="' + poseId + '"]');
-                    if (icon && icon.dataset.hilIconOverwritten === '1') icon.src = iconRenders[poseId];
+                    if (icon && (icon.dataset.hilIconOverwritten === '1' || icon.src === hilUtils.transparentGif)) {
+                        icon.src = iconRenders[poseId];
+                        icon.dataset.hilIconOverwritten = '1';
+                    }
                 }
             }
 
