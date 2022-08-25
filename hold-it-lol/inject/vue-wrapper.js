@@ -871,7 +871,6 @@ function main() {
                                         const id = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
                                         urls[id] = url;
                                     }
-                                    window.postMessage(['import_pose_icons', urls]);
                                     
                                     const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
                                     const char = manageCharacterInstance.editingCharacter;
@@ -879,7 +878,7 @@ function main() {
                                     for (let pose of char.poses) {
                                         if (pose.iconUrl) continue;
                                         if (pose.iconUrl === hilUtils.transparentGif) continue;
-                                        pose.iconUrl = data[pose.id];
+                                        pose.iconUrl = urls[pose.id];
                                         const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
                                         edit(pose);
                                     }
