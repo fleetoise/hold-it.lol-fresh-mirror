@@ -2591,6 +2591,11 @@ function onLoad(options) {
             const methodDropdown = exportCard.querySelector('.hil-export-method-dropdown select');
             const messageFileName = exportCard.querySelector('.v-messages');
             const discordInput = exportCard.querySelector('#hil-discord-webhook');
+            discordInput.querySelector('input').value = localStorage['hil-last-discord-webhook'] || '';
+            discordInput.querySelector('input').addEventListener('change', function() {
+                localStorage['hil-last-discord-webhook'] = discordInput.querySelector('input').value;
+            })
+
             methodDropdown.addEventListener('input', function() {
                 if (methodDropdown.value === 'zip') {
                     messageFileName.classList.remove('d-none');
