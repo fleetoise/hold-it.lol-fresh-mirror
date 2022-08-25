@@ -49,7 +49,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 }
                 const b64 = btoa(raw);
                 const dataURL = "data:image/" + type + ";base64," + b64;
+                console.log(dataURL);
                 sendResponse(dataURL);
+            })
+            .catch(function() {
+                sendResponse('error-fetch');
             });
         } catch {
             sendResponse(null);

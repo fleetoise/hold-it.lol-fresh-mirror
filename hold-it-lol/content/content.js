@@ -2299,13 +2299,24 @@ function onLoad(options) {
             const imageCache = {};
             async function fetchImage(url) {
                 if (!url) {
-                    return null;
+                    return 'error-url';
                 } else if (url in imageCache) {
                     return imageCache[url];
                 } else {
-                    const b64image = await chrome.runtime.sendMessage(["fetch-image", url]);
-                    imageCache[url] = b64image;
-                    return b64image;
+                    let result = await chrome.runtime.sendMessage(["fetch-image", url]);
+                    if (result.slice(0, 6) !== 'error-') {
+                        const img = new Image();
+                        await new Promise(function(resolve) {
+                            img.onload = resolve;
+                            img.onerror = function() {
+                                result = 'error-load';
+                                resolve();
+                            }
+                            img.src = result;
+                        });
+                    }
+                    imageCache[url] = result;
+                    return result;
                 }
             }
 
@@ -2462,22 +2473,39 @@ function onLoad(options) {
                     }
                     Promise.allSettled(promises).then(function(images) {
                         if (loadingPoseId !== pose.id) return;
-                        openedPoseId = pose.id;
-                        openedCharacterId = pose.characterId;
-                        openedCharacter = pose.character;
-                        frameDiv.querySelector('canvas[data-frame-id="' + iconData.frame + '"]')?.click();
 
                         editorCache[pose.id].preFrames = [];
                         editorCache[pose.id].idleFrames = [];
                         editorCache[pose.id].talkFrames = [];
+                        let lastError;
                         for (let i = 0; i < images.length; i++) {
                             let frameList = editorCache[pose.id].preFrames;
                             if (i === 0) frameList = editorCache[pose.id].idleFrames;
                             else if (i === 1) frameList = editorCache[pose.id].talkFrames;
 
                             const image = images[i].value;
-                            if (image) frameList.push(image);
+                            if (image) {
+                                if (image.slice(0, 6) === 'error-') {
+                                    lastError = image;
+                                    continue;
+                                }
+                                frameList.push(image);
+                            }
                         }
+
+                        if (editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length + editorCache[pose.id].talkFrames.length === 0) {
+                            poseLoadIcon.classList.add('hil-hide');
+                            let errorText = 'Pose image URLs did not work';
+                            errorMessage.querySelector('span').innerText = errorText;
+                            errorMessage.classList.remove('hil-hide');
+                            return;
+                        }
+
+                        openedPoseId = pose.id;
+                        openedCharacterId = pose.characterId;
+                        openedCharacter = pose.character;
+                        frameDiv.querySelector('canvas[data-frame-id="' + iconData.frame + '"]')?.click();
+
                         editorCache[pose.id].frameMax = editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length + editorCache[pose.id].talkFrames.length;
                         editorCache[pose.id].allFrames = editorCache[pose.id].preFrames.concat(editorCache[pose.id].idleFrames).concat(editorCache[pose.id].talkFrames);
                         let frameTimestamp = iconData.animTimestamp;
