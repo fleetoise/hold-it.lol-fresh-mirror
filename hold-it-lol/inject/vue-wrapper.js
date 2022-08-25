@@ -741,6 +741,7 @@ function main() {
         if (socketStates.options['pose-icon-maker']) {
             function checkIfIconsEditable() {
                 const editButton = document.querySelector('.hil-pose-edit-icon');
+                if (!editButton) return;
                 if (characterInstance.currentCharacter.id > 1000 && characterInstance.currentCharacter.poses.find(pose => !pose.iconUrl)) {
                     editButton.classList.remove('hil-hide');
                 } else {

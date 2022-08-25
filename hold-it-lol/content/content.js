@@ -88,17 +88,6 @@ function onLoad(options) {
 
 
     console.log('holdit.lol v0.7.1 beta - running onLoad()');
-    
-    if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
-        injectScript(chrome.runtime.getURL('content/utils.js'));
-        window.addEventListener('message', function listener(event) {
-            const [action] = event.data;
-            if (action !== 'loaded_utils') return;
-            injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
-            window.removeEventListener('message', listener);
-        });
-    }
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
@@ -177,6 +166,10 @@ function onLoad(options) {
     let helperDiv;
     let helperVisible = false;
     let toggleHelperDiv;
+    let createTabDiv;
+    let createTabButton;
+    let TabState;
+    let createRow;
     if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn'] || options['tts']) {
         helperToggle = createIcon('dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
         row2.appendChild(helperToggle);
@@ -200,530 +193,530 @@ function onLoad(options) {
                 helperDiv.style.transform = 'translateY(-10px)';
             }
         }
-    }
 
 
-    if (showTutorial) {
-        if (!options['seen-tutorial']) {
-            toggleHelperDiv(true);
+        if (showTutorial) {
+            if (!options['seen-tutorial']) {
+                toggleHelperDiv(true);
+            }
+
+            const div = document.createElement('div');
+            div.style.cssText = 'width: 60%; text-align: center; margin: 0 auto; font-weight: 300;';
+
+            const img = document.createElement('img');
+            img.src = 'https://cdn.discordapp.com/attachments/873624494810484817/916742603339341824/holdit.png';
+            img.style.width = '100%';
+            div.appendChild(img);
+
+            if (!options['seen-tutorial']) div.innerHTML += '<span style="font-weight: 400;">Thank you for installing Hold It.lol!</span><br>';
+            div.innerHTML += '<span>Click on the </span><img src="https://cdn.discordapp.com/attachments/873624494810484817/916750432368480326/icon32.png" style="height: 24px;vertical-align: middle;user-select: all;"><span> icon in the </span><span style="font-weight: 400;">top-right of your browser</span><span> to check out your </span><span style="font-weight: 400;">Options</span><span>.</span>'
+
+            helperDiv.appendChild(div);
+        };
+
+
+        createRow = function(parent, transparent = false) {
+            const div = document.createElement('div');
+            div.className = 'hil-row';
+            parent.appendChild(div);
+            return div;
         }
 
-        const div = document.createElement('div');
-        div.style.cssText = 'width: 60%; text-align: center; margin: 0 auto; font-weight: 300;';
 
-        const img = document.createElement('img');
-        img.src = 'https://cdn.discordapp.com/attachments/873624494810484817/916742603339341824/holdit.png';
-        img.style.width = '100%';
-        div.appendChild(img);
-
-        if (!options['seen-tutorial']) div.innerHTML += '<span style="font-weight: 400;">Thank you for installing Hold It.lol!</span><br>';
-        div.innerHTML += '<span>Click on the </span><img src="https://cdn.discordapp.com/attachments/873624494810484817/916750432368480326/icon32.png" style="height: 24px;vertical-align: middle;user-select: all;"><span> icon in the </span><span style="font-weight: 400;">top-right of your browser</span><span> to check out your </span><span style="font-weight: 400;">Options</span><span>.</span>'
-
-        helperDiv.appendChild(div);
-    };
+        if (options['now-playing']) {
+            const row = createRow(helperDiv);
+            row.classList.add('hil-tab-row-now-playing');
+            const span = document.createElement('span');
+            span.innerHTML = 'Now Playing: …';
+            row.appendChild(span);
+        }
 
 
-    function createRow(parent, transparent = false) {
-        const div = document.createElement('div');
-        div.className = 'hil-row';
-        parent.appendChild(div);
-        return div;
-    }
-
-
-    if (options['now-playing']) {
-        const row = createRow(helperDiv);
-        row.classList.add('hil-tab-row-now-playing');
-        const span = document.createElement('span');
-        span.innerHTML = 'Now Playing: …';
-        row.appendChild(span);
-    }
-
-
-    const TabState = {
-        NONE: {
-            enabled: true,
-            onEnable: function() {
-                tabSeparator.classList.add('hil-hide');
+        TabState = {
+            NONE: {
+                enabled: true,
+                onEnable: function() {
+                    tabSeparator.classList.add('hil-hide');
+                },
+                onDisable: function() {
+                    tabSeparator.classList.remove('hil-hide');
+                }
             },
-            onDisable: function() {
-                tabSeparator.classList.remove('hil-hide');
+            TESTIMONY: {},
+            TN: {},
+            TTS: {},
+        }
+        const tabRow = createRow(helperDiv);
+
+        const tabSeparator = document.createElement('hr');
+        tabSeparator.className = 'hil-row-separator hil-hide';
+        helperDiv.appendChild(tabSeparator);
+        
+        const contentRow = createRow(helperDiv);
+        contentRow.classList.add('hil-content-row')
+        let tabState = TabState.NONE;
+        function setState(state) {
+            if (tabState.onDisable) tabState.onDisable();
+            if (tabState.contentDiv) {
+                tabState.contentDiv.classList.add('hil-hide');
             }
-        },
-        TESTIMONY: {},
-        TN: {},
-        TTS: {},
-    }
-    const tabRow = createRow(helperDiv);
-
-    const tabSeparator = document.createElement('hr');
-    tabSeparator.className = 'hil-row-separator hil-hide';
-    helperDiv.appendChild(tabSeparator);
-    
-    const contentRow = createRow(helperDiv);
-    contentRow.classList.add('hil-content-row')
-    let tabState = TabState.NONE;
-    function setState(state) {
-        if (tabState.onDisable) tabState.onDisable();
-        if (tabState.contentDiv) {
-            tabState.contentDiv.classList.add('hil-hide');
+            if (tabState.tabButton) tabState.tabButton.classList.remove('hil-btn-tab-active');
+            tabState.enabled = false;
+            tabState = state;
+            if (tabState.onEnable) tabState.onEnable();
+            if (tabState.contentDiv) {
+                tabState.contentDiv.classList.remove('hil-hide');
+            }
+            if (tabState.tabButton) tabState.tabButton.classList.add('hil-btn-tab-active');
+            tabState.enabled = true;
         }
-        if (tabState.tabButton) tabState.tabButton.classList.remove('hil-btn-tab-active');
-        tabState.enabled = false;
-        tabState = state;
-        if (tabState.onEnable) tabState.onEnable();
-        if (tabState.contentDiv) {
-            tabState.contentDiv.classList.remove('hil-hide');
+        createTabDiv = function(state) {
+            const div = document.createElement('div');
+            div.className = 'hil-tab-content hil-hide';
+            state.contentDiv = div;
+            contentRow.appendChild(div);
+            return div;
         }
-        if (tabState.tabButton) tabState.tabButton.classList.add('hil-btn-tab-active');
-        tabState.enabled = true;
-    }
-    function createTabDiv(state) {
-        const div = document.createElement('div');
-        div.className = 'hil-tab-content hil-hide';
-        state.contentDiv = div;
-        contentRow.appendChild(div);
-        return div;
-    }
-    function createTabButton(state, text) {
-        const button = createButton(function () {
-            if (!state.enabled) setState(state);
-            else setState(TabState.NONE);
-        }, text, '', 'flex: 1 1 auto;max-width: 10rem;');
-        tabRow.appendChild(button);
-        state.tabButton = button;
-        return button;
-    }
-
-
-    if (options['testimony-mode']) {
-        const tabDiv = createTabDiv(TabState.TESTIMONY);
-        const testimonyRow = createRow(tabDiv);
-
-        const testimonyArea = document.createElement('textarea');
-        testimonyArea.className = 'hil-themed-text';
-        testimonyArea.style.cssText = 'display: none; width: 100%; height: 600px; resize: none; overflow: auto; padding: 5px; margin: 0; border: #552a2e 1px solid;';
-        testimonyArea.placeholder = "Paste your testimony here.\nSeparate statements with line breaks.";
-        textArea.parentElement.appendChild(testimonyArea);
-
-        const testimonyDiv = document.createElement('div');
-        testimonyDiv.className = 'hil-themed-text';
-        testimonyDiv.style.cssText = 'display: none; width: 100%; height: 600px; overflow: auto; padding: 5px 0px; margin: 0; border: #7f3e44 1px solid;';
-        textArea.parentElement.appendChild(testimonyDiv);
-
-        let statements;
-        let currentStatement;
-        let statementCache = {};
-        let lastStatementId = 0;
-        function resetCache() {
-            statementCache = {};
-            lastStatementId = 0;
-            window.postMessage(['clear_testimony_poses']);
+        createTabButton = function(state, text) {
+            const button = createButton(function () {
+                if (!state.enabled) setState(state);
+                else setState(TabState.NONE);
+            }, text, '', 'flex: 1 1 auto;max-width: 10rem;');
+            tabRow.appendChild(button);
+            state.tabButton = button;
+            return button;
         }
-        
-        let musicPlaying = false;
-        
-        let auto = false;
-        let red = false;
-        let crossExam = false;
 
-        const primaryDiv = document.createElement('div');
-        primaryDiv.style.cssText = 'display: none;' + DEFAULT_TRANSITION;
 
-        let testimonyLocked = false;
-        const lockTestimony = primaryButton(function () {
-            if (!testimonyLocked && testimonyArea.value == "") return;
-            testimonyLocked = !testimonyLocked;
-            if (testimonyLocked) {
+        if (options['testimony-mode']) {
+            const tabDiv = createTabDiv(TabState.TESTIMONY);
+            const testimonyRow = createRow(tabDiv);
 
-                lockTestimony.firstElementChild.classList.remove('mdi-check');
-                lockTestimony.firstElementChild.classList.add('mdi-close');
-                primaryDiv.style.display = 'block';
+            const testimonyArea = document.createElement('textarea');
+            testimonyArea.className = 'hil-themed-text';
+            testimonyArea.style.cssText = 'display: none; width: 100%; height: 600px; resize: none; overflow: auto; padding: 5px; margin: 0; border: #552a2e 1px solid;';
+            testimonyArea.placeholder = "Paste your testimony here.\nSeparate statements with line breaks.";
+            textArea.parentElement.appendChild(testimonyArea);
 
-                testimonyArea.value = testimonyArea.value.trim();
-                currentStatement = undefined;
-                statements = testimonyArea.value.split('\n').filter(e => e.trim());
+            const testimonyDiv = document.createElement('div');
+            testimonyDiv.className = 'hil-themed-text';
+            testimonyDiv.style.cssText = 'display: none; width: 100%; height: 600px; overflow: auto; padding: 5px 0px; margin: 0; border: #7f3e44 1px solid;';
+            textArea.parentElement.appendChild(testimonyDiv);
 
-                let toResetCache = true;
-                for (let statement of statements) {
-                    if (!(statement in statementCache)) continue;
-                    toResetCache = false;
-                    break;
-                }
-                if (toResetCache) resetCache();
+            let statements;
+            let currentStatement;
+            let statementCache = {};
+            let lastStatementId = 0;
+            function resetCache() {
+                statementCache = {};
+                lastStatementId = 0;
+                window.postMessage(['clear_testimony_poses']);
+            }
+            
+            let musicPlaying = false;
+            
+            let auto = false;
+            let red = false;
+            let crossExam = false;
 
-                testimonyDiv.textContent = '';
-                for (let i = 0; i < statements.length; i++) {
-                    const statement = statements[i];
+            const primaryDiv = document.createElement('div');
+            primaryDiv.style.cssText = 'display: none;' + DEFAULT_TRANSITION;
 
-                    const div = document.createElement('div');
-                    div.style.cssText = 'position: relative; padding: 0px 0px 16px 5px; cursor: pointer; margin-bottom: 9px;' + DEFAULT_TRANSITION;
-                    div.dataset.statement = i;
+            let testimonyLocked = false;
+            const lockTestimony = primaryButton(function () {
+                if (!testimonyLocked && testimonyArea.value == "") return;
+                testimonyLocked = !testimonyLocked;
+                if (testimonyLocked) {
 
-                    div.addEventListener('click', function () {
-                        if (div.querySelector(':scope .pose-message:hover')) return;
-                        toStatement(i);
-                    });
+                    lockTestimony.firstElementChild.classList.remove('mdi-check');
+                    lockTestimony.firstElementChild.classList.add('mdi-close');
+                    primaryDiv.style.display = 'block';
 
-                    div.appendChild(document.createElement('span'));
-                    div.lastElementChild.innerText = statement;
+                    testimonyArea.value = testimonyArea.value.trim();
+                    currentStatement = undefined;
+                    statements = testimonyArea.value.split('\n').filter(e => e.trim());
 
-                    const pose = document.createElement('div');
-                    pose.className = 'hil-themed pose-message v-messages v-messages__message ' + theme;
-                    pose.style.cssText = 'position: absolute;';
-                    if (statement in statementCache) {
-                        let poseName = statementCache[statement].poseName;
-                        if (!poseName) poseName = UNDEFINED_POSE_NAME;
-                        pose.innerText = poseName;
-                        pose.dataset.pose = poseName;
+                    let toResetCache = true;
+                    for (let statement of statements) {
+                        if (!(statement in statementCache)) continue;
+                        toResetCache = false;
+                        break;
                     }
-                    pose.addEventListener('mouseenter', () => { if (pose.dataset.pose) pose.innerText = 'Click to clear pose'; });
-                    pose.addEventListener('mouseleave', () => { if (pose.dataset.pose) pose.innerText = pose.dataset.pose; });
-                    pose.addEventListener('click', () => {
-                        pose.dataset.pose = '';
-                        pose.innerText = '';
-                        if (statementCache[statement] === undefined) return;
-                        delete statementCache[statement].poseName;
-                        window.postMessage([
-                            'clear_testimony_pose',
-                            statementCache[statement].id,
-                        ]);
-                    });
-                    div.appendChild(pose);
+                    if (toResetCache) resetCache();
 
-                    testimonyDiv.appendChild(div);
-                    setTimeout(function () {
-                        div.style.marginBottom = '20px';
-                        div.style.padding = '5px';
-                    }, 1);
+                    testimonyDiv.textContent = '';
+                    for (let i = 0; i < statements.length; i++) {
+                        const statement = statements[i];
+
+                        const div = document.createElement('div');
+                        div.style.cssText = 'position: relative; padding: 0px 0px 16px 5px; cursor: pointer; margin-bottom: 9px;' + DEFAULT_TRANSITION;
+                        div.dataset.statement = i;
+
+                        div.addEventListener('click', function () {
+                            if (div.querySelector(':scope .pose-message:hover')) return;
+                            toStatement(i);
+                        });
+
+                        div.appendChild(document.createElement('span'));
+                        div.lastElementChild.innerText = statement;
+
+                        const pose = document.createElement('div');
+                        pose.className = 'hil-themed pose-message v-messages v-messages__message ' + theme;
+                        pose.style.cssText = 'position: absolute;';
+                        if (statement in statementCache) {
+                            let poseName = statementCache[statement].poseName;
+                            if (!poseName) poseName = UNDEFINED_POSE_NAME;
+                            pose.innerText = poseName;
+                            pose.dataset.pose = poseName;
+                        }
+                        pose.addEventListener('mouseenter', () => { if (pose.dataset.pose) pose.innerText = 'Click to clear pose'; });
+                        pose.addEventListener('mouseleave', () => { if (pose.dataset.pose) pose.innerText = pose.dataset.pose; });
+                        pose.addEventListener('click', () => {
+                            pose.dataset.pose = '';
+                            pose.innerText = '';
+                            if (statementCache[statement] === undefined) return;
+                            delete statementCache[statement].poseName;
+                            window.postMessage([
+                                'clear_testimony_pose',
+                                statementCache[statement].id,
+                            ]);
+                        });
+                        div.appendChild(pose);
+
+                        testimonyDiv.appendChild(div);
+                        setTimeout(function () {
+                            div.style.marginBottom = '20px';
+                            div.style.padding = '5px';
+                        }, 1);
+                    }
+
+                    if (red && testimonyDiv.childElementCount != 0) {
+                        testimonyDiv.firstElementChild.firstElementChild.style.color = '#f00';
+                        testimonyDiv.lastElementChild.firstElementChild.style.color = '#f00';
+                    }
+
+                    testimonyArea.style.display = 'none';
+                    testimonyDiv.style.display = 'block';
+
+                } else {
+
+                    lockTestimony.firstElementChild.classList.add('mdi-check');
+                    lockTestimony.firstElementChild.classList.remove('mdi-close');
+                    primaryDiv.style.display = 'none';
+
+                    testimonyArea.style.display = 'block';
+                    testimonyDiv.style.display = 'none';
+
                 }
+            }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('check'));
+            textButton.parentElement.parentElement.insertBefore(lockTestimony, textButton.parentElement);
 
-                if (red && testimonyDiv.childElementCount != 0) {
-                    testimonyDiv.firstElementChild.firstElementChild.style.color = '#f00';
-                    testimonyDiv.lastElementChild.firstElementChild.style.color = '#f00';
+            const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send'));
+            const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send', 24, 'transform: scaleX(-1);'));
+            primaryDiv.appendChild(buttonPrevStatement);
+            primaryDiv.appendChild(buttonNextStatement);
+
+            textButton.parentElement.parentElement.appendChild(primaryDiv);
+
+
+            TabState.TESTIMONY.onEnable = function() {
+                textArea.style.display = 'none';
+
+                textButton.parentElement.style.display = 'none';
+                lockTestimony.style.display = 'flex';
+                if (testimonyLocked) {
+                    primaryDiv.style.display = 'flex';
+                    testimonyDiv.style.display = 'block';
+                } else {
+                    testimonyArea.style.display = 'block';
                 }
-
+            }
+            TabState.TESTIMONY.onDisable = function() {
                 testimonyArea.style.display = 'none';
-                testimonyDiv.style.display = 'block';
-
-            } else {
-
-                lockTestimony.firstElementChild.classList.add('mdi-check');
-                lockTestimony.firstElementChild.classList.remove('mdi-close');
-                primaryDiv.style.display = 'none';
-
-                testimonyArea.style.display = 'block';
                 testimonyDiv.style.display = 'none';
+                textArea.style.display = 'block';
 
+                textButton.parentElement.style.display = 'block';
+                lockTestimony.style.display = 'none';
+                primaryDiv.style.display = 'none';
             }
-        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('check'));
-        textButton.parentElement.parentElement.insertBefore(lockTestimony, textButton.parentElement);
-
-        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send'));
-        const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send', 24, 'transform: scaleX(-1);'));
-        primaryDiv.appendChild(buttonPrevStatement);
-        primaryDiv.appendChild(buttonNextStatement);
-
-        textButton.parentElement.parentElement.appendChild(primaryDiv);
+            createTabButton(TabState.TESTIMONY, 'Testimony Mode');
 
 
-        TabState.TESTIMONY.onEnable = function() {
-            textArea.style.display = 'none';
-
-            textButton.parentElement.style.display = 'none';
-            lockTestimony.style.display = 'flex';
-            if (testimonyLocked) {
-                primaryDiv.style.display = 'flex';
-                testimonyDiv.style.display = 'block';
-            } else {
-                testimonyArea.style.display = 'block';
-            }
-        }
-        TabState.TESTIMONY.onDisable = function() {
-            testimonyArea.style.display = 'none';
-            testimonyDiv.style.display = 'none';
-            textArea.style.display = 'block';
-
-            textButton.parentElement.style.display = 'block';
-            lockTestimony.style.display = 'none';
-            primaryDiv.style.display = 'none';
-        }
-        createTabButton(TabState.TESTIMONY, 'Testimony Mode');
-
-
-        const inputRow = createRow(tabDiv);
-        function testimonyInput(id, placeholder, onchange = undefined) {
-            const input = document.createElement('input');
-            input.id = id;
-            input.autocomplete = 'on';
-            input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
-            input.style.width = '10rem';
-            input.placeholder = placeholder;
-    
-            input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
-            if (onchange) input.addEventListener('change', onchange);
-    
-            inputRow.appendChild(input);
-            return input;
-        }
-        const musicInput = testimonyInput('hil-tm-music', 'Testimony music', () => musicPlaying = false);
-        const selectInput = testimonyInput('hil-tm-select', 'Cross-exam click sound');
-
-        function inputToTag(value, tagName) {
-            const match = value.match(/[0-9]+/g)
-            if (match && ('[#' + tagName + '0]').includes(value.replaceAll(/[0-9]+/g, '0'))) {
-                const id = match[0];
-                return '[#' + tagName + id + ']';
-            } else {
-                return '';
-            }
-        }
-
-        testimonyRow.appendChild(iconToggleButton(function() {
-            red = !red;
-            if (testimonyDiv.childElementCount > 0) {
-                if (red) {
-                    testimonyDiv.firstElementChild.firstElementChild.style.color = '#f00';
-                    testimonyDiv.lastElementChild.firstElementChild.style.color = '#f00';
-                } else {
-                    testimonyDiv.firstElementChild.firstElementChild.style.removeProperty('color');
-                    testimonyDiv.lastElementChild.firstElementChild.style.removeProperty('color');
-                }
-            }
-            return red;
-        }, 'Red Beginning/End', 'hil-testiony-btn'));
-        testimonyRow.appendChild(iconToggleButton(function() { return crossExam = !crossExam; }, 'Cross-exam mode', 'hil-testiony-btn'));
-        testimonyRow.appendChild(iconToggleButton(function() { return auto = !auto; }, 'Use < > from chat', 'hil-testiony-btn'));
-
-
-        function setElemPoseName(statementElem, name) {
-            statementElem.querySelector('div.pose-message').innerText = name;
-            statementElem.querySelector('div.pose-message').dataset.pose = name;
-        }
-
-        function toStatement(statement) {
-            let statementElem;
-            if (currentStatement != statement) {
-                currentStatement = statement;
-
-                let added = false;
-                let removed = false;
-                for (let elem of testimonyDiv.children) {
-                    if (!removed && elem.style.backgroundColor != '') {
-                        elem.style.removeProperty('background-color');
-                        removed = true;
-                    } else if (!added && elem.dataset.statement == String(currentStatement)) {
-                        elem.style.backgroundColor = '#552a2e';
-                        statementElem = elem;
-                        added = true;
-                    }
-                    if (removed && added) break;
-                }
-            } else {
-                for (let elem of testimonyDiv.children) {
-                    if (elem.dataset.statement != String(currentStatement)) continue;
-                    statementElem = elem;
-                    break;
-                }
-            }
-
-            const statementText = statements[statement];
-            const music = inputToTag(musicInput.value, 'bgm');
-            const continueSound = inputToTag(selectInput.value, 'bgs');
-
-            let text = statementText;
-
-            let preText;
-            if (red && (statement == 0 || statement == statements.length - 1)) {
-                text = '[##nt][#/r]' + text + '[/#]';
-            } else if (crossExam) {
-                text = text.replaceAll(/\[#.*?\]/g, '');
-                text = text.replaceAll('[/#]', '');
-                text = continueSound + '[#/g]' + text + '[/#]';
-            }
-            if (!crossExam) {
-                text = '[##tm]' + text;
-            }
-
-            if (!crossExam && statement == statements.length - 1) {
-                if (red) {
-                    text = TAG_MUSIC_FADE_OUT + text;
-                    musicPlaying = false;
-                } else {
-                    text = text + TAG_MUSIC_FADE_OUT;
-                    musicPlaying = false;
-                }
-            } else if (!musicPlaying && music && (!red || statement != 0)) {
-                text = music + text;
-                musicPlaying = true;
-            } else if (!crossExam && statement == 0 && music) {
-                text = TAG_MUSIC_STOP + text;
-                musicPlaying = false;
-            }
-
-            if (statementCache[statementText] === undefined) {
-                statementCache[statementText] = {
-                    id: lastStatementId
-                }
-                lastStatementId += 1;
-            } else if (statementCache[statementText].poseName) {
-                setElemPoseName(statementElem, statementCache[statementText].poseName);
-            }
-
-            text = '[##tmid' + statementCache[statementText].id + ']' + text;
-            sendText(text);
-        }
-
-        window.addEventListener('message', function(event) {
-            const [action, data] = event.data;
-            if (action !== 'set_statement_pose_name') return;
-            const statementText = Object.keys(statementCache).find(text => statementCache[text].id === data.id);
-            const statementObj = statementCache[statementText];
-            statementObj.poseName = data.name;
-
-            if (!testimonyLocked) return;
-
-            for (let statementElem of testimonyDiv.children) {
-                if (statementElem.querySelector('span').innerText !== statementText) continue;
-                setElemPoseName(statementElem, data.name);
-            }            
-        });
-
-        function loopTo(statement) { toStatement(statement); }
-
-        function nextStatement() {
-            const edges = crossExam && red && statements.length > 1;
-            if (currentStatement == undefined) {
-                toStatement(0);
-            } else if (currentStatement >= statements.length - (edges ? 2 : 1)) {
-                loopTo(edges ? 1 : 0);
-            } else {
-                toStatement(currentStatement + 1);
-            }
-        }
-        function prevStatement() {
-            const edges = crossExam && red && statements.length > 1;
-            if (currentStatement == undefined) {
-                toStatement(statements.length - 1);
-            } else if (currentStatement <= edges ? 1 : 0) {
-                loopTo(statements.length - (edges ? 2 : 1));
-            } else {
-                toStatement(currentStatement - 1);
-            }
-        }
-
-        buttonNextStatement.addEventListener('click', nextStatement);
-        buttonPrevStatement.addEventListener('click', prevStatement);
-
-        let characterObserver = new MutationObserver(function (mutations) {
-            for (let mutation of mutations) {
-                if (mutation.attributeName != "style" || mutation.oldValue == undefined) continue;
-
-                const oldIcon = mutation.oldValue.match(/background-image: (url\(\".*?\"\));/)[1];
-                const newIcon = mutation.target.style.backgroundImage;
-                if (oldIcon !== newIcon) {
-                    resetCache();
-                    for (let elem of document.querySelectorAll('.pose-message')) {
-                        elem.dataset.pose = '';
-                        elem.innerText = '';
-                    }
-                };
-            }
-        });
-
-        new MutationObserver(function (mutations, observer) {
-            for (let mutation of mutations) {
-                for (let node of mutation.addedNodes) {
-                    if (!node.matches('div.v-image__image[style*="background-image:"]')) continue;
-
-                    characterObserver.observe(node, {
-                        attributes: true,
-                        attributeOldValue: true
-                    });
-
-                    observer.disconnect();
-                }
-            }
-        }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), { childList: true });
-
-        states.testimonyArrow = function(arrow) {
-            if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
-                if (arrow == '>') nextStatement();
-                else if (arrow == '<') prevStatement();
-            }
-        }
-        states.testimonyIndex = function(statement) {
-            if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
-                let statementI = statement - 1;
-                if (red) statementI += 1;
-                let max = statements.length;
-                if (red) max -= 1;
-                if (statementI < 0 || statementI >= max) return;
-                toStatement(statementI);
-            }
-        }
-
-        window.addEventListener('message', function(event) {
-            const [action, data] = event.data;
-            if (action !== 'plain_message') return;
-
-            if (testRegex(data.text, '[> ]*') && data.text.indexOf('>') !== -1) states.testimonyArrow('>');
-            else if (testRegex(data.text, '[< ]*') && data.text.indexOf('<') !== -1) states.testimonyArrow('<');
-            else if (testRegex(data.text, '<[0-9]*?>')) states.testimonyIndex(Number(data.text.slice(1, -1)));
-        });     
-    }
-
-
-
-    if (options['smart-tn']) {
-        createTabButton(TabState.TN, 'TN animations');
-        const tnDiv = createTabDiv(TabState.TN);
-        const tnRow = createRow(tnDiv);
+            const inputRow = createRow(tabDiv);
+            function testimonyInput(id, placeholder, onchange = undefined) {
+                const input = document.createElement('input');
+                input.id = id;
+                input.autocomplete = 'on';
+                input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
+                input.style.width = '10rem';
+                input.placeholder = placeholder;
         
-        const description = document.createElement('span');
-        description.textContent = 'TN pose name keywords:'
-        description.style.margin = 'auto 10px';
-        description.style.whiteSpace = 'nowrap';
-        tnRow.appendChild(description);
-
-        // const patternInputs = document.createElement('div');
-        // patternInputs.style.display = 'flex';
-        // tnRow.appendChild(patternInputs);
-        function addPatternInput(value = '') {
-            const input = document.createElement('input');
-            input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-tn-pattern hil-themed-text ' + theme;
-            input.placeholder = 'TN';
-            input.value = value;
-            input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
-            input.addEventListener('change', onPatternsUpdate);
-            tnRow.appendChild(input);
-            return input;
-        }
-        function onPatternsUpdate() {
-            const patterns = [];
-            const toRemove = [];
-            for (let input of tnRow.querySelectorAll('input')) {
-                if (input.value === '') {
-                    toRemove.push(input);
-                    continue;
-                }
-                patterns.push(input.value);
+                input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
+                if (onchange) input.addEventListener('change', onchange);
+        
+                inputRow.appendChild(input);
+                return input;
             }
-            toRemove.forEach(elem => elem.remove());
+            const musicInput = testimonyInput('hil-tm-music', 'Testimony music', () => musicPlaying = false);
+            const selectInput = testimonyInput('hil-tm-select', 'Cross-exam click sound');
+
+            function inputToTag(value, tagName) {
+                const match = value.match(/[0-9]+/g)
+                if (match && ('[#' + tagName + '0]').includes(value.replaceAll(/[0-9]+/g, '0'))) {
+                    const id = match[0];
+                    return '[#' + tagName + id + ']';
+                } else {
+                    return '';
+                }
+            }
+
+            testimonyRow.appendChild(iconToggleButton(function() {
+                red = !red;
+                if (testimonyDiv.childElementCount > 0) {
+                    if (red) {
+                        testimonyDiv.firstElementChild.firstElementChild.style.color = '#f00';
+                        testimonyDiv.lastElementChild.firstElementChild.style.color = '#f00';
+                    } else {
+                        testimonyDiv.firstElementChild.firstElementChild.style.removeProperty('color');
+                        testimonyDiv.lastElementChild.firstElementChild.style.removeProperty('color');
+                    }
+                }
+                return red;
+            }, 'Red Beginning/End', 'hil-testiony-btn'));
+            testimonyRow.appendChild(iconToggleButton(function() { return crossExam = !crossExam; }, 'Cross-exam mode', 'hil-testiony-btn'));
+            testimonyRow.appendChild(iconToggleButton(function() { return auto = !auto; }, 'Use < > from chat', 'hil-testiony-btn'));
+
+
+            function setElemPoseName(statementElem, name) {
+                statementElem.querySelector('div.pose-message').innerText = name;
+                statementElem.querySelector('div.pose-message').dataset.pose = name;
+            }
+
+            function toStatement(statement) {
+                let statementElem;
+                if (currentStatement != statement) {
+                    currentStatement = statement;
+
+                    let added = false;
+                    let removed = false;
+                    for (let elem of testimonyDiv.children) {
+                        if (!removed && elem.style.backgroundColor != '') {
+                            elem.style.removeProperty('background-color');
+                            removed = true;
+                        } else if (!added && elem.dataset.statement == String(currentStatement)) {
+                            elem.style.backgroundColor = '#552a2e';
+                            statementElem = elem;
+                            added = true;
+                        }
+                        if (removed && added) break;
+                    }
+                } else {
+                    for (let elem of testimonyDiv.children) {
+                        if (elem.dataset.statement != String(currentStatement)) continue;
+                        statementElem = elem;
+                        break;
+                    }
+                }
+
+                const statementText = statements[statement];
+                const music = inputToTag(musicInput.value, 'bgm');
+                const continueSound = inputToTag(selectInput.value, 'bgs');
+
+                let text = statementText;
+
+                let preText;
+                if (red && (statement == 0 || statement == statements.length - 1)) {
+                    text = '[##nt][#/r]' + text + '[/#]';
+                } else if (crossExam) {
+                    text = text.replaceAll(/\[#.*?\]/g, '');
+                    text = text.replaceAll('[/#]', '');
+                    text = continueSound + '[#/g]' + text + '[/#]';
+                }
+                if (!crossExam) {
+                    text = '[##tm]' + text;
+                }
+
+                if (!crossExam && statement == statements.length - 1) {
+                    if (red) {
+                        text = TAG_MUSIC_FADE_OUT + text;
+                        musicPlaying = false;
+                    } else {
+                        text = text + TAG_MUSIC_FADE_OUT;
+                        musicPlaying = false;
+                    }
+                } else if (!musicPlaying && music && (!red || statement != 0)) {
+                    text = music + text;
+                    musicPlaying = true;
+                } else if (!crossExam && statement == 0 && music) {
+                    text = TAG_MUSIC_STOP + text;
+                    musicPlaying = false;
+                }
+
+                if (statementCache[statementText] === undefined) {
+                    statementCache[statementText] = {
+                        id: lastStatementId
+                    }
+                    lastStatementId += 1;
+                } else if (statementCache[statementText].poseName) {
+                    setElemPoseName(statementElem, statementCache[statementText].poseName);
+                }
+
+                text = '[##tmid' + statementCache[statementText].id + ']' + text;
+                sendText(text);
+            }
+
+            window.addEventListener('message', function(event) {
+                const [action, data] = event.data;
+                if (action !== 'set_statement_pose_name') return;
+                const statementText = Object.keys(statementCache).find(text => statementCache[text].id === data.id);
+                const statementObj = statementCache[statementText];
+                statementObj.poseName = data.name;
+
+                if (!testimonyLocked) return;
+
+                for (let statementElem of testimonyDiv.children) {
+                    if (statementElem.querySelector('span').innerText !== statementText) continue;
+                    setElemPoseName(statementElem, data.name);
+                }            
+            });
+
+            function loopTo(statement) { toStatement(statement); }
+
+            function nextStatement() {
+                const edges = crossExam && red && statements.length > 1;
+                if (currentStatement == undefined) {
+                    toStatement(0);
+                } else if (currentStatement >= statements.length - (edges ? 2 : 1)) {
+                    loopTo(edges ? 1 : 0);
+                } else {
+                    toStatement(currentStatement + 1);
+                }
+            }
+            function prevStatement() {
+                const edges = crossExam && red && statements.length > 1;
+                if (currentStatement == undefined) {
+                    toStatement(statements.length - 1);
+                } else if (currentStatement <= edges ? 1 : 0) {
+                    loopTo(statements.length - (edges ? 2 : 1));
+                } else {
+                    toStatement(currentStatement - 1);
+                }
+            }
+
+            buttonNextStatement.addEventListener('click', nextStatement);
+            buttonPrevStatement.addEventListener('click', prevStatement);
+
+            let characterObserver = new MutationObserver(function (mutations) {
+                for (let mutation of mutations) {
+                    if (mutation.attributeName != "style" || mutation.oldValue == undefined) continue;
+
+                    const oldIcon = mutation.oldValue.match(/background-image: (url\(\".*?\"\));/)[1];
+                    const newIcon = mutation.target.style.backgroundImage;
+                    if (oldIcon !== newIcon) {
+                        resetCache();
+                        for (let elem of document.querySelectorAll('.pose-message')) {
+                            elem.dataset.pose = '';
+                            elem.innerText = '';
+                        }
+                    };
+                }
+            });
+
+            new MutationObserver(function (mutations, observer) {
+                for (let mutation of mutations) {
+                    for (let node of mutation.addedNodes) {
+                        if (!node.matches('div.v-image__image[style*="background-image:"]')) continue;
+
+                        characterObserver.observe(node, {
+                            attributes: true,
+                            attributeOldValue: true
+                        });
+
+                        observer.disconnect();
+                    }
+                }
+            }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), { childList: true });
+
+            states.testimonyArrow = function(arrow) {
+                if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
+                    if (arrow == '>') nextStatement();
+                    else if (arrow == '<') prevStatement();
+                }
+            }
+            states.testimonyIndex = function(statement) {
+                if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
+                    let statementI = statement - 1;
+                    if (red) statementI += 1;
+                    let max = statements.length;
+                    if (red) max -= 1;
+                    if (statementI < 0 || statementI >= max) return;
+                    toStatement(statementI);
+                }
+            }
+
+            window.addEventListener('message', function(event) {
+                const [action, data] = event.data;
+                if (action !== 'plain_message') return;
+
+                if (testRegex(data.text, '[> ]*') && data.text.indexOf('>') !== -1) states.testimonyArrow('>');
+                else if (testRegex(data.text, '[< ]*') && data.text.indexOf('<') !== -1) states.testimonyArrow('<');
+                else if (testRegex(data.text, '<[0-9]*?>')) states.testimonyIndex(Number(data.text.slice(1, -1)));
+            });     
+        }
+
+
+
+        if (options['smart-tn']) {
+            createTabButton(TabState.TN, 'TN animations');
+            const tnDiv = createTabDiv(TabState.TN);
+            const tnRow = createRow(tnDiv);
+            
+            const description = document.createElement('span');
+            description.textContent = 'TN pose name keywords:'
+            description.style.margin = 'auto 10px';
+            description.style.whiteSpace = 'nowrap';
+            tnRow.appendChild(description);
+
+            // const patternInputs = document.createElement('div');
+            // patternInputs.style.display = 'flex';
+            // tnRow.appendChild(patternInputs);
+            function addPatternInput(value = '') {
+                const input = document.createElement('input');
+                input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-tn-pattern hil-themed-text ' + theme;
+                input.placeholder = 'TN';
+                input.value = value;
+                input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
+                input.addEventListener('change', onPatternsUpdate);
+                tnRow.appendChild(input);
+                return input;
+            }
+            function onPatternsUpdate() {
+                const patterns = [];
+                const toRemove = [];
+                for (let input of tnRow.querySelectorAll('input')) {
+                    if (input.value === '') {
+                        toRemove.push(input);
+                        continue;
+                    }
+                    patterns.push(input.value);
+                }
+                toRemove.forEach(elem => elem.remove());
+                addPatternInput('');
+
+                optionSet('smart-tn-patterns', patterns);
+                window.postMessage([
+                    'set_options',
+                    options
+                ]);
+            }
+
+            const patterns = options['smart-tn-patterns'] || ['TN'];
+            for (let pattern of patterns) {
+                addPatternInput(pattern);
+            }
             addPatternInput('');
-
-            optionSet('smart-tn-patterns', patterns);
-            window.postMessage([
-                'set_options',
-                options
-            ]);
         }
-
-        const patterns = options['smart-tn-patterns'] || ['TN'];
-        for (let pattern of patterns) {
-            addPatternInput(pattern);
-        }
-        addPatternInput('');
     }
 
 
@@ -2733,6 +2726,18 @@ function onLoad(options) {
                 window.postMessage(['warn_unexported_icons']);
                 break;
             }
+        });
+    }
+    
+
+    if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
+        injectScript(chrome.runtime.getURL('content/utils.js'));
+        window.addEventListener('message', function listener(event) {
+            const [action] = event.data;
+            if (action !== 'loaded_utils') return;
+            injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+            window.removeEventListener('message', listener);
         });
     }
 
