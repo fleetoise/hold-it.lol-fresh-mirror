@@ -39,7 +39,7 @@ function main() {
         break;
     }
 
-    const themeInput = getLabel('Dark Mode').parentElement.querySelector('input');
+    const themeInput = (getLabel('Dark Mode') || getLabel('Light Mode')).parentElement.querySelector('input');
     function getTheme() {
         if (themeInput.ariaChecked == "true") {
             return 'theme--dark';

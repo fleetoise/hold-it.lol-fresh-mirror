@@ -105,7 +105,7 @@ function onLoad(options) {
     let musicPlaying = false;
 
 
-    const themeInput = getLabel('Dark Mode').parentElement.querySelector('input');
+    const themeInput = (getLabel('Dark Mode') || getLabel('Light Mode')).parentElement.querySelector('input');
     if (themeInput.ariaChecked == "true") {
         theme = 'theme--dark';
     } else {

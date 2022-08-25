@@ -20,7 +20,7 @@ hilUtils.getLabel = function(innerText) {
 }
 
 hilUtils.getTheme = function() {
-    const themeInput = hilUtils.getLabel('Dark Mode').parentElement.querySelector('input');
+    const themeInput = (hilUtils.getLabel('Dark Mode') || hilUtils.getLabel('Light Mode')).parentElement.querySelector('input');
     if (themeInput.ariaChecked == "true") {
         return 'theme--dark';
     } else {
