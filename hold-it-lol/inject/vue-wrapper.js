@@ -89,7 +89,7 @@ function main() {
             if (character === undefined) continue;
             if (character.poses[0] === undefined) continue;
             if (character.poses[0].iconUrl) continue;
-            character.poses[0].iconUrl = hilUtils.transparentSvg;
+            character.poses[0].iconUrl = hilUtils.transparentGif;
         }
     }
 
@@ -338,7 +338,12 @@ function main() {
                     return name === '-assetsManager';
                 });
                 if (component) {
-                    component.setManageCharacter(characterInstance.currentCharacter);
+                    let char = characterInstance.currentCharacter;
+                    if (char.poses[0].iconUrl === hilUtils.transparentGif) {
+                        char = JSON.parse(JSON.stringify(char));
+                        char.poses[0].iconUrl = '';
+                    }
+                    component.setManageCharacter(char);
                     setTimeout(function() {
                         const tabs = document.querySelectorAll('.v-slide-group__content.v-tabs-bar__content .v-tab');
                         Array.from(tabs).find(tab => tab.textContent === 'Poses').click();
@@ -826,12 +831,13 @@ function main() {
                 for (let mutation of mutationRecord) {
                     for (let node of mutation.addedNodes) {
                         if (!(node.nodeType === 1 && node.nodeName === 'DIV' && node.matches('.v-alert'))) continue;
+                        if (!node.querySelector('.mdi-share-circle.success--text')) continue;
                         const content = node.querySelector('.v-alert__content');
                         socketStates['lastShareContent'] = content;
                         
                         let iconlessPoseIds = {};
                         for (let pose of node.__vue__.$parent.selectedCharacter.poses) {
-                            if (!pose.iconUrl) iconlessPoseIds[pose.id] = true;
+                            if (!pose.iconUrl || pose.iconUrl === hilUtils.transparentGif) iconlessPoseIds[pose.id] = true;
                         }
                         window.postMessage(['check_iconless_pose_ids', iconlessPoseIds]);
                         break;
@@ -870,6 +876,8 @@ function main() {
                                     const char = manageCharacterInstance.editingCharacter;
                                     if (!char) return;
                                     for (let pose of char.poses) {
+                                        if (pose.iconUrl) continue;
+                                        if (pose.iconUrl === hilUtils.transparentGif) continue;
                                         pose.iconUrl = data[pose.id];
                                         const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
                                         edit(pose);

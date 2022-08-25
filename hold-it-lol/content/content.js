@@ -1658,13 +1658,24 @@ function onLoad(options) {
                 window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
             });
         });
+        function customIconDisplayed(poseId) {
+            if (!(poseId in iconRenders)) return false;
+            const icon = document.querySelector('.p-image[data-pose-id="' + poseId + '"]');
+            if (!icon) return false;
+
+            return iconRenders[poseId];
+        }
 
         new MutationObserver(function(mutations) {
             for (let mutation of mutations) {
                 if (mutation.attributeName !== 'data-pose-id') continue;
                 if (!(mutation.target.nodeType === 1 && mutation.target.nodeName === 'IMG')) continue;
+                if (mutation.target.src !== hilUtils.transparentGif) continue;
                 const poseId = mutation.target.dataset.poseId;
-                if (iconRenders[poseId]) mutation.target.src = iconRenders[poseId];
+                if (iconRenders[poseId]) {
+                    mutation.target.src = iconRenders[poseId];
+                    mutation.target.dataset.hilIconOverwritten = '1';
+                }
             }
         }).observe(document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement, {
             childList: true,
@@ -1690,68 +1701,73 @@ function onLoad(options) {
 
         const editCard = htmlToElement(/*html*/`
             <div class="hil-hide hil-pose-edit-card hil-themed ${getTheme()}">
-                <div class="d-flex">
-                    <div class="headline hil-pose-title">Icon: </div>
-                    <i class="mdi mdi-delete headline hil-pose-icon-delete"></i>
-                    <div class="hil-close-button">Close</div>
-                </div>
-                <hr class="v-divider hil-themed ${getTheme()}">
-                <div class="v-input__control hil-hide">
-                    <div class="v-slider v-slider--horizontal hil-themed ${getTheme()}">
-                        ${''/*<input value="8" id="input-451" disabled="disabled" readonly="readonly" tabindex="-1">*/}
-                        <div class="v-slider__track-container">
-                            <div class="v-slider__track-background"></div>
-                            <div class="v-slider__track-fill primary" style="width: 0%;"></div>
-                        </div>
-                        <div class="v-slider__thumb-container primary--text" style="left: 0%;">
-                            <div class="v-slider__thumb primary"></div>
-                            <div class="v-slider__thumb-label primary">
-                                <span>0</span>
+                <div>
+                    <div class="d-flex">
+                        <div class="headline hil-pose-title">Icon: </div>
+                        <i class="mdi mdi-delete headline hil-pose-icon-delete hil-hide-on-load"></i>
+                        <div class="hil-close-button">Close</div>
+                    </div>
+                    <hr class="v-divider hil-themed ${getTheme()}">
+                    <div class="v-input__control hil-hide-on-load hil-hide">
+                        <div class="v-slider v-slider--horizontal hil-themed ${getTheme()}">
+                            <div class="v-slider__track-container">
+                                <div class="v-slider__track-background"></div>
+                                <div class="v-slider__track-fill primary" style="width: 0%;"></div>
+                            </div>
+                            <div class="v-slider__thumb-container primary--text" style="left: 0%;">
+                                <div class="v-slider__thumb primary"></div>
+                                <div class="v-slider__thumb-label primary">
+                                    <span>0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="v-messages v-messages__message hil-hide hil-themed ${getTheme()}">Idle animation</div>
-                <hr class="v-divider hil-themed ${getTheme()}">
-                <div class="hil-edit-columns d-flex hil-hide">
-                    <div style="width: 100%; overflow: hidden;">
-                        <div class="hil-themed ${getTheme()}">Frame</div>
-                        <div class="v-messages v-messages__message hil-themed ${getTheme()}"><b>0</b> total icons are affected by this frame</div>
-                        <div class="hil-swiper-container hil-themed ${getTheme()}" style="height: 60px;">
-                            <div class="hil-swiper hil-icon-frames">
-                                <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}" style="font-size: 64px;"></i>
+                    <div class="v-messages v-messages__message hil-hide hil-hide-on-load hil-themed ${getTheme()}">Idle animation</div>
+                    <hr class="v-divider hil-themed ${getTheme()}">
+                    <div class="hil-edit-columns hil-hide-on-load d-flex hil-hide">
+                        <div style="width: 100%; overflow: hidden;">
+                            <div class="hil-themed ${getTheme()}">Frame</div>
+                            <div class="v-messages v-messages__message hil-themed ${getTheme()}"><b>0</b> total icons are affected by this frame</div>
+                            <div class="hil-swiper-container hil-themed ${getTheme()}" style="height: 60px;">
+                                <div class="hil-swiper hil-icon-frames">
+                                    <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}" style="font-size: 64px;"></i>
+                                </div>
+                            </div>
+                            <div class="mb-2 hil-themed ${getTheme()}">Overlays</div>
+                            <div class="hil-swiper-container hil-themed ${getTheme()}">
+                                <div class="hil-swiper hil-icon-overlays">
+                                    <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
+                                    <i class="v-icon mdi mdi-archive hil-add-button hil-themed ${getTheme()}"></i>
+                                    <input class="d-none" type="file" accept="image/*">
+                                </div>
+                            </div>
+                            <div class="mb-2 hil-themed ${getTheme()}">Underlays</div>
+                            <div class="hil-swiper-container hil-themed ${getTheme()}">
+                                <div class="hil-swiper hil-icon-underlays">
+                                    <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
+                                    <i class="v-icon mdi mdi-archive hil-add-button hil-themed ${getTheme()}"></i>
+                                    <input class="d-none" type="file" accept="image/*">
+                                </div>
                             </div>
                         </div>
-                        <div class="mb-2 hil-themed ${getTheme()}">Overlays</div>
-                        <div class="hil-swiper-container hil-themed ${getTheme()}">
-                            <div class="hil-swiper hil-icon-overlays">
-                                <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
-                                <i class="v-icon mdi mdi-archive hil-add-button hil-themed ${getTheme()}"></i>
-                                <input class="d-none" type="file" accept="image/*">
-                            </div>
-                        </div>
-                        <div class="mb-2 hil-themed ${getTheme()}">Underlays</div>
-                        <div class="hil-swiper-container hil-themed ${getTheme()}">
-                            <div class="hil-swiper hil-icon-underlays">
-                                <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
-                                <i class="v-icon mdi mdi-archive hil-add-button hil-themed ${getTheme()}"></i>
-                                <input class="d-none" type="file" accept="image/*">
+                        <div class="hil-canvas-column" style="margin-left: 16px;">
+                            <canvas></canvas>
+                            <div class="hil-hide">
+                                <div><i class="v-icon mdi mdi-cursor-move" style="opacity: 0.6;"></i> Drag</div>
+                                <div><i class="v-icon mdi mdi-resize" style="opacity: 0.6;"></i> Scroll</div>
                             </div>
                         </div>
                     </div>
-                    <div class="hil-canvas-column" style="margin-left: 16px;">
-                        <canvas></canvas>
-                        <div class="hil-hide">
-                            <div><i class="v-icon mdi mdi-cursor-move" style="opacity: 0.6;"></i> Drag</div>
-                            <div><i class="v-icon mdi mdi-resize" style="opacity: 0.6;"></i> Scroll</div>
-                        </div>
+                    <div class="mb-4 hil-icon-export-buttons hil-hide-on-load"></div>
+                    <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
+                            <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
+                        </svg>
                     </div>
-                </div>
-                <div class="mb-4 hil-icon-export-buttons"></div>
-                <div class="v-progress-circular v-progress-circular--indeterminate">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
-                        <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
-                    </svg>
+                    <div class="hil-card-centered hil-hide" style="text-align: center;white-space: nowrap;">
+                        <i class="mdi mdi-alert-circle"></i>
+                        <span></span>
+                    </div>
                 </div>
             </div>
         `);
@@ -1796,15 +1812,16 @@ function onLoad(options) {
 
             const poseNameDiv = editCard.querySelector('.hil-pose-title');
             const slider = editCard.querySelector('.v-slider');
-            const poseLoadIcon = editCard.querySelector('.v-progress-circular');
             const editColumns = editCard.querySelector('.hil-edit-columns');
             const frameDiv = editCard.querySelector('.hil-icon-frames');
             const overlayDiv = editCard.querySelector('.hil-icon-overlays');
             const underlayDiv = editCard.querySelector('.hil-icon-underlays');
             const exportButtons = editCard.querySelector('.hil-icon-export-buttons');
-            const messageAnim = editCard.querySelector(':scope > .v-messages');
+            const messageAnim = editCard.querySelector(':scope > div > .v-messages');
             const messageFrameUses = editCard.querySelector('.hil-edit-columns .v-messages');
             const helpLines = editCard.querySelector('.hil-canvas-column > :nth-child(2)');
+            const poseLoadIcon = editCard.querySelector('.v-progress-circular');
+            const errorMessage = editCard.querySelector('.hil-card-centered:not(.v-progress-circular)');
 
             const iconCanvas = editCard.querySelector('.hil-canvas-column canvas');
             iconCanvas.width = 64;
@@ -1962,7 +1979,7 @@ function onLoad(options) {
                     editorCache[openedPoseId].data = undefined;
                     iconRenders[openedPoseId] = undefined;
                     const poseIcon = document.querySelector('.p-image[data-pose-id="' + openedPoseId + '"]');
-                    if (poseIcon) poseIcon.src = hilUtils.transparentSvg;
+                    if (poseIcon) poseIcon.src = hilUtils.transparentGif;
                 }
                 for (let poseId in editorCache.storageCache.characters[openedCharacterId].icons) {
                     if (Number(poseId) === openedPoseId) continue;
@@ -2016,7 +2033,7 @@ function onLoad(options) {
 
                     iconRenders[poseId] = canvas.toDataURL();
                     const icon = document.querySelector('img.p-image[data-pose-id="' + poseId + '"]');
-                    if (icon) icon.src = iconRenders[poseId];
+                    if (icon && icon.dataset.hilIconOverwritten === '1') icon.src = iconRenders[poseId];
                 }
             }
 
@@ -2299,9 +2316,8 @@ function onLoad(options) {
                 
                 poseNameDiv.innerText = 'Icon: ' + pose.name;
 
-                editColumns.classList.add('hil-hide');
-                slider.parentElement.classList.add('hil-hide');
-                messageAnim.classList.add('hil-hide');
+                editCard.querySelectorAll('.hil-hide-on-load').forEach(elem => elem.classList.add('hil-hide'));
+                errorMessage.classList.add('hil-hide');
                 poseLoadIcon.classList.remove('hil-hide');
 
                 loadingPoseId = pose.id;
@@ -2309,6 +2325,13 @@ function onLoad(options) {
                 if (openedPoseId !== pose.id && saveTimeout) {
                     clearTimeout(saveTimeout);
                     saveFunc(openedPoseId, openedCharacterId);
+                }
+
+                if (pose.iconUrl) {
+                    poseLoadIcon.classList.add('hil-hide');
+                    errorMessage.querySelector('span').innerText = 'Pose already includes icon';
+                    errorMessage.classList.remove('hil-hide');
+                    return;
                 }
 
                 chrome.storage.local.get('icon-editor', function(storage) {
@@ -2472,10 +2495,8 @@ function onLoad(options) {
                         }
 
                         poseLoadIcon.classList.add('hil-hide');
-                        slider.parentElement.classList.remove('hil-hide');
-                        messageAnim.classList.remove('hil-hide');
-                        editColumns.classList.remove('hil-hide');
-
+                        errorMessage.classList.add('hil-hide');
+                        editCard.querySelectorAll('.hil-hide-on-load').forEach(elem => elem.classList.remove('hil-hide'));
                     });
                 });
 
@@ -2483,30 +2504,32 @@ function onLoad(options) {
 
             exportCard = htmlToElement(/*html*/`
                 <div class="hil-hide hil-pose-edit-card hil-icon-export-card hil-themed ${getTheme()}">
-                    <div class="d-flex">
-                        <div class="headline hil-pose-title">Export Options</div>
-                        <div class="hil-close-button">Close</div>
-                    </div>
-                    <hr class="v-divider hil-themed ${getTheme()}">
-                    <div class="mb-2 hil-hide-on-load hil-export-method-dropdown">
-                        <label for="hil-export-method" class="hil-dropdown-label v-label v-label--active hil-themed ${getTheme()}">Export method</label>
-                        <i class="v-icon notranslate mdi mdi-menu-down hil-themed ${getTheme()}"></i>
-                        <select id="hil-export-method" class="hil-dropdown hil-themed ${getTheme()}">
-                            <option value="zip">Download in ZIP</option>
-                            <option value="discord">Host on discord</option>
-                        </select>
-                    </div>
-                    <div class="v-messages v-messages__message hil-hide-on-load hil-themed ${getTheme()}">To import the icons back, keep the file names the same</div>
-                    <div id="hil-discord-webhook" class="hil-export-textbox hil-hide-on-load d-none">
-                        <label for="hil-export-method" class="hil-dropdown-label v-label v-label--active hil-themed theme--dark">Webhook URL</label>
-                        <input class="mt-4 hil-row-textbox v-size--default v-sheet--outlined hil-themed hil-themed-text ${getTheme()}" placeholder="Paste URL here...">
-                        <div class="v-messages v-messages__message hil-themed ${getTheme()}">Open the settings of your hosting channel > Integrations > Webhooks > New Webhook > Copy Webhook URL</div>
-                    </div>
-                    <div class="my-4 hil-hide-on-load hil-icon-export-buttons"></div>
-                    <div class="v-progress-circular v-progress-circular--indeterminate">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
-                            <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
-                        </svg>
+                    <div>
+                        <div class="d-flex">
+                            <div class="headline hil-pose-title">Export Options</div>
+                            <div class="hil-close-button">Close</div>
+                        </div>
+                        <hr class="v-divider hil-themed ${getTheme()}">
+                        <div class="mb-2 hil-hide-on-load hil-export-method-dropdown">
+                            <label for="hil-export-method" class="hil-dropdown-label v-label v-label--active hil-themed ${getTheme()}">Export method</label>
+                            <i class="v-icon notranslate mdi mdi-menu-down hil-themed ${getTheme()}"></i>
+                            <select id="hil-export-method" class="hil-dropdown hil-themed ${getTheme()}">
+                                <option value="zip">Download in ZIP</option>
+                                <option value="discord">Host on discord</option>
+                            </select>
+                        </div>
+                        <div class="v-messages v-messages__message hil-hide-on-load hil-themed ${getTheme()}">To import the icons back, keep the file names the same</div>
+                        <div id="hil-discord-webhook" class="hil-export-textbox hil-hide-on-load d-none">
+                            <label for="hil-export-method" class="hil-dropdown-label v-label v-label--active hil-themed theme--dark">Webhook URL</label>
+                            <input class="mt-4 hil-row-textbox v-size--default v-sheet--outlined hil-themed hil-themed-text ${getTheme()}" placeholder="Paste URL here...">
+                            <div class="v-messages v-messages__message hil-themed ${getTheme()}">Open the settings of your hosting channel > Integrations > Webhooks > New Webhook > Copy Webhook URL</div>
+                        </div>
+                        <div class="my-4 hil-hide-on-load hil-icon-export-buttons"></div>
+                        <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
+                                <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             `);
@@ -2516,6 +2539,8 @@ function onLoad(options) {
             exportButtons.appendChild(createButton(
                 function() {
                     if (!openedPoseId) return;
+                    const icon = document.querySelector('img.p-image[data-pose-id="' + openedPoseId + '"]');
+                    if (icon.dataset.hilIconOverwritten !== '1') return;
                     const a = document.createElement('a');
                     a.href = iconRenders[openedPoseId];
                     a.download = openedPoseId + '.png';
@@ -2557,6 +2582,8 @@ function onLoad(options) {
                     const poseIds = {};
                     for (let poseId in editorCache.storageCache.characters[openedCharacterId].icons) {
                         if (!iconRenders[poseId]) continue;
+                        const icon = document.querySelector('img.p-image[data-pose-id="' + poseId + '"]');
+                        if (icon.dataset.hilIconOverwritten !== '1') continue;
                         poseIds[poseId] = iconRenders[poseId];
                     }
 

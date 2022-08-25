@@ -360,6 +360,7 @@ th {
     font-size: 1rem;
     font-family: Roboto, sans-serif;
     transition: var(--default-transition);
+    z-index: 2;
 }
 
 .hil-pose-edit-card.theme--dark {
@@ -368,6 +369,10 @@ th {
 
 .hil-pose-edit-card.theme--light {
     background: var(--color-l-bg-secondary);
+}
+
+.hil-pose-edit-card>div {
+    position: relative;
 }
 
 .hil-pose-edit-card .hil-pose-title {
@@ -422,7 +427,7 @@ th {
     background-color: var(--color-l-bg-tertiary);
 }
 
-.hil-pose-edit-card>div {
+.hil-pose-edit-card>div>div {
     margin: 0 16px;
 }
 
@@ -437,13 +442,15 @@ th {
     cursor: move;
 }
 
-.hil-pose-edit-card .v-progress-circular {
-    height: 32px;
-    width: 32px;
+.hil-pose-edit-card .hil-card-centered {
     position: absolute;
     top: 50%;
-    left: 50%;
-    transform: translateX(-100%);
+    width: 100%;
+    margin: 0;
+}
+
+.hil-pose-edit-card .v-progress-circular {
+    height: 32px;
 }
 
 .hil-pose-edit-card .hil-canvas-column {
@@ -493,7 +500,7 @@ th {
     margin-bottom: 20px;
 }
 
-.hil-pose-edit-card>div.v-messages {
+.hil-pose-edit-card>div>div.v-messages {
     margin: 0 16px 8px 16px;
 }
 
