@@ -2491,7 +2491,14 @@ function onLoad(options) {
 
                         if (preFrames.length + idleFrames.length + talkFrames.length === 0) {
                             poseLoadIcon.classList.add('hil-hide');
-                            let errorText = 'Pose image URLs did not work';
+                            let errorText = 'Pose image URL did not work';
+                            if (lastError === 'error-url') {
+                                errorText = 'Invalid URL';
+                            } else if (lastError === 'error-fetch') {
+                                errorText = 'Pose\'s image hosting is currently unsupported';
+                            } else if (lastError === 'error-load') {
+                                errorText = 'Pose image file is broken';
+                            }
                             errorMessage.querySelector('span').innerText = errorText;
                             errorMessage.classList.remove('hil-hide');
                             return;
