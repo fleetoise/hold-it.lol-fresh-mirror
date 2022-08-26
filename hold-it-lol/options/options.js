@@ -39,7 +39,7 @@ const tabs = [
             { key: 'fullscreen-evidence', title: 'Full screen in record', description: 'Mention full-screen evidence from the court record.', preview: 'previews/placeholder.png' },
             { key: 'spectator-preload', title: '"Preload Resources" while spectating', description: 'Toggle "Preload Resources" while spectating.', preview: 'previews/placeholder.png' },
             { key: 'reload-ccs', title: 'Reload custom characters', description: 'Reload others\' custom characters from Settings to see their changes without reloading the page.', preview: 'previews/placeholder.png' },
-            { key: 'drag-pair-offset', title: 'Drag paired character', description: 'Drag your character around the frame to offset them in pairing.', preview: 'previews/placeholder.png' },
+            // { key: 'drag-pair-offset', title: 'Drag paired character', description: 'Drag your character around the frame to offset them in pairing.', preview: 'previews/placeholder.png' },
         ],
     },
     {
