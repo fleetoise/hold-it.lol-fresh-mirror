@@ -82,14 +82,22 @@ function main() {
         return userList.find(user => user.username === username)?.id;
     }
 
+    const customPoseIconCCs = {};
     function updateCustomPoseIconCCs() {
         if (socketStates['customIconCharacters'] === undefined) return;
+        for (let id in customPoseIconCCs) {
+            if (socketStates['customIconCharacters'].includes(id)) continue;
+            const character = characterListInstance.customList.find(character => character.id === Number(id));
+            if (character === undefined) continue;
+            if (character.poses[0].iconUrl === hilUtils.transparentGif) character.poses[0].iconUrl = '';
+        }
         for (let id of socketStates['customIconCharacters']) {
             const character = characterListInstance.customList.find(character => character.id === Number(id));
             if (character === undefined) continue;
             if (character.poses[0] === undefined) continue;
             if (character.poses[0].iconUrl) continue;
             character.poses[0].iconUrl = hilUtils.transparentGif;
+            customPoseIconCCs[character.id] = true;
         }
     }
 

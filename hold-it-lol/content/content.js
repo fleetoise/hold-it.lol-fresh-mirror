@@ -1641,6 +1641,14 @@ function onLoad(options) {
         chrome.storage.local.get('icon-renders', function(storage) {
             iconRenders = storage['icon-renders'] || {};
         });
+        function setCustomIconCharacters(characters) {
+            const charIds = [];
+            for (let key in characters) {
+                const character = characters[key];
+                if (character.icons && Object.keys(character.icons).length > 0) charIds.push(key);
+            }
+            window.postMessage(['set_custom_icon_characters', charIds]);
+        }
         chrome.storage.local.get('icon-editor', function(storage) {
             storage = verifyStructure(storage['icon-editor'], {
                 characters: {},
@@ -1648,16 +1656,9 @@ function onLoad(options) {
                 overlays: {},
             });
             wrapperLoaded.then(function() {
-                window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
+                setCustomIconCharacters(storage.characters);
             });
         });
-        function customIconDisplayed(poseId) {
-            if (!(poseId in iconRenders)) return false;
-            const icon = document.querySelector('.p-image[data-pose-id="' + poseId + '"]');
-            if (!icon) return false;
-
-            return iconRenders[poseId];
-        }
 
         new MutationObserver(function(mutations) {
             for (let mutation of mutations) {
@@ -1973,19 +1974,22 @@ function onLoad(options) {
                     iconRenders[openedPoseId] = undefined;
                     const poseIcon = document.querySelector('.p-image[data-pose-id="' + openedPoseId + '"]');
                     if (poseIcon) poseIcon.src = hilUtils.transparentGif;
-                }
-                for (let poseId in editorCache.storageCache.characters[openedCharacterId].icons) {
-                    if (Number(poseId) === openedPoseId) continue;
-                    const icon = document.querySelector('.p-image[data-pose-id="' + poseId + '"]');
-                    if (icon) {
-                        icon.click();
-                        return;
-                    }
-                }
+                    delete editorCache.storageCache.characters[openedCharacterId].icons[openedPoseId];
 
-                clearTimeout(saveTimeout);
-                saveFunc(openedPoseId, openedCharacterId);
-                editCard.classList.add('hil-hide');
+                    for (let poseId in editorCache.storageCache.characters[openedCharacterId].icons) {
+                        if (Number(poseId) === openedPoseId) continue;
+                        const icon = document.querySelector('.p-image[data-pose-id="' + poseId + '"]');
+                        if (icon) {
+                            icon.click();
+                            return;
+                        }
+                    }
+                    
+                    clearTimeout(saveTimeout);
+                    saveFunc(openedPoseId, openedCharacterId);
+                    editCard.classList.add('hil-hide');
+                    setCustomIconCharacters(editorCache.storageCache.characters);
+                }
             });
 
             async function drawIcon(canvas, poseId) {
@@ -2420,7 +2424,6 @@ function onLoad(options) {
                         }
                         storage.characters[pose.characterId] = characterData;
                     }
-                    window.postMessage(['set_custom_icon_characters', Object.keys(storage.characters)]);
 
                     if (openedCharacterId !== pose.characterId) {
                         for (let child of frameDiv.querySelectorAll(':scope > :not(i)')) {
@@ -2447,9 +2450,6 @@ function onLoad(options) {
                         }
                         characterData.icons[pose.id] = iconData;
                     }
-                    if (!(pose.id in editorCache)) editorCache[pose.id] = {};
-                    editorCache[pose.id].data = iconData;
-                    editorCache.storageCache = storage;
 
                     for (let [ layerParent, layerType ] of [[overlayDiv, 'overlays'], [underlayDiv, 'underlays']]) {
                         for (let layerDiv of layerParent.children) {
@@ -2470,14 +2470,14 @@ function onLoad(options) {
                     Promise.allSettled(promises).then(function(images) {
                         if (loadingPoseId !== pose.id) return;
 
-                        editorCache[pose.id].preFrames = [];
-                        editorCache[pose.id].idleFrames = [];
-                        editorCache[pose.id].talkFrames = [];
+                        const preFrames = [];
+                        const idleFrames = [];
+                        const talkFrames = [];
                         let lastError;
                         for (let i = 0; i < images.length; i++) {
-                            let frameList = editorCache[pose.id].preFrames;
-                            if (i === 0) frameList = editorCache[pose.id].idleFrames;
-                            else if (i === 1) frameList = editorCache[pose.id].talkFrames;
+                            let frameList = preFrames;
+                            if (i === 0) frameList = idleFrames;
+                            else if (i === 1) frameList = talkFrames;
 
                             const image = images[i].value;
                             if (image) {
@@ -2489,7 +2489,7 @@ function onLoad(options) {
                             }
                         }
 
-                        if (editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length + editorCache[pose.id].talkFrames.length === 0) {
+                        if (preFrames.length + idleFrames.length + talkFrames.length === 0) {
                             poseLoadIcon.classList.add('hil-hide');
                             let errorText = 'Pose image URLs did not work';
                             errorMessage.querySelector('span').innerText = errorText;
@@ -2497,10 +2497,18 @@ function onLoad(options) {
                             return;
                         }
 
+                        if (!(pose.id in editorCache)) editorCache[pose.id] = {};
+                        editorCache[pose.id].data = iconData;
+                        editorCache.storageCache = storage;
+                        setCustomIconCharacters(storage.characters);
+                        
                         openedPoseId = pose.id;
                         openedCharacterId = pose.characterId;
                         openedCharacter = pose.character;
                         frameDiv.querySelector('canvas[data-frame-id="' + iconData.frame + '"]')?.click();
+                        editorCache[pose.id].preFrames = preFrames;
+                        editorCache[pose.id].idleFrames = idleFrames;
+                        editorCache[pose.id].talkFrames = talkFrames;
 
                         editorCache[pose.id].frameMax = editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length + editorCache[pose.id].talkFrames.length;
                         editorCache[pose.id].allFrames = editorCache[pose.id].preFrames.concat(editorCache[pose.id].idleFrames).concat(editorCache[pose.id].talkFrames);
