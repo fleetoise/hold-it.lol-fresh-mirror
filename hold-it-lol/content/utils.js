@@ -170,6 +170,12 @@ hilUtils.sliderListener = function(event, sliderContainer, min, max, callback) {
     }, { once: true });
 }
 
+hilUtils.wait = function(duration = 0) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, duration);
+    });
+}
+
 hilUtils.transparentGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
 window.postMessage(['loaded_utils']);

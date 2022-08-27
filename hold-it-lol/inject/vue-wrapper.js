@@ -1,6 +1,6 @@
 "use strict";
 
-const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement } = hilUtils;
+const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait } = hilUtils;
 
 function main() {
 
@@ -283,7 +283,7 @@ function main() {
 
 
     window.postMessage(['wrapper_loaded']);
-    window.addEventListener('message', function (event) {
+    window.addEventListener('message', async function (event) {
         const [action, data] = event.data;
         if (action === 'set_options') {
             socketStates.options = data;
@@ -339,30 +339,42 @@ function main() {
             document.querySelector('.hil-icon-export-card').classList.add('hil-hide');
         } else if (action === 'set_pose_icon_url_list') {
             characterListInstance.showAssets();
-            setTimeout(function() {
-                const component = app.__vue__.$children.find(function(component) {
-                    const tag = component.$vnode.tag;
-                    const name = tag.slice(tag.lastIndexOf('-'));
-                    return name === '-assetsManager';
+            await wait();
+            const component = app.__vue__.$children.find(function(component) {
+                const tag = component.$vnode.tag;
+                const name = tag.slice(tag.lastIndexOf('-'));
+                return name === '-assetsManager';
+            });
+            if (component) {
+                let char = characterInstance.currentCharacter;
+                component.selectCharacter(char.id);
+                component.$refs.characterPreviewer.manageCharacter();
+                await new Promise(function(resolve) {
+                    new MutationObserver(function(mutationRecord, observer) {
+                        for (let mutation of mutationRecord) {
+                            for (let elem of mutation.target.querySelectorAll('.v-window-item')) {
+                                const toolbar = elem.parentElement.parentElement.parentElement.querySelector('.v-toolbar__title');
+                                if (!toolbar) continue;
+                                const label = toolbar.textContent;
+                                const index = Array.from(elem.parentElement.childNodes).indexOf(elem);
+                                if (label === 'Manage Character') {
+                                    observer.disconnect();
+                                    resolve();
+                                }
+                            }
+                        }
+                    }).observe(app, {
+                        childList: true,
+                        subtree: true,
+                    });
                 });
-                if (component) {
-                    let char = characterInstance.currentCharacter;
-                    if (char.poses[0].iconUrl === hilUtils.transparentGif) {
-                        char = JSON.parse(JSON.stringify(char));
-                        char.poses[0].iconUrl = '';
-                    }
-                    component.setManageCharacter(char);
-                    setTimeout(function() {
-                        const tabs = document.querySelectorAll('.v-slide-group__content.v-tabs-bar__content .v-tab');
-                        Array.from(tabs).find(tab => tab.textContent === 'Poses').click();
-                        setTimeout(function() {
-                            const textArea = document.querySelector('textarea.hil-pose-icon-import');
-                            textArea.value = data;
-                            textArea.parentElement.classList.remove('d-none');
-                        }, 0);
-                    }, 0);
-                }
-            }, 0);
+                const tabs = document.querySelectorAll('.v-slide-group__content.v-tabs-bar__content .v-tab');
+                Array.from(tabs).find(tab => tab.textContent === 'Poses').click();
+                await wait();
+                const textArea = document.querySelector('textarea.hil-pose-icon-import');
+                textArea.value = data;
+                textArea.parentElement.classList.remove('d-none');
+            }
         } else if (action === 'warn_unexported_icons') {
             socketStates['lastShareContent'].textContent += '(Warning: Has un-exported custom icons)';
         }
@@ -907,6 +919,8 @@ function main() {
                                 'mb-4',
                                 'height:22.25px!important;width:100%;'
                             ));
+
+                            window.postMessage(['icon_importer_loaded']);
                         }
                     }
                 }
