@@ -98,6 +98,8 @@ div.hil-tab-content {
 
 div.hil-tab-row-now-playing {
     justify-content: right;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 div.hil-tab-row-now-playing span {
