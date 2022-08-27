@@ -66,13 +66,6 @@ function insertTag(tag) {
     textArea.focus();
 }
 
-// function updateSelectionState() {
-//     currentSelectionState.baseNodeDiv = sel.baseNode && (sel.baseNode.nodeType == 1 ? sel.baseNode : sel.baseNode.parentElement);
-//     currentSelectionState.baseOffset = sel.baseOffset;
-//     currentSelectionState.extentNodeDiv = sel.extentNode && (sel.extentNode.nodeType == 1 ? sel.extentNode : sel.extentNode.parentElement);
-//     currentSelectionState.extentOffset = sel.extentOffset;
-// }
-
 function optionSet(key, value) {
     options[key] = value;
     chrome.storage.local.get({ 'options': {} }, function (result) {
@@ -679,9 +672,6 @@ function onLoad(options) {
             description.style.whiteSpace = 'nowrap';
             tnRow.appendChild(description);
 
-            // const patternInputs = document.createElement('div');
-            // patternInputs.style.display = 'flex';
-            // tnRow.appendChild(patternInputs);
             function addPatternInput(value = '') {
                 const input = document.createElement('input');
                 input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-tn-pattern hil-themed-text ' + theme;
@@ -2084,15 +2074,12 @@ function onLoad(options) {
                 }
                 editorCache[openedPoseId].data.animTimestamp = animTimestamp;
 
-                const img = new Image();
-                img.onload = function() {
-                    editorCache[currentId].selectedImage = img;
-                    for (let canvas of frameDiv.querySelectorAll('canvas')) {
-                        updateFrameCanvas(editorCache[currentId].selectedImage, canvas);
-                    }
-                    drawIcon(iconCanvas, currentId);
+                editorCache[currentId].selectedImage = editorCache[currentId].allFrames[frameTimestamp - 1];
+                for (let canvas of frameDiv.querySelectorAll('canvas')) {
+                    updateFrameCanvas(editorCache[currentId].selectedImage, canvas);
                 }
-                img.src = editorCache[currentId].allFrames[frameTimestamp - 1];
+                drawIcon(iconCanvas, currentId);
+
                 setTimeoutSave();
             }
             slider.addEventListener('mousedown', function (event) {
@@ -2298,24 +2285,28 @@ function onLoad(options) {
             }
 
             const imageCache = {};
-            async function fetchImage(url) {
+            async function fetchImageFrames(url) {
                 if (!url) {
                     return 'error-url';
                 } else if (url in imageCache) {
                     return imageCache[url];
                 } else {
-                    let result = await chrome.runtime.sendMessage(["fetch-image", url]);
-                    if (result.slice(0, 6) !== 'error-') {
-                        const img = new Image();
-                        await new Promise(function(resolve) {
-                            img.onload = resolve;
-                            img.onerror = function() {
-                                result = 'error-load';
-                                resolve();
-                            }
-                            img.src = result;
-                        });
+                    const array = await chrome.runtime.sendMessage(["fetch-image", url]);
+                    let result = array;
+                    if (result.constructor !== String) {
+                        const arrayBuffer = new Uint8Array(array).buffer;
+                        const type = url.slice(url.lastIndexOf('.') + 1);
+                        
+                        result = [];
+                        const imageDecoder = new ImageDecoder({data: arrayBuffer, type: "image/" + type});
+                        await imageDecoder.tracks.ready;
+                        if (imageDecoder.tracks.length !== 1) console.log('imageDecoder.tracks.length = ' + imageDecoder.tracks.length);
+                        for (let i = 0; i < imageDecoder.tracks[0].frameCount; i++) {
+                            const decoded = await imageDecoder.decode({frameIndex: i});
+                            result.push(decoded.image);
+                        }
                     }
+
                     imageCache[url] = result;
                     return result;
                 }
@@ -2462,31 +2453,35 @@ function onLoad(options) {
                         }
                     }
 
-                    const promises = [fetchImage(pose.idleImageUrl), fetchImage(pose.speakImageUrl)];
+                    const promises = [fetchImageFrames(pose.idleImageUrl), fetchImageFrames(pose.speakImageUrl)];
                     for (let state of pose.states) {
                         promises.push(
-                            fetchImage(state.imageUrl)
+                            fetchImageFrames(state.imageUrl)
                         );
                     }
-                    Promise.allSettled(promises).then(function(images) {
+                    Promise.allSettled(promises).then(function(frameLists) {
                         if (loadingPoseId !== pose.id) return;
 
                         const preFrames = [];
                         const idleFrames = [];
                         const talkFrames = [];
                         let lastError;
-                        for (let i = 0; i < images.length; i++) {
+                        for (let i = 0; i < frameLists.length; i++) {
                             let frameList = preFrames;
                             if (i === 0) frameList = idleFrames;
                             else if (i === 1) frameList = talkFrames;
 
-                            const image = images[i].value;
-                            if (image) {
-                                if (image.slice(0, 6) === 'error-') {
-                                    lastError = image;
+                            const frames = frameLists[i].value;
+                            if (frames) {
+                                if (frames.constructor === String && frames.slice(0, 6) === 'error-') {
+                                    lastError = frames;
                                     continue;
                                 }
-                                frameList.push(image);
+                                frames.forEach(frame => {
+                                    frame.naturalWidth = frame.codedWidth;
+                                    frame.naturalHeight = frame.codedHeight;
+                                });
+                                frameList.push(...frames);
                             }
                         }
 
