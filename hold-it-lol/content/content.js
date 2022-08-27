@@ -93,6 +93,7 @@ function onLoad(options) {
 
     const app = document.getElementById('app');
     textArea = document.querySelector('.frameTextarea');
+    textArea.classList.add('hil-loaded');
     const textValue = text => setValue(textArea, text);
     const textButton = textArea.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.v-btn--has-bg.primary');
     const chatBox = document.querySelector('.chat');
@@ -2801,7 +2802,7 @@ chrome.runtime.onMessage.addListener(function(event) {
 });
 
 function tryMain() {
-    if (document.querySelector('.frameTextarea')) {
+    if (document.querySelector('.frameTextarea:not(.hil-loaded)')) {
         optionsLoaded.then(function(options) {
             onLoad(options);
         });
