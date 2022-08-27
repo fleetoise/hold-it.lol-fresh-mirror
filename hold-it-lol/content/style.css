@@ -494,6 +494,10 @@ th {
     line-height: 1.5;
 }
 
+.hil-pose-edit-card>div>.v-messages {
+    margin: 8px 16px;
+}
+
 .hil-pose-edit-card .hil-icon-frames canvas {
     height: 100%;
 }

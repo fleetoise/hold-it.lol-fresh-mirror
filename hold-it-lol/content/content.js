@@ -2555,7 +2555,7 @@ function onLoad(options) {
                             <input class="mt-4 hil-row-textbox v-size--default v-sheet--outlined hil-themed hil-themed-text ${getTheme()}" placeholder="Paste URL here...">
                             <div class="v-messages v-messages__message hil-themed ${getTheme()}">Open the settings of your hosting channel > Integrations > Webhooks > New Webhook > Copy Webhook URL</div>
                         </div>
-                        <div class="my-4 hil-hide-on-load hil-icon-export-buttons"></div>
+                        <div class="my-4 hil-hide-on-load hil-edit-button-row hil-icon-export-buttons"></div>
                         <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
                                 <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
