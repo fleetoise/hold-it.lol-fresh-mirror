@@ -482,26 +482,9 @@ th {
     width: 100%;
 }
 
-.hil-pose-edit-card .hil-slider-divider {
-    width: 1.5%;
-    transform: translateX(-50%);
-}
-
-.hil-pose-edit-card.theme--dark .hil-slider-divider {
-    background: var(--color-d-bg-secondary) !important;
-}
-
-.hil-pose-edit-card.theme--light .hil-slider-divider {
-    background: var(--color-l-bg-secondary) !important;
-}
-
 .hil-pose-edit-card .hil-swiper-container {
     height: 48px;
     margin-bottom: 20px;
-}
-
-.hil-pose-edit-card>div>div.v-messages {
-    margin: 0 16px 8px 16px;
 }
 
 .hil-pose-edit-card .v-messages {
@@ -557,13 +540,13 @@ th {
     outline: 2px solid #7f3f45;
 }
 
-.hil-pose-edit-card .hil-icon-export-buttons {
+.hil-pose-edit-card .hil-edit-button-row {
     display: flex;
     height: 2rem;
     gap: 4px;
 }
 
-.hil-pose-edit-card .hil-icon-export-buttons button {
+.hil-pose-edit-card .hil-edit-button-row button {
     flex: auto;
 }
 

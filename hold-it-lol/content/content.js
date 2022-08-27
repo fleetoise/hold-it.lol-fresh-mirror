@@ -1619,7 +1619,7 @@ function onLoad(options) {
     if (options['pose-icon-maker']) {
         const AnimType = {
             IDLE: 0,
-            SPEAK: 1,
+            TALK: 1,
             PRE: 2,
         };
         const CharacterAlignment = {
@@ -1707,7 +1707,7 @@ function onLoad(options) {
                             </div>
                         </div>
                     </div>
-                    <div class="v-messages v-messages__message hil-hide hil-hide-on-load hil-themed ${getTheme()}">Idle animation</div>
+                    <div class="mb-2 hil-edit-button-row hil-animation-buttons hil-hide-on-load" style="height: 1.5rem"></div>
                     <hr class="v-divider hil-themed ${getTheme()}">
                     <div class="hil-edit-columns hil-hide-on-load d-flex hil-hide">
                         <div style="width: 100%; overflow: hidden;">
@@ -1743,7 +1743,7 @@ function onLoad(options) {
                             </div>
                         </div>
                     </div>
-                    <div class="mb-4 hil-icon-export-buttons hil-hide-on-load"></div>
+                    <div class="mb-4 hil-edit-button-row hil-icon-export-buttons hil-hide-on-load"></div>
                     <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
                             <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
@@ -1797,12 +1797,11 @@ function onLoad(options) {
 
             const poseNameDiv = editCard.querySelector('.hil-pose-title');
             const slider = editCard.querySelector('.v-slider');
-            const editColumns = editCard.querySelector('.hil-edit-columns');
+            const animationButtons = editCard.querySelector('.hil-animation-buttons');
             const frameDiv = editCard.querySelector('.hil-icon-frames');
             const overlayDiv = editCard.querySelector('.hil-icon-overlays');
             const underlayDiv = editCard.querySelector('.hil-icon-underlays');
             const exportButtons = editCard.querySelector('.hil-icon-export-buttons');
-            const messageAnim = editCard.querySelector(':scope > div > .v-messages');
             const messageFrameUses = editCard.querySelector('.hil-edit-columns .v-messages');
             const helpLines = editCard.querySelector('.hil-canvas-column > :nth-child(2)');
             const poseLoadIcon = editCard.querySelector('.v-progress-circular');
@@ -2056,25 +2055,21 @@ function onLoad(options) {
                 ctx.strokeRect(frameLeft - ctx.lineWidth * 0.5, frameTop - ctx.lineWidth * 0.5, frameHeight + ctx.lineWidth, frameHeight + ctx.lineWidth);
             }
 
-            function onSliderSet(frameTimestamp) {
-                const currentId = openedPoseId;
-                let animTimestamp = frameTimestamp;
-                if (frameTimestamp <= editorCache[openedPoseId].preFrames.length) {
-                    messageAnim.innerHTML = '<b>Pre</b> animation';
-                    editorCache[openedPoseId].data.animType = AnimType.PRE;
-                } else if (frameTimestamp <= editorCache[openedPoseId].preFrames.length + editorCache[openedPoseId].idleFrames.length) {
-                    messageAnim.innerHTML = '<b>Idle</b> animation';
-                    editorCache[openedPoseId].data.animType = AnimType.IDLE;
-                    animTimestamp -= editorCache[openedPoseId].preFrames.length;
-                } else {
-                    messageAnim.innerHTML = '<b>Talking</b> animation';
-                    editorCache[openedPoseId].data.animType = AnimType.SPEAK;
-                    animTimestamp -= editorCache[openedPoseId].preFrames.length;
-                    animTimestamp -= editorCache[openedPoseId].idleFrames.length;
-                }
-                editorCache[openedPoseId].data.animTimestamp = animTimestamp;
+            function getSelectedFrameList(poseId) {
+                let frameList = editorCache[poseId].idleFrames;
+                if (editorCache[poseId].data.animType === AnimType.PRE) frameList = editorCache[poseId].preFrames;
+                if (editorCache[poseId].data.animType === AnimType.TALK) frameList = editorCache[poseId].talkFrames;
+                return frameList;
+            }
 
-                editorCache[currentId].selectedImage = editorCache[currentId].allFrames[frameTimestamp - 1];
+            function onSliderSet(animTimestamp) {
+                const currentId = openedPoseId;
+                editorCache[openedPoseId].data.animTimestamp = animTimestamp;
+                const frameList = getSelectedFrameList(currentId);
+
+                let frame = animTimestamp - 1;
+                if (frame > frameList.length - 1) frame = frameList.length - 1;
+                editorCache[currentId].selectedImage = frameList[frame];
                 for (let canvas of frameDiv.querySelectorAll('canvas')) {
                     updateFrameCanvas(editorCache[currentId].selectedImage, canvas);
                 }
@@ -2083,13 +2078,23 @@ function onLoad(options) {
                 setTimeoutSave();
             }
             slider.addEventListener('mousedown', function (event) {
-                if (editorCache[openedPoseId].frameMax) sliderListener(event, slider.parentElement, 1, editorCache[openedPoseId].frameMax, onSliderSet);
+                if (openedPoseId) sliderListener(event, slider.parentElement, 1, getSelectedFrameList(openedPoseId).length, onSliderSet);
             });
-
-            function addDivider(leftPercent) {
-                const divider = htmlToElement(`<div class="v-slider__track-fill hil-slider-divider" style="left: ${leftPercent}%;"></div>`);
-                slider.querySelector('.v-slider__track-container').appendChild(divider);
-                return divider;
+            
+            for (let [ type, text ] of [ [AnimType.PRE, 'Pre'], [AnimType.IDLE, 'Idle'], [AnimType.TALK, 'Talking'] ]) {
+                const button = createButton(
+                    function() {
+                        editorCache[openedPoseId].data.animType = type;
+                        animationButtons.querySelector('.primary')?.classList.remove('primary');
+                        button.classList.add('primary');
+                        
+                        setSlider(slider, editorCache[openedPoseId].data.animTimestamp, 1, getSelectedFrameList(openedPoseId).length);
+                        onSliderSet(editorCache[openedPoseId].data.animTimestamp);
+                    },
+                    text,
+                    'v-size--small'
+                );
+                animationButtons.appendChild(button);
             }
 
             function addFrame(frameId) {
@@ -2513,21 +2518,12 @@ function onLoad(options) {
                         editorCache[pose.id].idleFrames = idleFrames;
                         editorCache[pose.id].talkFrames = talkFrames;
 
-                        editorCache[pose.id].frameMax = editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length + editorCache[pose.id].talkFrames.length;
-                        editorCache[pose.id].allFrames = editorCache[pose.id].preFrames.concat(editorCache[pose.id].idleFrames).concat(editorCache[pose.id].talkFrames);
-                        let frameTimestamp = iconData.animTimestamp;
-                        if (iconData.animType === AnimType.IDLE) frameTimestamp += editorCache[pose.id].preFrames.length;
-                        if (iconData.animType === AnimType.SPEAK) frameTimestamp += editorCache[pose.id].idleFrames.length;
-                        setSlider(slider, frameTimestamp, 1, editorCache[pose.id].frameMax);
-                        onSliderSet(frameTimestamp);
-
-                        slider.querySelectorAll('.hil-slider-divider').forEach(elem => elem.remove());
-                        if (editorCache[pose.id].preFrames.length > 0) {
-                            addDivider(editorCache[pose.id].preFrames.length / editorCache[pose.id].frameMax * 100);
-                        }
-                        if (editorCache[pose.id].talkFrames.length > 0) {
-                            addDivider((editorCache[pose.id].preFrames.length + editorCache[pose.id].idleFrames.length) / editorCache[pose.id].frameMax * 100);
-                        }
+                        animationButtons.children[0].classList.toggle('d-none', preFrames.length === 0);
+                        animationButtons.children[1].classList.toggle('d-none', idleFrames.length === 0);
+                        animationButtons.children[2].classList.toggle('d-none', talkFrames.length === 0);
+                        if (iconData.animType === AnimType.PRE) animationButtons.children[0].click();
+                        else if (iconData.animType === AnimType.IDLE) animationButtons.children[1].click();
+                        else if (iconData.animType === AnimType.TALK) animationButtons.children[2].click();
 
                         poseLoadIcon.classList.add('hil-hide');
                         errorMessage.classList.add('hil-hide');
