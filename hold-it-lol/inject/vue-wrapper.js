@@ -32,6 +32,13 @@ function main() {
     const frameInstance = courtContainer.parentElement.parentElement.__vue__;
     const chatInstance = document.querySelector('.chat').parentElement.__vue__;
     const getLastTabInstance = () => document.querySelector('.v-window.v-item-group.v-tabs-items').firstElementChild.lastElementChild.firstElementChild.__vue__;
+    function getAssetManagerInstance() {
+        return app.__vue__.$children.find(function(component) {
+            const tag = component.$vnode.tag;
+            const name = tag.slice(tag.lastIndexOf('-'));
+            return name === '-assetsManager';
+        });
+    }
     let muteInputInstance;
     for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
         if (label.textContent !== 'Muted Users') continue;
@@ -340,11 +347,7 @@ function main() {
         } else if (action === 'set_pose_icon_url_list') {
             characterListInstance.showAssets();
             await wait();
-            const component = app.__vue__.$children.find(function(component) {
-                const tag = component.$vnode.tag;
-                const name = tag.slice(tag.lastIndexOf('-'));
-                return name === '-assetsManager';
-            });
+            const component = getAssetManagerInstance();
             if (component) {
                 let char = characterInstance.currentCharacter;
                 component.selectCharacter(char.id);
@@ -373,7 +376,8 @@ function main() {
                 await wait();
                 const textArea = document.querySelector('textarea.hil-pose-icon-import');
                 textArea.value = data;
-                textArea.parentElement.classList.remove('d-none');
+                const button = document.querySelector('button.hil-pose-icon-import');
+                button.click();
             }
         } else if (action === 'warn_unexported_icons') {
             socketStates['lastShareContent'].textContent += '(Warning: Has un-exported custom icons)';
@@ -758,6 +762,38 @@ function main() {
             })
         }
 
+        let resolvedCharacters = {};
+        function resolveCharacter(characterId) {
+            return new Promise(function(resolve) {
+                if (characterId in resolvedCharacters) {
+                    resolve(resolvedCharacters[characterId]);
+                    return;
+                }
+                
+                const character = frameInstance.customCharacters[characterId];
+                if (character) {
+                    for (let pose of character.poses) {
+                        if (pose.states.length === 0) continue;
+                        resolvedCharacters[characterId] = character;
+                        resolve(character);
+                        return;
+                    }
+                }
+                    
+                fetch('https://api.objection.lol/character/getcharacters', {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({
+                        ids: [characterId]
+                    })
+                })
+                .then(res => res.json())
+                .then(function([ character ]) {
+                    resolvedCharacters[characterId] = character;
+                    resolve(character);
+                });
+            });
+        }
         if (socketStates.options['pose-icon-maker']) {
             function checkIfIconsEditable() {
                 const editButton = document.querySelector('.hil-pose-edit-icon');
@@ -773,38 +809,9 @@ function main() {
             checkIfIconsEditable();
             characterInstance.$watch('currentCharacter', checkIfIconsEditable);
 
-            let resolvedCharacters = {};
             function onPoseSet() {
                 const characterId = characterInstance.currentCharacter.id;
-                const characterResolved = new Promise(function(resolve, reject) {
-                    if (characterId in resolvedCharacters) {
-                        resolve(resolvedCharacters[characterId]);
-                        return;
-                    }
-                    
-                    const character = frameInstance.customCharacters[characterId];
-                    if (character) {
-                        for (let pose of character.poses) {
-                            if (pose.states.length === 0) continue;
-                            resolvedCharacters[characterId] = character;
-                            resolve(character);
-                            return;
-                        }
-                    }
-                        
-                    fetch('https://api.objection.lol/character/getcharacters', {
-                        method: "POST",
-                        headers: {'Content-Type': 'application/json'}, 
-                        body: JSON.stringify({
-                            ids: [characterId]
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(function([ character ]) {
-                        resolvedCharacters[characterId] = character;
-                        resolve(character);
-                    });
-                });
+                const characterResolved = resolveCharacter(characterId);
 
                 characterResolved.then(function(character) {
                     if (character === undefined) return;
@@ -847,21 +854,37 @@ function main() {
                 childList: true,
                 subtree: true,
             });
+        }
+
+        if (socketStates.options['pose-icon-maker'] || socketStates.options['export-cc-images']) {
+            function simplifyPoseName(name) {
+                name = name.trim();
+                name = name.toLowerCase();
+                name = name.replaceAll(/[^a-zA-Z0-9_]/g, '_');
+                name = name.replaceAll(/\s+/g, '-');
+                return name;
+            }
+
+            function getFileNameFromURL(url) {
+                return url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+            }
 
             new MutationObserver(function(mutationRecord) {
                 for (let mutation of mutationRecord) {
-                    for (let node of mutation.addedNodes) {
-                        if (!(node.nodeType === 1 && node.nodeName === 'DIV' && node.matches('.v-alert'))) continue;
-                        if (!node.querySelector('.mdi-share-circle.success--text')) continue;
-                        const content = node.querySelector('.v-alert__content');
-                        socketStates['lastShareContent'] = content;
-                        
-                        let iconlessPoseIds = {};
-                        for (let pose of node.__vue__.$parent.selectedCharacter.poses) {
-                            if (!pose.iconUrl || pose.iconUrl === hilUtils.transparentGif) iconlessPoseIds[pose.id] = true;
+                    if (socketStates.options['pose-icon-maker']) {
+                        for (let node of mutation.addedNodes) {
+                            if (!(node.nodeType === 1 && node.nodeName === 'DIV' && node.matches('.v-alert'))) continue;
+                            if (!node.querySelector('.mdi-share-circle.success--text')) continue;
+                            const content = node.querySelector('.v-alert__content');
+                            socketStates['lastShareContent'] = content;
+                            
+                            let iconlessPoseIds = {};
+                            for (let pose of node.__vue__.$parent.selectedCharacter.poses) {
+                                if (!pose.iconUrl || pose.iconUrl === hilUtils.transparentGif) iconlessPoseIds[pose.id] = true;
+                            }
+                            window.postMessage(['check_iconless_pose_ids', iconlessPoseIds]);
+                            break;
                         }
-                        window.postMessage(['check_iconless_pose_ids', iconlessPoseIds]);
-                        break;
                     }
                     for (let elem of mutation.target.querySelectorAll('.v-window-item:not([data-hil-processed])')) {
                         elem.dataset.hilProcessed = '1';
@@ -871,56 +894,201 @@ function main() {
                         const index = Array.from(elem.parentElement.childNodes).indexOf(elem);
                         if (label === 'Manage Character' && index === 1) {
                             const col = elem.querySelector('.col');
+                            const buttonRow = htmlToElement(/*html*/`
+                                <div class="d-flex" style="gap: 4px"></div>
+                            `);
     
-                            const importDiv = htmlToElement(/*html*/`
-                                <div class="mb-4 d-none" style="transition:var(--default-transition)">
-                                    <textarea class="hil-pose-icon-import" placeholder="Paste your list of pose icons here, one URL per line." style="width: 100%;height: 150px;resize: none;padding: 5px 5px 1px;color: #fff;border: thin solid rgba(255, 255, 255, 0.12);border-radius: 0px !important;white-space: nowrap;"></textarea>
+                            for (let [ condition, className, openText, importText, textareaPlaceholder, descriptionMessage, importCallback ] of [
+                                [
+                                    socketStates.options['pose-icon-maker'],
+                                    "hil-pose-icon-import",
+                                    "Pose icon importing",
+                                    "Import icons",
+                                    "Paste your list of pose icons here, one URL per line.",
+                                    "If you exported some icons from the pose icon maker, paste a list of the image file URLs here to add them to the character. Make sure the names are unchanged from how they were exported.",
+                                    function(urls) {
+                                        const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
+                                        const char = manageCharacterInstance.editingCharacter;
+                                        if (!char) return;
+                                        for (let pose of char.poses) {
+                                            if (pose.iconUrl) continue;
+                                            pose.iconUrl = urls[pose.id];
+                                            const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
+                                            edit(pose);
+                                        }
+                                        manageCharacterInstance.goBack();
+                                    }
+                                ],
+                                [
+                                    socketStates.options['export-cc-images'],
+                                    "hil-pose-image-import",
+                                    "Backup pose image importing",
+                                    "Import archived pose images",
+                                    "Paste your list of pose images, one URL per line.",
+                                    "If you archived the character's images, paste a list of the image file URLs here to replace the character's current images. Make sure the archived names are unchanged from how they were saved.",
+                                    function(urls) {
+                                        const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
+                                        const char = manageCharacterInstance.editingCharacter;
+                                        if (!char) return;
+                                        for (let fileName in urls) {
+                                            const url = urls[fileName];
+                                            const dash1 = fileName.indexOf('-');
+                                            const dash2 = fileName.lastIndexOf('-');
+                                            const id = fileName.slice(0, dash1);
+                                            const name = fileName.slice(dash1 + 1, dash2);
+                                            const type = fileName.slice(dash2 + 1);
+
+                                            let pose = char.poses.find(pose => pose.id == id);
+                                            if (!pose) {
+                                                pose = char.poses.find(pose => simplifyPoseName(pose.name) == name);
+                                            };
+                                            if (!pose) continue;
+                                            
+                                            if (type === 'a') {
+                                                pose.idleImageUrl = url;
+                                            } else if (type === 'b') {
+                                                pose.speakImageUrl = url;
+                                            } else if (parseInt(type) !== NaN && pose.states[parseInt(type)]) {
+                                                pose.states[parseInt(type)].imageUrl = url;
+                                            }
+                                        }
+                                        for (let pose of char.poses) {
+                                            const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
+                                            edit(pose);
+                                        }
+                                        manageCharacterInstance.goBack();
+                                    },
+                                ],
+                            ]) {
+                                if (!condition) continue;
+                                const importDiv = htmlToElement(/*html*/`
+                                    <div class="mb-4 hil-import-div d-none" style="transition:var(--default-transition)">
+                                        <div class="v-messages v-messages__message mb-2 hil-themed ${getTheme()}" style="font-size: 16px; line-height: 24px">${descriptionMessage}</div>
+                                        <textarea class="${className}" placeholder="${textareaPlaceholder}" style="width: 100%;height: 150px;resize: none;padding: 5px 5px 1px;color: #fff;border: thin solid rgba(255, 255, 255, 0.12);border-radius: 0px !important;white-space: nowrap;"></textarea>
+                                    </div>
+                                `);
+                                const textArea = importDiv.querySelector('textarea');
+        
+                                importDiv.appendChild(hilUtils.createButton(
+                                    function() {
+                                        const urls = {};
+                                        for (let value of textArea.value.split('\n')) {
+                                            let url;
+                                            try {
+                                                url = new URL(value).href;
+                                            } catch {}
+                                            if (!url) continue;
+                                            const fileName = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+                                            urls[fileName] = url;
+                                        }
+                                        importCallback(urls);
+                                    },
+                                    importText,
+                                    'primary mb-2',
+                                    'width:100%'
+                                ));
+                                col.prepend(importDiv);
+        
+                                const button = hilUtils.createButton(
+                                    function() {
+                                        const toOpen = importDiv.classList.contains('d-none');
+                                        col.querySelectorAll('.hil-import-div').forEach(div => div.classList.add('d-none'));
+                                        col.querySelectorAll(':scope > :nth-child(1) > .primary').forEach(div => div.classList.remove('primary'));
+                                        if (toOpen) importDiv.classList.remove('d-none');
+                                        if (toOpen) button.classList.add('primary');
+                                    },
+                                    openText,
+                                    'mb-2 ' + className,
+                                    'height:22.25px!important;flex:1;'
+                                );
+                                buttonRow.appendChild(button);
+                            }
+
+                            col.prepend(buttonRow);
+                        } else if (socketStates.options['export-cc-images'] && label === 'My Assets' && index === 1) {
+                            const shareButton = elem.querySelector('.v-btn.info');
+                            
+                            const loadingBarContainer = htmlToElement(/*html*/`
+                                <div class="mt-2 hil-cc-loading-bar hil-disabled">
+                                    <div style="width: 0%;"></div>
+                                    <div class="d-none"></div>
                                 </div>
                             `);
-                            const textArea = importDiv.querySelector('textarea');
-    
-                            importDiv.appendChild(hilUtils.createButton(
-                                function() {
-                                    const urls = {};
-                                    for (let value of textArea.value.split('\n')) {
-                                        let url;
-                                        try {
-                                            url = new URL(value).href;
-                                        } catch {}
-                                        if (!url) continue;
-                                        const id = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-                                        urls[id] = url;
-                                    }
-                                    
-                                    const manageCharacterInstance = document.querySelector('#app > div.v-application--wrap > div.container.pa-0.pa-lg-2.container--fluid > div.v-dialog__container').__vue__.$parent;
-                                    const char = manageCharacterInstance.editingCharacter;
-                                    if (!char) return;
-                                    for (let pose of char.poses) {
-                                        if (pose.iconUrl) continue;
-                                        if (pose.iconUrl === hilUtils.transparentGif) continue;
-                                        pose.iconUrl = urls[pose.id];
-                                        const edit = app.__vue__.$store._actions['assets/character/editPose'][0];
-                                        edit(pose);
-                                    }
-                                    manageCharacterInstance.goBack();
-                                },
-                                'Import icon URLs',
-                                'primary mb-2',
-                                'width:100%'
-                            ));
-    
-                            col.prepend(importDiv);
-    
-                            col.prepend(hilUtils.createButton(
-                                function() {
-                                    importDiv.classList.toggle('d-none');
-                                },
-                                'Pose icon importing',
-                                'mb-4',
-                                'height:22.25px!important;width:100%;'
-                            ));
+                            shareButton.parentElement.parentElement.parentElement.appendChild(loadingBarContainer);
+                            const loadingBar = loadingBarContainer.children[0];
+                            const loadingScroll = loadingBarContainer.children[1];
 
-                            window.postMessage(['icon_importer_loaded']);
+                            function toggleLoadingUI(enabled) {
+                                button.classList.toggle('v-btn--disabled', enabled);
+                                loadingBarContainer.classList.toggle('hil-disabled', !enabled);
+                                loadingBar.style.width = '0';
+                                if (enabled) loadingScroll.classList.add('d-none');
+                            }
+
+                            const button = hilUtils.createButton(
+                                async function() {
+                                    toggleLoadingUI(true);
+                                    const assetManager = getAssetManagerInstance();
+                                    if (!assetManager) return;
+                                    const characterId = assetManager.$refs.characterPreviewer.selected;
+                                    const character = await resolveCharacter(characterId);
+
+                                    const fileUrls = [];
+                                    const addFile = (url, name) => fileUrls.push({url, name});
+                                    for (let pose of character.poses) {
+                                        const id = pose.id;
+                                        let name = id + '-' + simplifyPoseName(pose.name);
+                                        addFile(pose.idleImageUrl, 'poses/' + name + '-a');
+                                        if (pose.speakImageUrl) addFile(pose.speakImageUrl, 'poses/' + name + '-b');
+                                        for (let i = 0; i < pose.states.length; i++) {
+                                            const imageUrl = pose.states[i].imageUrl;
+                                            addFile(imageUrl, 'poses/' + name + '-' + i);
+                                        }
+                                        for (let sound of pose.audioTicks) {
+                                            if (sound.fileName) addFile(sound.fileName, 'sounds/' + getFileNameFromURL(sound.fileName));
+                                        }
+                                    }
+                                    for (let bubble of character.bubbles) {
+                                        const name = simplifyPoseName(bubble.name);
+                                        if (bubble.imageUrl) addFile(bubble.imageUrl, 'bubbles/' + name);
+                                        if (bubble.soundUrl) addFile(bubble.soundUrl, 'sounds/' + getFileNameFromURL(bubble.soundUrl));
+                                    }
+                                    for (let item of ['blip', 'galleryAJImage', 'galleryImage', 'icon']) {
+                                        const key = item + 'Url';
+                                        if (character[key]) addFile(character[key], item);
+                                    }
+
+                                    window.postMessage(['fetch_cc_files', fileUrls]);
+                                    const files = await new Promise(function(resolve) {
+                                        window.addEventListener('message', function listener(event) {
+                                            const [ action, data ] = event.data;
+                                            if (action === 'cc_files_fetched') resolve(data);
+                                        })
+                                    });
+                                    setTimeout(() => loadingScroll.classList.remove('d-none'), 500);
+
+                                    const zip = new JSZip();
+                                    for (let file of files) {
+                                        zip.file(file.name, file.array);
+                                    }
+
+                                    zip.generateAsync({type:"blob"}).then(function (blob) {
+                                        const a = document.createElement('a');
+                                        const url = window.URL.createObjectURL(blob);
+                                        a.href = url;
+                                        let name = character.name + '.zip';
+                                        name = name.replaceAll(/\s/g, ' ');
+                                        name = name.replaceAll(/[|~<>?/:*]/g, '');
+                                        a.download = name;
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                        toggleLoadingUI(false);
+                                    });
+                                },
+                                'Archive'
+                            )
+                            button.className = 'mt-2 ml-2 v-btn v-btn--has-bg v-size--small hil-cc-arhiver warning hil-themed ' + getTheme();
+                            shareButton.parentElement.appendChild(button);
                         }
                     }
                 }

@@ -2625,22 +2625,7 @@ function onLoad(options) {
 
                     if (methodDropdown.value === 'zip') {
                         exportCard.classList.add('hil-export-loading');
-                        function exportZip() {
-                            window.postMessage(['zip_pose_icons', Object.keys(poseIds)]);
-                        }
-
-                        if (!states.jsZipLoaded) {
-                            states.jsZipLoaded = true;
-                            injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
-                            window.addEventListener('message', function listener(event) {
-                                const [action] = event.data;
-                                if (action !== 'loaded_jszip') return;
-                                window.removeEventListener('message', listener);
-                                exportZip();
-                            });
-                        } else {
-                            exportZip();
-                        }
+                        window.postMessage(['zip_pose_icons', Object.keys(poseIds)]);
                     } else if (methodDropdown.value === 'discord') {
                         let url;
                         try {
@@ -2735,9 +2720,39 @@ function onLoad(options) {
             }
         });
     }
+
+    if (options['export-cc-images']) {
+        
+        window.addEventListener('message', async function(event) {
+            const [action, data] = event.data;
+            if (action !== 'fetch_cc_files') return;
+            const promises = [];
+            const files = [];
+            let filesProcessed = 0;
+            for (let file of data) {
+                promises.push(new Promise(async function(resolve) {
+                    const array = await chrome.runtime.sendMessage(["fetch-image", file.url]);
+                    const type = file.url.slice(file.url.lastIndexOf('.') + 1);
+                    let name = file.name + '.' + type;
+
+                    files.push({
+                        url: file.url,
+                        name,
+                        array,
+                    })
+                    filesProcessed += 1;
+                    if (document.querySelector('.hil-cc-loading-bar>div')) document.querySelector('.hil-cc-loading-bar>div').style.width = (filesProcessed / data.length) * 100 + '%';
+                    resolve();
+                }));
+            }
+            await Promise.allSettled(promises);
+            window.postMessage(['cc_files_fetched', files]);
+        });
+    }
     
 
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
+    if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
     if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         window.addEventListener('message', function listener(event) {

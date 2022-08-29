@@ -7,7 +7,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(e => {
 
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    const [ action, data ] = request;
+    let [ action, data ] = request;
     if (action === 'create-asset-context-menu') {
         function callback() {
             chrome.runtime.lastError;
@@ -35,6 +35,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         const { text, voiceName, pitch } = data;
         chrome.tts.speak(text, {voiceName, pitch});
     } else if (action === 'fetch-image') {
+        console.log(data);
+        if (data[0] === '/') data = 'https://objection.lol' + data;
+        console.log(data);
         try {
             fetch(data)
             .then(response => response.arrayBuffer())
