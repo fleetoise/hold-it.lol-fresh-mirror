@@ -60,7 +60,7 @@ const tabs = [
             //{key: 'dual-wield', title: 'Dual wield', description: 'Control two paired characters at the same time.', preview: 'previews/placeholder.png'},
             { key: 'tts', title: 'Text-to-speech', description: 'Plays messages using wacky text-to-speech voices.', preview: 'previews/placeholder.png' },
             { key: 'pose-icon-maker', title: 'Pose icons for all characters', description: 'Add pose icons to characters that lack them using an in-courtroom editor.', preview: 'previews/placeholder.png' },
-            { key: 'export-cc-images', title: 'Custom character archiver', description: 'Download and preserve character images.', preview: 'previews/placeholder.png' },
+            { key: 'export-cc-images', title: 'Custom character archiver', description: 'Download and preserve character images. (Warning: downloads will lag your current courtroom page.)', preview: 'previews/placeholder.png' },
         ],
     },
     {
