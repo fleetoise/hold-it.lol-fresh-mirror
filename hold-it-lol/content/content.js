@@ -523,7 +523,7 @@ function onLoad(options) {
                 } else if (crossExam) {
                     text = text.replaceAll(/\[#.*?\]/g, '');
                     text = text.replaceAll('[/#]', '');
-                    text = continueSound + '[#/g]' + text + '[/#]';
+                    text = continueSound + '[#ts10][#/g]' + text + '[/#]';
                 }
                 if (!crossExam) {
                     text = '[##tm]' + text;
