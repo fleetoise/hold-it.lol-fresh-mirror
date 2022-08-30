@@ -14,7 +14,6 @@ const URL_REGEX = /((?:http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z
 
 const TAG_PAUSE_100 = '[#p100]';
 const TAG_MUSIC_FADE_OUT = '[#bgmfo]';
-const TAG_MUSIC_STOP = '[#bgms]';
 const STOP_MUSIC_TEXT = '[Stop Music]';
 const TEXT_EFFECT_DUAL_TITLE = 'Both Effects';
 const TEXT_EFFECT_DUAL_DESCRIPTION = 'Perform flash and shake at a certain point';
@@ -95,8 +94,6 @@ function onLoad(options) {
     const mainWrap = document.querySelector('.v-main__wrap');
     const row1 = mainWrap.firstElementChild.firstElementChild.firstElementChild;
     const row2 = mainWrap.firstElementChild.firstElementChild.lastElementChild;
-
-    let musicPlaying = false;
 
 
     const themeInput = (getLabel('Dark Mode') || getLabel('Light Mode')).parentElement.querySelector('input');
@@ -307,8 +304,6 @@ function onLoad(options) {
                 window.postMessage(['clear_testimony_poses']);
             }
             
-            let musicPlaying = false;
-            
             let auto = false;
             let red = false;
             let crossExam = false;
@@ -452,7 +447,11 @@ function onLoad(options) {
                 inputRow.appendChild(input);
                 return input;
             }
-            const musicInput = testimonyInput('hil-tm-music', 'Testimony music', () => musicPlaying = false);
+            const musicInput = testimonyInput('hil-tm-music', 'Testimony music', function() {
+                window.postMessage(['set_socket_state', {
+                    [ 'testimony-music' ]: inputToTag(musicInput.value, 'bgm')
+                }]);
+            });
             const selectInput = testimonyInput('hil-tm-select', 'Cross-exam click sound');
 
             function inputToTag(value, tagName) {
@@ -519,9 +518,8 @@ function onLoad(options) {
 
                 let text = statementText;
 
-                let preText;
                 if (red && (statement == 0 || statement == statements.length - 1)) {
-                    text = '[##nt][#/r]' + text + '[/#]';
+                    text = '[##nt][##ct][#/r]' + text + '[/#]';
                 } else if (crossExam) {
                     text = text.replaceAll(/\[#.*?\]/g, '');
                     text = text.replaceAll('[/#]', '');
@@ -534,17 +532,11 @@ function onLoad(options) {
                 if (!crossExam && statement == statements.length - 1) {
                     if (red) {
                         text = TAG_MUSIC_FADE_OUT + text;
-                        musicPlaying = false;
                     } else {
                         text = text + TAG_MUSIC_FADE_OUT;
-                        musicPlaying = false;
                     }
-                } else if (!musicPlaying && music && (!red || statement != 0)) {
-                    text = music + text;
-                    musicPlaying = true;
-                } else if (!crossExam && statement == 0 && music) {
-                    text = TAG_MUSIC_STOP + text;
-                    musicPlaying = false;
+                } else if (!crossExam && red && statement == 0 && music) {
+                    text = '[#bgms]' + text;
                 }
 
                 if (statementCache[statementText] === undefined) {
@@ -633,7 +625,7 @@ function onLoad(options) {
             }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), { childList: true });
 
             states.testimonyArrow = function(arrow) {
-                if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
+                if (testimonyLocked && auto) {
                     if (arrow == '>') nextStatement();
                     else if (arrow == '<') prevStatement();
                 }
@@ -1328,10 +1320,6 @@ function onLoad(options) {
         const messageIcon = messageNode.querySelector('i');
         const messageTextDiv = messageNode.querySelector('.chat-text');
         const messageText = messageTextDiv.innerText;
-
-        if (musicPlaying && messageText.includes(STOP_MUSIC_TEXT)) {
-            musicPlaying = false;
-        }
 
         if (options['tts'] && states.ttsEnabled && states.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
             chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);

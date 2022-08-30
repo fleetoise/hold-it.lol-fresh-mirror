@@ -1175,6 +1175,10 @@ function main() {
         } else if (action === 'receive_message') {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
+            if (socketStates.options['testimony-mode'] && socketStates['testimony-music']) {
+                const matches = data.frame.text.match(/\[#bgm([0-9s]|fo|fi)*?\]/g);
+                if (matches && matches.find(match => match !== socketStates['testimony-music'])) socketStates['testimony-music-state'] = false;
+            }
             if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) {
                 const unwatch = frameInstance.$watch('frame', function (frame) {
                     if (!compareShallow(frame, data.frame, ['text', 'poseId', 'bubbleType', 'username', 'mergeNext', 'doNotTalk', 'goNext', 'poseAnimation', 'flipped', 'backgroundId', 'characterId', 'popupId'])) return;
@@ -1274,6 +1278,7 @@ function main() {
 
         if (action === 'message') {
             if (socketStates['no-talk'] || data.frame.text.includes('[##nt]')) data.frame.doNotTalk = true;
+            if (data.frame.text.includes('[##ct]')) data.frame.frameActions.push({ "actionId": 9 });
             if (data.frame.text.includes('[##tm]')) data.testimony = true;
             if (socketStates.options['smart-pre']) {
                 if (data.frame.poseAnimation) window.postMessage(['pre_animate_locked']);
@@ -1288,7 +1293,7 @@ function main() {
 
                     if (socketStates['prev-message'] !== undefined) {
                         const prevFrame = socketStates['prev-message'].frame;
-                        if (prevFrame.text.match(/\[#evd[0-9]*?\]/g) || prevFrame.characterId !== data.frame.characterId || (prevFrame.pairId === data.frame.pairId && data.frame.pairId !== null)) return;
+                        if (prevFrame.text.match(/\[#evd[0-9]+?\]/g) || prevFrame.characterId !== data.frame.characterId || (prevFrame.pairId === data.frame.pairId && data.frame.pairId !== null)) return;
                     }
 
                     const patterns = socketStates.options['smart-tn-patterns'] || ['TN'];
@@ -1323,6 +1328,11 @@ function main() {
                 const match = /\[##tmid([0-9]+?)\]/g.exec(data.frame.text);
                 if (match === null) return;
                 const statementId = parseInt(match[1]);
+                
+                if (!socketStates['testimony-music-state'] && socketStates['testimony-music'] && !data.frame.text.includes('[##nt]')) {
+                    data.frame.text = socketStates['testimony-music'] + data.frame.text;
+                    socketStates['testimony-music-state'] = true;
+                }
 
                 if (socketStates.testimonyPoses[statementId]) {
                     data.frame.poseId = socketStates.testimonyPoses[statementId];
