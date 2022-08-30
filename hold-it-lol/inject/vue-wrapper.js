@@ -1040,6 +1040,7 @@ function main() {
                                         let name = id + '-' + simplifyPoseName(pose.name);
                                         addFile(pose.idleImageUrl, 'poses/' + name + '-a');
                                         if (pose.speakImageUrl) addFile(pose.speakImageUrl, 'poses/' + name + '-b');
+                                        if (pose.iconUrl) addFile(pose.iconUrl, 'icons/' + name);
                                         for (let i = 0; i < pose.states.length; i++) {
                                             const imageUrl = pose.states[i].imageUrl;
                                             addFile(imageUrl, 'poses/' + name + '-' + i);
