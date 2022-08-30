@@ -2290,11 +2290,12 @@ function onLoad(options) {
             }
 
             const imageCache = {};
-            async function fetchImageFrames(url) {
+            const imageCacheIds = [];
+            async function fetchImageFrames(url, characterId) {
                 if (!url) {
                     return 'error-url';
-                } else if (url in imageCache) {
-                    return imageCache[url];
+                } else if (characterId in imageCache && url in imageCache[characterId]) {
+                    return imageCache[characterId][url];
                 } else {
                     const array = await chrome.runtime.sendMessage(["fetch-image", url]);
                     let result = array;
@@ -2312,7 +2313,15 @@ function onLoad(options) {
                         }
                     }
 
-                    imageCache[url] = result;
+                    if (!(characterId in imageCache)) {
+                        imageCache[characterId] = {};
+                        imageCacheIds.push(characterId);
+                        if (imageCacheIds.length > 4) {
+                            const id = imageCacheIds.shift();
+                            delete imageCache[id];
+                        }
+                    }
+                    imageCache[characterId][url] = result;
                     return result;
                 }
             }
@@ -2335,7 +2344,7 @@ function onLoad(options) {
                     saveFunc(openedPoseId, openedCharacterId);
                 }
 
-                if (pose.iconUrl) {
+                if (pose.iconUrl && pose.iconUrl !== hilUtils.transparentGif) {
                     poseLoadIcon.classList.add('hil-hide');
                     errorMessage.querySelector('span').innerText = 'Pose already includes icon';
                     errorMessage.classList.remove('hil-hide');
@@ -2458,10 +2467,10 @@ function onLoad(options) {
                         }
                     }
 
-                    const promises = [fetchImageFrames(pose.idleImageUrl), fetchImageFrames(pose.speakImageUrl)];
+                    const promises = [fetchImageFrames(pose.idleImageUrl, pose.characterId), fetchImageFrames(pose.speakImageUrl, pose.characterId)];
                     for (let state of pose.states) {
                         promises.push(
-                            fetchImageFrames(state.imageUrl)
+                            fetchImageFrames(state.imageUrl, pose.characterId)
                         );
                     }
                     Promise.allSettled(promises).then(function(frameLists) {
