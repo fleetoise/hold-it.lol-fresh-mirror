@@ -766,7 +766,12 @@ function main() {
         function resolveCharacter(characterId) {
             return new Promise(function(resolve) {
                 if (characterId in resolvedCharacters) {
-                    resolve(resolvedCharacters[characterId]);
+                    const character = frameInstance.customCharacters[characterId];
+                    if (character) {
+                        resolve(character);
+                    } else {
+                        resolve(resolvedCharacters[characterId]);
+                    }
                     return;
                 }
                 
