@@ -2798,7 +2798,7 @@ window.addEventListener('load', function() {
 });
 
 chrome.runtime.onMessage.addListener(function(event) {
-    const [ action, data ] = event;
+    const [ action ] = event;
     if (action == "courtroom_state_loaded") {
         tryMain();
     }

@@ -1350,6 +1350,11 @@ function main() {
             if (socketStates.options['smart-pre']) socketStates['prev-pre-pose'] = data.frame.poseId;
             socketStates['prev-pose'] = data.frame.poseId;
             socketStates['prev-char'] = characterInstance.currentCharacter.id;
+            if (socketStates.options['more-color-tags']) {
+                data.frame.text = data.frame.text.replaceAll('[#/y]', '[#/cf3ff00]');
+                data.frame.text = data.frame.text.replaceAll('[#/w]', '[#/cbbb]');
+                data.frame.text = data.frame.text.replaceAll('[#/dr]', '[#/cf00]');
+            }
 
             data.frame.text = data.frame.text.replaceAll(/\[##.*?\]/g, '');
         }
