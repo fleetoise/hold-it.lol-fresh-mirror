@@ -1063,6 +1063,7 @@ function main() {
                                         const key = item + 'Url';
                                         if (character[key]) addFile(character[key], item);
                                     }
+                                    addFile(JSON.stringify(character), 'char.json');
 
                                     window.postMessage(['fetch_cc_files', fileUrls]);
                                     const files = await new Promise(function(resolve) {
