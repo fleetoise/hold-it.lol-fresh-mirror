@@ -1063,7 +1063,6 @@ function main() {
                                         const key = item + 'Url';
                                         if (character[key]) addFile(character[key], item);
                                     }
-                                    addFile(JSON.stringify(character), 'char.json');
 
                                     window.postMessage(['fetch_cc_files', fileUrls]);
                                     const files = await new Promise(function(resolve) {
@@ -1078,6 +1077,7 @@ function main() {
                                     for (let file of files) {
                                         zip.file(file.name, file.array);
                                     }
+                                    zip.file('char.json', JSON.stringify(character, null, 4));
 
                                     zip.generateAsync({type:"blob"}).then(function (blob) {
                                         const a = document.createElement('a');
