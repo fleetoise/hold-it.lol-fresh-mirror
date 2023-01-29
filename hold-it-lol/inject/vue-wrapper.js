@@ -22,8 +22,8 @@ function main() {
     const app = document.querySelector('#app');
     const appState = app.__vue__.$store.state;
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
-    const roomInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
-    const toolbarInstance = document.querySelector('.mx-auto.v-card header').__vue__.$parent;
+    const roomInstance = document.querySelector('div.v-card--flat.v-sheet[style="max-width: 960px;"]').parentElement.__vue__;
+    const toolbarInstance = document.querySelector('div.v-card--flat.v-sheet[style="max-width: 960px;"] header').__vue__.$parent;
     const characterInstance = document.querySelector('.v-main__wrap > div > div.row > div:nth-child(1) > div').__vue__;
     const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
     const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
