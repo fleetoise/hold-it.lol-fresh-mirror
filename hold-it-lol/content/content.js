@@ -1156,9 +1156,14 @@ function onLoad(options) {
                 const currentImgs = [].map.call(evidenceList.children, (elem) => elem.querySelector('.v-image__image')?.style.backgroundImage);
                 if (currentImgs.includes('url("' + image + '")')) image += '?';
 
-                setValue(inputRow.querySelector(':scope > :nth-child(1) input'), name);
-                setValue(inputRow.querySelector(':scope > :nth-child(2) input'), image);
-                setValue(inputRow.querySelector(':scope > :nth-child(5) textarea'), desc);
+                for (let label of inputRow.querySelectorAll('label')) {
+                    let input = label.nextElementSibling;
+                    if (label.textContent == "Name") setValue(input, name);
+                    else if (label.textContent == "Icon URL") setValue(input, image);
+                    else if (label.textContent == "Check URL") setValue(input, image);
+                    else if (label.textContent == "Description") setValue(input, desc);
+                }
+
                 adding = true;
                 setTimeout(() => {
                     evidenceButton.click();
