@@ -1719,7 +1719,7 @@ function onLoad(options) {
                                     <input class="d-none" type="file" accept="image/*">
                                 </div>
                             </div>
-                            <div class="mb-2 hil-themed ${getTheme()}">Underlays</div>
+                            <div class="mb-2 hil-themed ${getTheme()}">Backgrounds</div>
                             <div class="hil-swiper-container hil-themed ${getTheme()}">
                                 <div class="hil-swiper hil-icon-underlays">
                                     <i class="v-icon mdi mdi-plus-box hil-add-button hil-themed ${getTheme()}"></i>
