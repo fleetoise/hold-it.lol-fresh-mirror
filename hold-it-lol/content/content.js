@@ -1045,18 +1045,18 @@ function onLoad(options) {
 
 
     if (options['ctrl-effects']) {
-        function check(event, keyCodeMax = 51, keyCodeMin = 49) {
+        function check(event, keyCodeMin = 49, keyCodeMax = 51) {
             return (event.ctrlKey || event.metaKey) && event.keyCode >= keyCodeMin && event.keyCode <= keyCodeMax;
         }
 
         document.addEventListener('keydown', function (event) {
-            if (check(event, 52)) {
+            if (check(event)) {
                 event.preventDefault();
             }
         })
 
         textArea.addEventListener('keydown', function (event) {
-            if (check(event, 51)) {
+            if (check(event)) {
                 const pos = textArea.selectionEnd;
                 let strength;
                 switch (event.keyCode) {
@@ -1073,6 +1073,40 @@ function onLoad(options) {
                 insertValue(textArea, tag, pos);
                 textArea.selectionEnd = pos + tag.length;
                 textArea.selectionStart = textArea.selectionEnd;
+            }
+        })
+    }
+
+    if (options['alt-colors']) {
+        function check(event, keyCodeMin = 49, keyCodeMax = 51) {
+            return event.altKey && event.keyCode >= keyCodeMin && event.keyCode <= keyCodeMax;
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (check(event)) {
+                event.preventDefault();
+            }
+        })
+
+        textArea.addEventListener('keydown', function (event) {
+            if (check(event)) {
+                let color;
+                if (event.keyCode == 49) {
+                    color = "r"
+                } else if (event.keyCode == 50) {
+                    color = "g"
+                } else if (event.keyCode == 51) {
+                    color = "b"
+                }
+                const openingTag = `[#/${color}]`;
+                const closingTag = '[/#]'
+
+                const start = textArea.selectionStart;
+                const end = textArea.selectionEnd;
+                const text = textArea.value.slice(0, start) + openingTag + textArea.value.slice(start, end) + closingTag + textArea.value.slice(end);
+                setValue(textArea, text);
+                textArea.selectionEnd = end + openingTag.length + closingTag.length;
+                textArea.selectionStart = start;
             }
         })
     }

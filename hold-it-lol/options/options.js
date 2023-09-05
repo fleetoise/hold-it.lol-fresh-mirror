@@ -24,6 +24,7 @@ const tabs = [
             { key: 'no-talk-toggle', title: '"No talking" toggle', description: 'Disables your character\'s talking animation, just like in Maker.', preview: 'previews/placeholder.png' },
             { key: 'comma-pause', title: 'Quickly typing pauses', description: 'Type , again after a , (or other punctuation marks) to add delays.<br>(Typing more , increases the delay.)', preview: 'previews/placeholder.png' },
             { key: 'ctrl-effects', title: 'Effect hotkeys', description: 'Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.', preview: 'previews/placeholder.png' },
+            { key: 'alt-colors', title: 'Color hotkeys', description: 'Quickly color selected text red, blue or green by pressing ALT + 1, ALT + 2, or ALT + 3.', preview: 'previews/placeholder.png' },
             { key: 'dual-button', title: 'Dual effect button', description: 'Insert both Flash and Shake at the same time.', preview: 'previews/placeholder.png' },
             { key: 'smart-pre', title: 'Smart pre-animate', description: 'Disables your pose\'s pre-animation until you use a different pose.', preview: 'previews/placeholder.png' },
             { key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching to a new pose, automatically plays the previous pose\'s "to normal" when available.<br>(Lags less without Preload Resources.)', preview: 'previews/placeholder.png' },
