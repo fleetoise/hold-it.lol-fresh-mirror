@@ -1279,6 +1279,8 @@ function main() {
 
         if (action === 'message') {
             if (socketStates['no-talk'] || data.frame.text.includes('[##nt]')) data.frame.doNotTalk = true;
+            if (data.frame.text.includes('[##mn]')) data.frame.mergeNext = true;
+            if (data.frame.text.includes('[##dd]')) data.frame.keepDialogue = true;
             if (data.frame.text.includes('[##ct]')) data.frame.frameActions.push({ "actionId": 9 });
             if (data.frame.text.includes('[##tm]')) data.testimony = true;
             if (socketStates.options['smart-pre']) {
