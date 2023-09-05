@@ -178,4 +178,46 @@ hilUtils.wait = function(duration = 0) {
 
 hilUtils.transparentGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
+hilUtils.fixTagNesting = function(text) {
+    REGEX_TAG = /\[#[^/[\]]*?\]$/
+    REGEX_COLOR_TAG = /\[#\/[0-9a-zA-Z]*?\]$/
+    REGEX_UNCOLOR_TAG = /\[\/#\]$/
+
+    newText = "";
+    inColorTag = false;
+    currentColorTag = "";
+    nestedColorTags = [];
+
+    for (let char of text) {
+        newText += char;
+        if (newText.match(REGEX_COLOR_TAG)) {
+            console.log(111, newText.match(REGEX_COLOR_TAG)[0]);
+            if (!inColorTag) {
+                inColorTag = true;
+            } else {
+                nestedColorTags.push(currentColorTag);
+                console.log(111222, newText);
+                newText = newText.replace(REGEX_COLOR_TAG, "[/#]$&");
+                console.log(111333, newText);
+            }
+            currentColorTag = newText.match(REGEX_COLOR_TAG)[0];
+        } else if (inColorTag && newText.match(REGEX_TAG)) {
+            console.log(222, newText.match(REGEX_TAG)[0]);
+            console.log(222444, newText);
+            newText = newText.replace(REGEX_TAG, "[/#]" + "$&" + currentColorTag);
+            console.log(222555, newText);
+        } else if (newText.match(REGEX_UNCOLOR_TAG)) {
+            if (nestedColorTags.length > 0) {
+                currentColorTag = nestedColorTags.pop();
+                console.log(333666, newText);
+                newText = newText.replace(REGEX_UNCOLOR_TAG, "$&" + currentColorTag);
+                console.log(333777, newText);
+            } else {
+                inColorTag = false;
+            }
+        }
+    }
+    return newText
+}
+
 window.postMessage(['loaded_utils']);

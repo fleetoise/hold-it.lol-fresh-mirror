@@ -1,6 +1,6 @@
 "use strict";
 
-const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait } = hilUtils;
+const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting } = hilUtils;
 
 function main() {
 
@@ -1283,10 +1283,12 @@ function main() {
             if (data.frame.text.includes('[##dd]')) data.frame.keepDialogue = true;
             if (data.frame.text.includes('[##ct]')) data.frame.frameActions.push({ "actionId": 9 });
             if (data.frame.text.includes('[##tm]')) data.testimony = true;
+            
             if (socketStates.options['smart-pre']) {
                 if (data.frame.poseAnimation) window.postMessage(['pre_animate_locked']);
                 if (data.frame.poseId === socketStates['prev-pre-pose']) data.frame.poseAnimation = false;
             }
+
             if (socketStates.options['smart-tn'] && data.frame.poseAnimation && socketStates['prev-char'] === characterInstance.currentCharacter.id && data.frame.poseId !== socketStates['prev-pose']) {
                 (function () {
                     let useTN = socketStates.options['tn-toggle-value'];
@@ -1350,13 +1352,21 @@ function main() {
                     ]);
                 }
             })();
+
             if (socketStates.options['smart-pre']) socketStates['prev-pre-pose'] = data.frame.poseId;
             socketStates['prev-pose'] = data.frame.poseId;
             socketStates['prev-char'] = characterInstance.currentCharacter.id;
+
             if (socketStates.options['more-color-tags']) {
                 data.frame.text = data.frame.text.replaceAll('[#/y]', '[#/cf3ff00]');
                 data.frame.text = data.frame.text.replaceAll('[#/w]', '[#/cbbb]');
                 data.frame.text = data.frame.text.replaceAll('[#/dr]', '[#/cf00]');
+            }
+
+            if (socketStates.options['fix-tag-nesting']) {
+                console.log(data.frame.text);
+                data.frame.text = fixTagNesting(data.frame.text);
+                console.log(data.frame.text);
             }
 
             data.frame.text = data.frame.text.replaceAll(/\[##.*?\]/g, '');

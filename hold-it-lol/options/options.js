@@ -19,6 +19,7 @@ const tabs = [
     {
         title: 'Messages',
         items: [
+            { key: 'fix-tag-nesting', title: 'Fix tags inside color tags', description: 'Fixes tags inside of color tags such as [#/r][#bgs1][/#] not working.', preview: 'previews/placeholder.png' },
             { key: 'more-color-tags', title: 'Extra color tags', description: 'Converts [#/y], [#/w] and [#/dr] into valid color tags.', preview: 'previews/placeholder.png' },
             { key: 'no-talk-toggle', title: '"No talking" toggle', description: 'Disables your character\'s talking animation, just like in Maker.', preview: 'previews/placeholder.png' },
             { key: 'comma-pause', title: 'Quickly typing pauses', description: 'Type , again after a , (or other punctuation marks) to add delays.<br>(Typing more , increases the delay.)', preview: 'previews/placeholder.png' },
