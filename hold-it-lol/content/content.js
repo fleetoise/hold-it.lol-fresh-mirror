@@ -79,7 +79,7 @@ function optionSet(key, value) {
 function onLoad(options) {
 
 
-    console.log('holdit.lol v0.7.2 beta - running onLoad()');
+    console.log('holdit.lol v0.7.4 beta - running onLoad()');
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
