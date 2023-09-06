@@ -1120,9 +1120,8 @@ function onLoad(options) {
         });
 
 
-        tabDiv.innerHTML = '<div class="hil-evidence-title">Paste a table here</div><div id="hil-evidence-area" class="hil-themed ' + theme + '" contenteditable="true"></div><div class="hil-evidence-submit v-btn hil-themed ' + theme + '">Submit</div><div class="hil-evidence-error error--text"></div>';
+        tabDiv.innerHTML = '<div class="hil-evidence-title">Paste a table here</div><div id="hil-evidence-area" class="hil-themed ' + theme + '" contenteditable="true"></div><div class="hil-evidence-submit v-btn hil-themed ' + theme + '">Submit</div>';
         const pasteArea = tabDiv.querySelector('#hil-evidence-area');
-        const error = tabDiv.querySelector('.hil-evidence-error');
 
         pasteArea.addEventListener("input", function () {
             for (let table of pasteArea.querySelectorAll(':not(:scope) > table')) {
@@ -1147,7 +1146,6 @@ function onLoad(options) {
             for (let elem of pasteArea.querySelectorAll('.hil-evd-warning')) elem.classList.remove('hil-evd-warning');
             for (let elem of pasteArea.querySelectorAll('.hil-evd-error')) elem.classList.remove('hil-evd-error');
             for (let elem of pasteArea.querySelectorAll('.hil-evd-row')) elem.classList.remove('hil-evd-row');
-            error.textContent = '';
         });
 
 
@@ -1256,12 +1254,20 @@ function onLoad(options) {
                     if (text.length > EVIDENCE_MAX_LENGTH_NAME) {
                         nameElem.classList.add('hil-evd-error');
                         nameElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        error.textContent = 'Name on row ' + i + " can\'t be longer than " + EVIDENCE_MAX_LENGTH_NAME + '!';
+                        window.postMessage(["snotify", ["error", `Evidence name is longer than ${EVIDENCE_MAX_LENGTH_NAME} characters: "${text}"`]]);
                         return;
                     }
                 }
 
             }
+
+            let evidenceCount = 0;
+            for (let table of tableCellContents) {
+                for (let tuple of table.contents) {
+                    evidenceCount += 1;
+                }
+            }
+            window.postMessage(["snotify", ["info", `Importing ${evidenceCount} pieces of evidence`]])
 
             for (let table of tableCellContents) {
                 for (let tuple of table.contents) {

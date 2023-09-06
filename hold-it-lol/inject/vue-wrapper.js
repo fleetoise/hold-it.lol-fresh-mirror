@@ -23,7 +23,7 @@ function main() {
     const appState = app.__vue__.$store.state;
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
     const roomInstance = document.querySelector('div.v-card--flat.v-sheet[style="max-width: 960px;"]').parentElement.__vue__;
-    const toolbarInstance = document.querySelector('div.v-card--flat.v-sheet[style="max-width: 960px;"] header').__vue__.$parent;
+    const toolbarInstance = document.querySelector('div.v-card--flat.v-sheet[style="max-width: 960px;"] header').__vue__.$parent; // toolbarInstance.$snotify.info(''); toolbarInstance.$snotify.warning(''); toolbarInstance.$snotify.error(''); toolbarInstance.$snotify.success(''); 
     const characterInstance = document.querySelector('.v-main__wrap > div > div.row > div:nth-child(1) > div').__vue__;
     const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
     const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
@@ -298,6 +298,9 @@ function main() {
             for (const key in data) {
                 socketStates[key] = data[key];
             }
+        } else if (action === 'snotify') {
+            console.log(data);
+            toolbarInstance.$snotify[data[0]](...data.slice(1));
         } else if (action === 'clear_testimony_poses') {
             socketStates.testimonyPoses = {};
         } else if (action === 'clear_testimony_pose') {
@@ -495,8 +498,13 @@ function main() {
                     if (id === undefined) return;
 
                     const mods = roomInstance.users.filter(user => user.isMod).map(user => user.id);
-                    if (!mods.includes(id)) mods.push(id);
-                    else mods.splice(mods.indexOf(id), 1);
+                    if (!mods.includes(id)) {
+                        mods.push(id);
+                        toolbarInstance.$snotify.info(`Made ${usernameGetter()} a moderator.`);
+                    } else {
+                        mods.splice(mods.indexOf(id), 1);
+                        toolbarInstance.$snotify.info(`${usernameGetter()} is no longer a moderator.`);
+                    }
 
                     socket.emit('set_mods', mods);
                 },
@@ -511,6 +519,7 @@ function main() {
                     banList = banList.filter(id => !roomInstance.users.map(user => user.id).includes(id));
                     banList.push(getId());
                     socket.emit('set_bans', banList);
+                    toolbarInstance.$snotify.info(`Banned ${usernameGetter()}.`);
                 }, 'skull', 'Ban', 'hil-userlist-ban', userInstance.isOwner || userInstance.isMod ? '' : 'display: none;'));
 
                 container.appendChild(userActionButton(function (button) {
@@ -519,6 +528,12 @@ function main() {
                     muteInputInstance.selectItem(id);
 
                     const muted = !muteInputInstance.selectedItems.find(item => item.id === id); // Counter-intuitive but trust it
+                    if (muted) {
+                        toolbarInstance.$snotify.info(`Muted ${usernameGetter()}.`);
+                    } else {
+                        toolbarInstance.$snotify.info(`Unmuted ${usernameGetter()}.`);
+                    }
+
                     const mutedIndicatorMethod = muted ? 'add' : 'remove';
                     const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
                     for (let button of document.querySelectorAll('div.hil-user-action-buttons[data-user-id="' + id + '"] .hil-userlist-mute')) {
@@ -540,8 +555,13 @@ function main() {
                         if (id === undefined) return;
 
                         let muted = id in socketStates['mutedCharUsers'];
-                        if (muted) delete socketStates['mutedCharUsers'][id];
-                        if (!muted) socketStates['mutedCharUsers'][id] = true;
+                        if (muted) {
+                            delete socketStates['mutedCharUsers'][id];
+                            toolbarInstance.$snotify.info(`Hid ${usernameGetter()}'s character.`);
+                        } else {
+                            socketStates['mutedCharUsers'][id] = true;
+                            toolbarInstance.$snotify.info(`Unhid ${usernameGetter()}'s character.`);
+                        }
 
                         for (const mutedId in socketStates['mutedCharUsers']) {
                             if (muteInputInstance.items.find(item => item.id === mutedId)) continue;
