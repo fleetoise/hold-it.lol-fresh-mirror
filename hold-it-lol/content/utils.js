@@ -1,5 +1,29 @@
 const hilUtils = {}
 
+hilUtils.addMessageListenerAll = function(window, callback) {
+    function listener(event) {
+        let eventAction, eventData;
+        try {
+            [ eventAction, eventData ] = event.data;
+        } catch {
+            return;
+        }
+        if (typeof eventAction === 'string') {
+            callback(eventAction, eventData);
+        }
+    }
+    window.addEventListener('message', listener);
+    return listener;
+}
+
+hilUtils.addMessageListener = function(window, action, callback, once=false) {
+    listener = hilUtils.addMessageListenerAll(window, function(eventAction, eventData) {
+        if (eventAction !== action) return;
+        callback(eventData);
+        if (once) window.removeEventListener('message', listener);
+    }, once);
+}
+
 hilUtils.clickOff = function() { document.getElementById('app').firstElementChild.click(); }
 
 hilUtils.testRegex = function(str, re) {

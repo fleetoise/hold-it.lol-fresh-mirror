@@ -2,7 +2,7 @@
 
 // Beware: spaghetti code, all mushed into a single file oh noes
 
-const { injectScript, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure, setSlider, sliderListener } = hilUtils;
+const { addMessageListener, injectScript, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure, setSlider, sliderListener } = hilUtils;
 
 const DEFAULT_TRANSITION = 'transition: .28s cubic-bezier(.4,0,.2,1);';
 
@@ -551,10 +551,8 @@ function onLoad(options) {
                 text = '[##tmid' + statementCache[statementText].id + ']' + text;
                 sendText(text);
             }
-
-            window.addEventListener('message', function(event) {
-                const [action, data] = event.data;
-                if (action !== 'set_statement_pose_name') return;
+            
+            addMessageListener(window, 'set_statement_pose_name', function(data) {
                 const statementText = Object.keys(statementCache).find(text => statementCache[text].id === data.id);
                 const statementObj = statementCache[statementText];
                 statementObj.poseName = data.name;
@@ -564,7 +562,7 @@ function onLoad(options) {
                 for (let statementElem of testimonyDiv.children) {
                     if (statementElem.querySelector('span').innerText !== statementText) continue;
                     setElemPoseName(statementElem, data.name);
-                }            
+                }   
             });
 
             function loopTo(statement) { toStatement(statement); }
@@ -641,14 +639,11 @@ function onLoad(options) {
                 }
             }
 
-            window.addEventListener('message', function(event) {
-                const [action, data] = event.data;
-                if (action !== 'plain_message') return;
-
+            addMessageListener(window, 'plain_message', function(data) {
                 if (testRegex(data.text, '[> ]*') && data.text.indexOf('>') !== -1) states.testimonyArrow('>');
                 else if (testRegex(data.text, '[< ]*') && data.text.indexOf('<') !== -1) states.testimonyArrow('<');
                 else if (testRegex(data.text, '<[0-9]*?>')) states.testimonyIndex(Number(data.text.slice(1, -1)));
-            });     
+            })    
         }
 
 
@@ -881,9 +876,7 @@ function onLoad(options) {
                     preToggle.addEventListener('click', function() {
                         window.postMessage(['pre_animate_toggled']);
                     });
-                    window.addEventListener('message', function(event) {
-                        const action = event.data[0];
-                        if (action !== 'pre_animate_locked') return;
+                    addMessageListener(window, 'pre_animate_locked', function() {
                         preToggleThumb.className += ' mdi mdi-lock hil-toggle-thumb-lock';
                         preToggleThumb.classList.remove('v-input--switch__thumb');
                     });
@@ -1584,42 +1577,37 @@ function onLoad(options) {
             }
                 
             const characterVoices = {};
-            window.addEventListener('message', function(event) {
+            addMessageListener(window, 'plain_message', function(data) {
                 if (!states.ttsEnabled) return;
+                chrome.runtime.sendMessage(["tts-speak", {text: data.username + ' writes; ' + data.text}]);
+            });
+            addMessageListener(window, 'talking_started', function(data) {
+                let text = data.plainText;
+                if (ttsReadNames) text = data.username + ' says; ' + text;
 
-                const [action, data] = event.data;
-                if (action === 'plain_message') {
-                    chrome.runtime.sendMessage(["tts-speak", {text: data.username + ' writes; ' + data.text}]);
-                } else if (action === 'talking_started') {
-
-                    let text = data.plainText;
-                    if (ttsReadNames) text = data.username + ' says; ' + text;
-
-                    if (voices.length > 0 === false) {
-                        chrome.runtime.sendMessage(["tts-speak", {text: text}]);
-                        return;
-                    }
-                    if (data.characterId in characterVoices === false || characterVoices[data.characterId].voiceObj.enabled === false) {
-                        const enabledVoices = voices.filter(voice => voice.enabled);
-                        let minUses = enabledVoices.reduce(function(min, current) {
-                            return Math.min(min, current.uses);
-                        }, Infinity);
-                        const availableVoices = enabledVoices.filter(voice => voice.uses === minUses);
-
-                        let chosenVoice = kindaRandomChoice(enabledVoices, data.characterId);
-                        if (!availableVoices.includes(chosenVoice)) chosenVoice = kindaRandomChoice(availableVoices, data.characterId);
-                        chosenVoice.uses += 1;
-                        const pitch = Math.random() * (1.15 - 0.85) + 0.85;
-                        characterVoices[data.characterId] = {
-                            voiceName: chosenVoice.voiceName,
-                            pitch,
-                            voiceObj: chosenVoice,
-                        };
-                    }
-                    const { voiceName, pitch } = characterVoices[data.characterId];
-                    chrome.runtime.sendMessage(["tts-speak", {text, voiceName, pitch}]);
-                    
+                if (voices.length > 0 === false) {
+                    chrome.runtime.sendMessage(["tts-speak", {text: text}]);
+                    return;
                 }
+                if (data.characterId in characterVoices === false || characterVoices[data.characterId].voiceObj.enabled === false) {
+                    const enabledVoices = voices.filter(voice => voice.enabled);
+                    let minUses = enabledVoices.reduce(function(min, current) {
+                        return Math.min(min, current.uses);
+                    }, Infinity);
+                    const availableVoices = enabledVoices.filter(voice => voice.uses === minUses);
+
+                    let chosenVoice = kindaRandomChoice(enabledVoices, data.characterId);
+                    if (!availableVoices.includes(chosenVoice)) chosenVoice = kindaRandomChoice(availableVoices, data.characterId);
+                    chosenVoice.uses += 1;
+                    const pitch = Math.random() * (1.15 - 0.85) + 0.85;
+                    characterVoices[data.characterId] = {
+                        voiceName: chosenVoice.voiceName,
+                        pitch,
+                        voiceObj: chosenVoice,
+                    };
+                }
+                const { voiceName, pitch } = characterVoices[data.characterId];
+                chrome.runtime.sendMessage(["tts-speak", {text, voiceName, pitch}]);
             });
         });
     }
@@ -2352,10 +2340,8 @@ function onLoad(options) {
                     return result;
                 }
             }
-
-            window.addEventListener('message', function(event) {
-                const [action, pose] = event.data;
-                if (action !== 'set_pose') return;
+            
+            addMessageListener(window, 'set_pose', function(pose) {
                 if (editCard.classList.contains('hil-hide')) return;
                 
                 poseNameDiv.innerText = 'Icon: ' + pose.name;
@@ -2746,9 +2732,7 @@ function onLoad(options) {
             exportCard.classList.add('hil-hide');
         });
 
-        window.addEventListener('message', function(event) {
-            const [action, data] = event.data;
-            if (action !== 'check_iconless_pose_ids') return;
+        addMessageListener(window, 'check_iconless_pose_ids', function(data) {
             for (let poseId in data) {
                 if (!(poseId in iconRenders)) continue;
                 window.postMessage(['warn_unexported_icons']);
@@ -2759,9 +2743,7 @@ function onLoad(options) {
 
     if (options['export-cc-images']) {
         
-        window.addEventListener('message', async function(event) {
-            const [action, data] = event.data;
-            if (action !== 'fetch_cc_files') return;
+        addMessageListener(window, 'fetch_cc_files', async function(data) {
             const promises = [];
             const files = [];
             let filesProcessed = 0;
@@ -2791,12 +2773,9 @@ function onLoad(options) {
     if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
     if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
-        window.addEventListener('message', function listener(event) {
-            const [action] = event.data;
-            if (action !== 'loaded_utils') return;
+        addMessageListener(window, 'loaded_utils', function() {
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
-            window.removeEventListener('message', listener);
-        });
+        }, true);
     }
 
 
@@ -2808,20 +2787,15 @@ function onLoad(options) {
 
 
 wrapperLoaded = new Promise(function(resolve) {
-    window.addEventListener('message', function listener(event) {
-        const [action] = event.data;
-        
-        if (action === 'wrapper_loaded') {
-            resolve();
-            optionsLoaded.then(function(options) {
-                window.postMessage([
-                    'set_options',
-                    options
-                ]);
-            });
-            window.removeEventListener('message', listener);
-        }
-    });
+    addMessageListener(window, 'wrapper_loaded', function(data) {
+        resolve();
+        optionsLoaded.then(function(options) {
+            window.postMessage([
+                'set_options',
+                options
+            ]);
+        });
+    }, true);
 });
 
 

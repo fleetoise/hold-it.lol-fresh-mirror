@@ -1,6 +1,6 @@
 "use strict";
 
-const { compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting } = hilUtils;
+const { addMessageListener, addMessageListenerAll, compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting } = hilUtils;
 
 function main() {
 
@@ -290,8 +290,7 @@ function main() {
 
 
     window.postMessage(['wrapper_loaded']);
-    window.addEventListener('message', async function (event) {
-        const [action, data] = event.data;
+    addMessageListenerAll(window, async function(action, data) {
         if (action === 'set_options') {
             socketStates.options = data;
             socketStates.optionsLoadedResolve();
@@ -756,10 +755,7 @@ function main() {
                 }
             }
             processVolumeSliders();
-            window.addEventListener('message', function(event) {
-                const action = event.data[0];
-                if (action === 'room_spectated') processVolumeSliders();
-            })
+            addMessageListener(window, 'room_spectated', processVolumeSliders);
         }
 
         let resolvedCharacters = {};
@@ -836,12 +832,7 @@ function main() {
             onPoseSet();
             poseInstance.$watch('currentPoseId', onPoseSet);
 
-            window.addEventListener('message', function (event) {
-                const [action, data] = event.data;
-                if (action === 'get_current_pose') {
-                    onPoseSet();
-                }
-            });
+            addMessageListener(window, 'get_current_pose', onPoseSet);
 
             characterListInstance.$watch('customList', function() {
                 updateCustomPoseIconCCs();
@@ -1066,10 +1057,9 @@ function main() {
 
                                     window.postMessage(['fetch_cc_files', fileUrls]);
                                     const files = await new Promise(function(resolve) {
-                                        window.addEventListener('message', function listener(event) {
-                                            const [ action, data ] = event.data;
-                                            if (action === 'cc_files_fetched') resolve(data);
-                                        })
+                                        addMessageListener(window, 'cc_files_fetched', function(data) {
+                                            resolve(data);
+                                        });
                                     });
                                     setTimeout(() => loadingScroll.classList.remove('d-none'), 500);
 
