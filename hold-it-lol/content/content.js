@@ -870,30 +870,6 @@ function onLoad(options) {
             if (options['no-talk-toggle'] || options['smart-tn']) {
                 const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
 
-                if (options['smart-pre']) {
-                    const preToggle = label.parentElement.parentElement.parentElement;
-                    const preToggleThumb = preToggle.querySelector('.v-input--switch__thumb');
-                    preToggle.addEventListener('click', function() {
-                        window.postMessage(['pre_animate_toggled']);
-                    });
-                    addMessageListener(window, 'pre_animate_locked', function() {
-                        preToggleThumb.className += ' mdi mdi-lock hil-toggle-thumb-lock';
-                        preToggleThumb.classList.remove('v-input--switch__thumb');
-                    });
-                    new MutationObserver(function () {
-                        if (!preToggleThumb.classList.contains('hil-toggle-thumb-lock')) return;
-                        preToggleThumb.classList.remove('hil-toggle-thumb-lock');
-                        preToggleThumb.classList.remove('mdi-lock');
-                        preToggleThumb.classList.remove('mdi');
-                        preToggleThumb.classList.add('v-input--switch__thumb');
-                    }).observe(document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement, {
-                        childList: true,
-                        subtree: true,
-                        characterData: true,
-                        attributeFilter: [ 'class' ],
-                    });
-                }
-
                 const flipToggle = label.parentElement.parentElement.parentElement.nextElementSibling;
                 
                 function createToggle(onchange, text, checked = false) {
@@ -2771,7 +2747,7 @@ function onLoad(options) {
 
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         addMessageListener(window, 'loaded_utils', function() {
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));

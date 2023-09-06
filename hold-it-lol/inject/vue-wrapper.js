@@ -302,8 +302,6 @@ function main() {
             socketStates.testimonyPoses = {};
         } else if (action === 'clear_testimony_pose') {
             delete socketStates.testimonyPoses[data];
-        } else if (action === 'pre_animate_toggled') {
-            delete socketStates['prev-pre-pose'];
         } else if (action === 'fullscreen_button_added') {
             const presentButton = document.querySelector('[hil-button="present-evd"]');
             const fullscreenButton = document.querySelector('[hil-button="fullscreen-evd"]');
@@ -1273,11 +1271,6 @@ function main() {
             if (data.frame.text.includes('[##dd]')) data.frame.keepDialogue = true;
             if (data.frame.text.includes('[##ct]')) data.frame.frameActions.push({ "actionId": 9 });
             if (data.frame.text.includes('[##tm]')) data.testimony = true;
-            
-            if (socketStates.options['smart-pre']) {
-                if (data.frame.poseAnimation) window.postMessage(['pre_animate_locked']);
-                if (data.frame.poseId === socketStates['prev-pre-pose']) data.frame.poseAnimation = false;
-            }
 
             if (socketStates.options['smart-tn'] && data.frame.poseAnimation && socketStates['prev-char'] === characterInstance.currentCharacter.id && data.frame.poseId !== socketStates['prev-pose']) {
                 (function () {
@@ -1343,7 +1336,6 @@ function main() {
                 }
             })();
 
-            if (socketStates.options['smart-pre']) socketStates['prev-pre-pose'] = data.frame.poseId;
             socketStates['prev-pose'] = data.frame.poseId;
             socketStates['prev-char'] = characterInstance.currentCharacter.id;
 
