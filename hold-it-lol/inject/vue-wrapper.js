@@ -1346,9 +1346,7 @@ function main() {
             }
 
             if (socketStates.options['fix-tag-nesting']) {
-                console.log(data.frame.text);
                 data.frame.text = fixTagNesting(data.frame.text);
-                console.log(data.frame.text);
             }
 
             data.frame.text = data.frame.text.replaceAll(/\[##.*?\]/g, '');

@@ -90,7 +90,6 @@ function optionSet(key, value) {
         options['seen-tutorial'] = true;
         chrome.storage.local.set({ 'options': options });
     });
-    console.log(key, value);
 }
 
 function createSwitch(onchange) {
