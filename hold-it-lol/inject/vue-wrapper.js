@@ -503,7 +503,7 @@ function main() {
                     isMod ? 'account-arrow-down' : 'crown',
                     isMod ? 'Remove moderator' : 'Make moderator',
                     'hil-userlist-mod',
-                    userInstance.currentUser.isOwner ? '' : 'display: none;')
+                    userInstance.isOwner ? '' : 'display: none;')
                 );
 
                 container.appendChild(userActionButton(function () {
@@ -511,7 +511,7 @@ function main() {
                     banList = banList.filter(id => !roomInstance.users.map(user => user.id).includes(id));
                     banList.push(getId());
                     socket.emit('set_bans', banList);
-                }, 'skull', 'Ban', 'hil-userlist-ban', userInstance.currentUser.isOwner || userInstance.currentUser.isMod ? '' : 'display: none;'));
+                }, 'skull', 'Ban', 'hil-userlist-ban', userInstance.isOwner || userInstance.isMod ? '' : 'display: none;'));
 
                 container.appendChild(userActionButton(function (button) {
                     const id = getId();
@@ -661,8 +661,17 @@ function main() {
                         const messageNode = chat.lastElementChild;
                         if (messageNode.querySelector('i').matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
                             const username = messageNode.querySelector('.v-list-item__title').innerText;
-                            if (username === userInstance.currentUser.username) return;
-                            messageNode.appendChild(userActionButtonSet(() => username, true));
+                            if (username === userInstance.currentUser.username) {
+                                const paddingDiv = document.createElement('div');
+                                let buttonCount = 2;
+                                if (userInstance.isOwner) buttonCount += 1;
+                                if (userInstance.isOwner || userInstance.isMod) buttonCount += 1;
+                                paddingDiv.style.width = buttonCount * 42 + "px";
+                                messageNode.appendChild(paddingDiv);
+                            } else {
+                                const buttons = userActionButtonSet(() => username, true);
+                                messageNode.appendChild(buttons);
+                            }
                         }
 
                         break;
