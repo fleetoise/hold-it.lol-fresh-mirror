@@ -300,7 +300,6 @@ function main() {
                 socketStates[key] = data[key];
             }
         } else if (action === 'snotify') {
-            console.log(data);
             toolbarInstance.$snotify[data[0]](...data.slice(1));
         } else if (action === 'clear_testimony_poses') {
             socketStates.testimonyPoses = {};
@@ -1300,12 +1299,12 @@ function main() {
                 username: roomInstance.users.find(user => user.id === data.userId).username,
             }]);
         } else if (action === 'user_left') {
-            if (socketStates.options['remute'] && data.discordUsername) {
+            if (socketStates.options['remute'] && data.authUsername) {
                 if (muteInputInstance.selectedItems.find(user => user.id === data.id)) {
-                    socketStates['mutedLeftCache'][data.discordUsername] = true;
+                    socketStates['mutedLeftCache'][data.authUsername] = true;
                 }
                 if (socketStates.options['mute-character'] && data.id in socketStates['mutedCharUsers']) {
-                    socketStates['hiddenLeftCache'][data.discordUsername] = true;
+                    socketStates['hiddenLeftCache'][data.authUsername] = true;
                 }
             }
             if (socketStates.options['chat-moderation']) {
@@ -1329,7 +1328,7 @@ function main() {
                 button.tooltip?.realign('Make moderator');
             }
         } else if (action === 'user_joined') {
-            if (socketStates.options['remute'] && data.discordUsername) {
+            if (socketStates.options['remute'] && data.authUsername) {
                 function addJoinText(text) {
                     const checkLastMessage = () => {
                         if (chatInstance.messages[chatInstance.messages.length - 1].text.slice(0, -' joined.'.length) !== data.username) return false;
@@ -1343,16 +1342,16 @@ function main() {
                     }
                 }
 
-                if (data.discordUsername in socketStates['mutedLeftCache']) {
+                if (data.authUsername in socketStates['mutedLeftCache']) {
                     muteInputInstance.selectItem(data.id);
-                    delete socketStates['mutedLeftCache'][data.discordUsername];
+                    delete socketStates['mutedLeftCache'][data.authUsername];
                     addJoinText('(Automatically re-muted)');
-                } else if (socketStates.options['mute-character'] && data.discordUsername in socketStates['hiddenLeftCache']) {
+                } else if (socketStates.options['mute-character'] && data.authUsername in socketStates['hiddenLeftCache']) {
                     addJoinText('(Automatically re-hidden)');
                 }
-                if (socketStates.options['mute-character'] && data.discordUsername in socketStates['hiddenLeftCache']) {
+                if (socketStates.options['mute-character'] && data.authUsername in socketStates['hiddenLeftCache']) {
                     socketStates['mutedCharUsers'][data.id] = true;
-                    delete socketStates['hiddenLeftCache'][data.discordUsername];
+                    delete socketStates['hiddenLeftCache'][data.authUsername];
                 }
             }
         }
