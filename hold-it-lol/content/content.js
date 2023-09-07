@@ -1733,7 +1733,7 @@ function onLoad(options) {
                         </div>
                     </div>
                     <div class="mb-4 hil-edit-button-row hil-icon-export-buttons hil-hide-on-load"></div>
-                    <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate">
+                    <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate v-progress-circular--visible">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
                             <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
                         </svg>
@@ -2552,7 +2552,7 @@ function onLoad(options) {
                             <div class="v-messages v-messages__message hil-themed ${getTheme()}">Open the settings of your hosting channel > Integrations > Webhooks > New Webhook > Copy Webhook URL</div>
                         </div>
                         <div class="my-4 hil-hide-on-load hil-edit-button-row hil-icon-export-buttons"></div>
-                        <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate">
+                        <div class="hil-card-centered v-progress-circular v-progress-circular--indeterminate v-progress-circular--visible">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="23 23 46 46">
                                 <circle fill="transparent" cx="46" cy="46" r="20" stroke-width="6" class="v-progress-circular__overlay"></circle>
                             </svg>
