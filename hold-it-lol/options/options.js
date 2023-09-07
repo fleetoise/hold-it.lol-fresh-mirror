@@ -4,11 +4,19 @@ let toggleHovering = null;
 let optionChanged = false;
 const tabs = [
     {
+        title: 'Fixes',
+        items: [
+            { key: 'newlines', title: 'New lines', description: 'Shift+Enter adds a new line.', preview: 'previews/placeholder.png' },
+            { key: 'fix-tag-nesting', title: 'Fix tags inside color tags', description: 'Fixes tags inside of color tags such as [#/r][#bgs1][/#] not working.', preview: 'previews/placeholder.png' },
+            { key: 'disable-testimony-shortcut', title: 'Disable T key', description: 'Turn off the "T" hotkey that toggles "give testimony".', preview: 'previews/placeholder.png' },
+            { key: 'old-toggles', title: 'Classic toggles', description: 'Toggles like "Pre-animate" are accessible outside of a menu (as it was in the past).', preview: 'previews/placeholder.png' },
+        ],
+    },
+    {
         title: 'Convenience',
         items: [
             { key: 'auto-record', title: 'Auto-recording', description: 'Automatically start recording joined courtrooms (saving is manual).', preview: 'previews/placeholder.png' },
             { key: 'save-last-character', title: 'Remember last character', description: 'The last character you used (with the extension on) is selected by default in the next court.', preview: 'previews/placeholder.png' },
-            { key: 'disable-testimony-shortcut', title: 'Disable T key', description: 'Turn off the "T" hotkey that toggles "give testimony".', preview: 'previews/placeholder.png' },
             { key: 'unblur-low-res', title: 'Unblur pixel characters', description: 'Makes character poses with low resolutions sharp instead of blurry.', preview: 'previews/placeholder.png' },
             // { key: 'merge-characters', title: 'Merge characters', description: 'Merge poses from multiple characters to work like a single character.', preview: 'previews/placeholder.png' },
             { key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close formatting menus after you\'ve used them.', preview: 'previews/placeholder.png' },
@@ -19,8 +27,6 @@ const tabs = [
     {
         title: 'Messages',
         items: [
-            { key: 'newlines', title: 'New lines', description: 'Shift+Enter adds a new line.', preview: 'previews/placeholder.png' },
-            { key: 'fix-tag-nesting', title: 'Fix tags inside color tags', description: 'Fixes tags inside of color tags such as [#/r][#bgs1][/#] not working.', preview: 'previews/placeholder.png' },
             { key: 'more-color-tags', title: 'More color tags', description: 'Converts [#/y], [#/w] and [#/dr] into valid color tags.', preview: 'previews/placeholder.png' },
             { key: 'no-talk-toggle', title: '"No talking" toggle', description: 'Disables your character\'s talking animation, just like in Objection Maker.', preview: 'previews/placeholder.png' },
             { key: 'comma-pause', title: 'Quickly typing pauses', description: 'Press , again after a , or other punctuation marks to add pauses.<br>(Typing more , increases the delay.)', preview: 'previews/placeholder.png' },
@@ -33,7 +39,6 @@ const tabs = [
     {
         title: 'Interface',
         items: [
-            { key: 'old-toggles', title: 'Classic toggles', description: 'Toggles like "Pre-animate" are accessible outside of a menu (as it was in the past).', preview: 'previews/placeholder.png' },
             // { key: 'old-bubbles', title: 'Classic bubble buttons', description: 'Speech bubbles are selected from a column of buttons instead of a dropdown (as it was in the past).', preview: 'previews/placeholder.png' },
             { key: 'convert-chat-urls', title: 'Clickable chat links', description: 'URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.', preview: 'previews/placeholder.png' },
             // { key: 'chat-timestamps', title: 'Chat timestamps', description: 'Shows the time at which a message was sent in the chat log.', preview: 'previews/placeholder.png' },
