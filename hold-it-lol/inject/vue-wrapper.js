@@ -1248,6 +1248,57 @@ function main() {
                 });
             }
         }
+
+        if (socketStates.options['old-bubbles']) {
+
+            const buttonColumn = htmlToElement(/*html*/`
+                <div class="theme--dark mr-2 d-block v-btn-toggle primary--text"></div>
+            `);
+
+            const speechBubbleDropdown = document.querySelector('.v-input.v-input--hide-details.v-text-field.v-text-field--solo-flat.v-select');
+            speechBubbleDropdown.style.display = 'none';
+            speechBubbleDropdown.parentElement.appendChild(buttonColumn);
+
+            let activeButton = null;
+            function addButton(bubble) {
+                const button = htmlToElement(/*html*/`
+                    <button class="${getTheme()} hil-themed v-btn v-btn--block v-size--small hil-classic-speech-button">${bubble.name}</button>
+                `);
+                button.addEventListener("click", function() {
+                    if (button.classList.contains('v-btn--active')) {
+                        button.classList.remove('v-btn--active');
+                        activeButton = null;
+                        speechBubbleDropdown.__vue__.selectItem(0);
+                    } else {
+                        if (activeButton !== null) activeButton.classList.remove('v-btn--active');
+                        activeButton = button;
+                        button.classList.add('v-btn--active');
+    
+                        speechBubbleDropdown.__vue__.selectItem(bubble.id);
+                    }
+                });
+                buttonColumn.appendChild(button);
+            }
+
+            function updateBubbles() {
+                activeButton = null;
+                while (buttonColumn.lastElementChild) {
+                    buttonColumn.removeChild(buttonColumn.lastElementChild);
+                }
+                for (let bubble of characterInstance.currentCharacter.bubbles) {
+                    addButton(bubble);
+                }
+            }
+
+            updateBubbles();
+            characterInstance.$watch('currentCharacter.id', updateBubbles);
+
+            speechBubbleDropdown.__vue__.$watch("selectedItems", function(selectedItems) {
+                if (selectedItems[0] && selectedItems[0].value !== 0) return;
+                activeButton.classList.remove('v-btn--active');
+                activeButton = null;
+            });
+        }
     });
 
 

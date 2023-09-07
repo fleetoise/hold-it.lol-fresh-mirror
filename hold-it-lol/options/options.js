@@ -35,7 +35,7 @@ const tabs = [
         title: 'Interface',
         items: [
             { key: 'old-toggles', title: 'Classic toggles', description: 'Toggles like "Pre-animate" are accessible outside of a menu (as it was in the past).', preview: 'previews/old-toggles.png' },
-            // { key: 'old-bubbles', title: 'Classic bubble buttons', description: 'Speech bubbles are selected from a column of buttons instead of a dropdown (as it was in the past).', preview: 'previews/old-bubbles.png' },
+            { key: 'old-bubbles', title: 'Classic speech bubbles', description: 'Speech bubbles are selected from a column of buttons instead of a dropdown (as it was in the past).', preview: 'previews/old-bubbles.png' },
             { key: 'convert-chat-urls', title: 'Clickable chat links', description: 'URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.', preview: 'previews/convert-chat-urls.png' },
             // { key: 'chat-timestamps', title: 'Chat timestamps', description: 'Shows the time at which a message was sent in the chat log.', preview: 'previews/chat-timestamps.png' },
             // { key: 'chat-backlog-indicator', title: 'Show message backlog', description: 'Shows the amount of messages currently waiting to be displayed.', preview: 'previews/chat-backlog-indicator.png' },

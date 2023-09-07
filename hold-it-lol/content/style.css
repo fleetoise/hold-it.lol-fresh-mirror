@@ -23,7 +23,7 @@ body.hil-loading-menus #app>div:not(.v-application--wrap):not(.hil-join-dialog):
     display: none;
 }
 
-.hil-themed.v-btn:not(:hover):focus:before {
+.hil-themed.v-btn:not(.v-btn--active):not(:hover):focus:before {
     opacity: 0 !important;
 }
 
@@ -789,4 +789,12 @@ div.hil-small-tooltip {
 .hil-hide {
     opacity: 0 !important;
     visibility: hidden !important;
+}
+
+.hil-classic-speech-button {
+    border-color: #ffffff1f;
+    border-radius: 0;
+    border-style: solid;
+    border-width: thin;
+    box-shadow: none;
 }

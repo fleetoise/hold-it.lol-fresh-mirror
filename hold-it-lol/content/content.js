@@ -2731,7 +2731,7 @@ function onLoad(options) {
 
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close']) {
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close'] || options['old-bubbles']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         addMessageListener(window, 'loaded_utils', function() {
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
