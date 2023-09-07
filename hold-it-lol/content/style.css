@@ -320,7 +320,9 @@ div.hil-small-tooltip {
 
 #hil-evidence-area * {
     font-family: sans-serif !important;
+    font-size: 11pt;
     color: #fff !important;
+    background: transparent !important;
 }
 
 #hil-evidence-area table {
@@ -328,10 +330,8 @@ div.hil-small-tooltip {
     border-collapse: collapse !important;
 }
 
-#evidence-area td,
-th {
+#hil-evidence-area td, #hil-evidence-area th {
     border: solid #777 1px !important;
-    background-color: transparent !important;
     min-width: 20px;
     min-height: 20px;
 }
