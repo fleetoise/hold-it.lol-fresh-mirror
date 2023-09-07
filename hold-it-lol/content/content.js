@@ -30,6 +30,7 @@ let states = {};
 let modifierKeys = {};
 let theme;
 let textArea;
+let testifyToggle;
 
 let options;
 let optionsLoaded = new Promise(function(resolve, reject) {
@@ -410,6 +411,8 @@ function onLoad(options) {
                 } else {
                     testimonyArea.style.display = 'block';
                 }
+
+                if (testifyToggle && !testifyToggle.classList.contains('v-input--is-label-active')) testifyToggle.querySelector('.v-input__slot').click();
             }
             TabState.TESTIMONY.onDisable = function() {
                 testimonyArea.style.display = 'none';
@@ -419,6 +422,8 @@ function onLoad(options) {
                 textButton.parentElement.style.display = 'block';
                 lockTestimony.style.display = 'none';
                 primaryDiv.style.display = 'none';
+
+                if (testifyToggle && testifyToggle.classList.contains('v-input--is-label-active')) testifyToggle.querySelector('.v-input__slot').click();
             }
             createTabButton(TabState.TESTIMONY, 'Testimony Mode');
 
@@ -515,9 +520,6 @@ function onLoad(options) {
                     text = text.replaceAll(/\[#.*?\]/g, '');
                     text = text.replaceAll('[/#]', '');
                     text = continueSound + '[##dd][#ts10][#/g]' + text + '[/#]';
-                }
-                if (!crossExam) {
-                    text = '[##tm]' + text;
                 }
 
                 if (!crossExam && statement == statements.length - 1) {
@@ -832,20 +834,23 @@ function onLoad(options) {
     }
 
     setTimeout(() => {
+        const extraLabels = (options['no-talk-toggle'] || options['smart-tn'] || options['dont-delay-toggle']);
+
         for (let label of document.querySelectorAll('label')) {
             if (label.textContent === 'Give Testimony') {
-                label.textContent = 'Testify';
+                if (extraLabels) label.textContent = 'Testify';
+                testifyToggle = label.parentElement.parentElement.parentElement;
             }
 
             if (label.textContent !== 'Pre-animate') continue;
-            label.textContent = 'Pre-anim';
+            if (extraLabels) label.textContent = 'Pre-anim';
 
             const preToggle = label.parentElement.parentElement.parentElement;
             const toggles = preToggle.parentElement;
             const testimonyToggle = toggles.parentElement.querySelector(':scope > .v-input--switch');
             toggles.classList.add('hil-message-toggles');
 
-            if (options['no-talk-toggle'] || options['smart-tn'] || options['dont-delay-toggle']) {
+            if (extraLabels) {
                 const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
 
                 const flipToggle = label.parentElement.parentElement.parentElement.nextElementSibling;
