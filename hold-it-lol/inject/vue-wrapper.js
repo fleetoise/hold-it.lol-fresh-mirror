@@ -554,13 +554,13 @@ function main() {
                         const id = getId();
                         if (id === undefined) return;
 
-                        let muted = id in socketStates['mutedCharUsers'];
-                        if (muted) {
+                        let currentlyMuted = id in socketStates['mutedCharUsers'];
+                        if (currentlyMuted) {
                             delete socketStates['mutedCharUsers'][id];
-                            toolbarInstance.$snotify.info(`Hid ${usernameGetter()}'s character.`);
+                            toolbarInstance.$snotify.info(`Unhid ${usernameGetter()}'s character.`);
                         } else {
                             socketStates['mutedCharUsers'][id] = true;
-                            toolbarInstance.$snotify.info(`Unhid ${usernameGetter()}'s character.`);
+                            toolbarInstance.$snotify.info(`Hid ${usernameGetter()}'s character.`);
                         }
 
                         for (const mutedId in socketStates['mutedCharUsers']) {
@@ -568,14 +568,14 @@ function main() {
                             delete socketStates['mutedCharUsers'][mutedId];
                         }
 
-                        muted = id in socketStates['mutedCharUsers'];
-                        const mutedIndicatorMethod = muted ? 'add' : 'remove';
-                        const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
+                        currentlyMuted = id in socketStates['mutedCharUsers'];
+                        const mutedIndicatorMethod = currentlyMuted ? 'add' : 'remove';
+                        const unmutedIndicatorMethod = !currentlyMuted ? 'add' : 'remove';
                         for (let button of document.querySelectorAll('div.hil-user-action-buttons[data-user-id="' + id + '"] .hil-userlist-mute-char')) {
                             button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-eye-off');
                             button.querySelector('i').classList[mutedIndicatorMethod]('mdi-eye');
                             container.parentElement.querySelector('.hil-user-action-icons .mdi-eye-off')?.classList[unmutedIndicatorMethod]('hil-hide');
-                            button.tooltip?.realign(muted ? 'Show character' : 'Hide character');
+                            button.tooltip?.realign(currentlyMuted ? 'Show character' : 'Hide character');
                         }
                     },
                         isCharacterMuted ? 'eye' : 'eye-off',
