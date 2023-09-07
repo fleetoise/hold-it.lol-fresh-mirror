@@ -1541,6 +1541,7 @@ function onLoad(options) {
                 chrome.runtime.sendMessage(["tts-speak", {text: data.username + ' writes; ' + data.text}]);
             });
             addMessageListener(window, 'talking_started', function(data) {
+                if (!states.ttsEnabled) return;
                 let text = data.plainText;
                 if (ttsReadNames) text = data.username + ' says; ' + text;
 

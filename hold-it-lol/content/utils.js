@@ -17,11 +17,11 @@ hilUtils.addMessageListenerAll = function(window, callback) {
 }
 
 hilUtils.addMessageListener = function(window, action, callback, once=false) {
-    listener = hilUtils.addMessageListenerAll(window, function(eventAction, eventData) {
+    const listener = hilUtils.addMessageListenerAll(window, function(eventAction, eventData) {
         if (eventAction !== action) return;
         callback(eventData);
         if (once) window.removeEventListener('message', listener);
-    }, once);
+    });
 }
 
 hilUtils.clickOff = function() { document.getElementById('app').firstElementChild.click(); }
