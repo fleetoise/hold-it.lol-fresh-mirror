@@ -1214,7 +1214,8 @@ function main() {
         
         if (socketStates.options['menu-auto-close']) {
             const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
-            for (let menu of app.querySelectorAll(':scope > div[role="menu"]')) {
+            const menus = app.querySelectorAll(':scope > div[role="menu"]');
+            for (let menu of menus) {
                 const titleElem = menu.querySelector('.v-list-item__title') || menu.querySelector('.v-label');
                 if (titleElem == null) continue;
                 
@@ -1228,6 +1229,24 @@ function main() {
                         });
                     }
                 }
+            }
+        }
+
+        if (socketStates.options['menu-hover']) {
+            const buttons = document.querySelector('.mdi-palette').parentElement.parentElement.parentElement.querySelectorAll('button');
+            for (let button of buttons) {
+                button.addEventListener('mouseenter', function () {
+                    for (let button of buttons) {
+                        const comp = button.__vue__.$parent;
+                        comp.isActive = false;
+                    }
+
+                    let toFocus = false;
+                    const textArea = document.querySelector('textarea.frameTextarea')
+                    if (document.activeElement == textArea) toFocus = true;
+                    button.click();
+                    if (toFocus) textArea.focus();
+                });
             }
         }
     });

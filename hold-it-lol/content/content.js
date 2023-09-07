@@ -713,15 +713,6 @@ function onLoad(options) {
         const buttons = document.querySelector('.mdi-palette').parentElement.parentElement.parentElement.querySelectorAll('button');
         for (let button of buttons) {
             button.click();
-
-            if (options['menu-hover']) {
-                button.addEventListener('mouseenter', function () {
-                    let toFocus = false;
-                    if (document.activeElement == textArea) toFocus = true;
-                    button.click();
-                    if (toFocus) textArea.focus();
-                });
-            }
         }
 
         setTimeout(function () {
