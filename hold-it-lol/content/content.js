@@ -957,6 +957,8 @@ function onLoad(options) {
                 window.postMessage(['fullscreen_button_added']);
 
                 fullscreenButton.removeAttribute('disabled');
+                fullscreenButton.classList.add('primary');
+                fullscreenButton.classList.remove('v-btn--disabled');
                 fullscreenButton.querySelector('i').classList.remove('mdi-hand-pointing-up');
                 fullscreenButton.querySelector('i').classList.add('mdi-fit-to-screen');
                 fullscreenButton.querySelector('span').lastChild.textContent = 'Show full';
