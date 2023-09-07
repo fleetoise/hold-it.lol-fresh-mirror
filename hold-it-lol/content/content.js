@@ -814,14 +814,12 @@ function onLoad(options) {
                 titleDiv.nextElementSibling.textContent = description;
             }
 
-            const eventName = options['menu-hover'] ? 'mouseenter' : 'click';
-
-            menuButtonFlash.addEventListener(eventName, function () {
+            menuButtonFlash.addEventListener('click', function () {
                 listener(menuButtonFlash, TEXT_EFFECT_FLASH_TITLE, TEXT_EFFECT_FLASH_DESCRIPTION);
                 dualEffectMode = false;
             });
 
-            menuButtonDual.addEventListener(eventName, function () {
+            menuButtonDual.addEventListener('click', function () {
                 menuButtonFlash.click();
                 listener(menuButtonDual, TEXT_EFFECT_DUAL_TITLE, TEXT_EFFECT_DUAL_DESCRIPTION);
                 dualEffectMode = true;

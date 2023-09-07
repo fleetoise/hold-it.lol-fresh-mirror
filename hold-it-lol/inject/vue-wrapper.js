@@ -1236,6 +1236,7 @@ function main() {
             for (let button of buttons) {
                 button.addEventListener('mouseenter', function () {
                     for (let button of buttons) {
+                        if (!button.__vue__) continue;
                         const comp = button.__vue__.$parent;
                         comp.isActive = false;
                     }
