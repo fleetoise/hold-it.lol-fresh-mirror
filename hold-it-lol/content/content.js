@@ -833,14 +833,19 @@ function onLoad(options) {
 
     setTimeout(() => {
         for (let label of document.querySelectorAll('label')) {
+            if (label.textContent === 'Give Testimony') {
+                label.textContent = 'Testify';
+            }
+
             if (label.textContent !== 'Pre-animate') continue;
+            label.textContent = 'Pre-anim';
 
             const preToggle = label.parentElement.parentElement.parentElement;
             const toggles = preToggle.parentElement;
             const testimonyToggle = toggles.parentElement.querySelector(':scope > .v-input--switch');
             toggles.classList.add('hil-message-toggles');
 
-            if (options['no-talk-toggle'] || options['smart-tn']) {
+            if (options['no-talk-toggle'] || options['smart-tn'] || options['dont-delay-toggle']) {
                 const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
 
                 const flipToggle = label.parentElement.parentElement.parentElement.nextElementSibling;
@@ -880,18 +885,29 @@ function onLoad(options) {
                 }
 
                 const toggleData = [];
-                options['no-talk-toggle'] && toggleData.push({label: 'No Talking', checked: false, onchange: function(checked) {
-                    window.postMessage(['set_socket_state', {
+                if (options['no-talk-toggle']) {
+                    toggleData.push({label: 'No Talk', checked: false, onchange: function(checked) {
+                        window.postMessage(['set_socket_state', {
                             [ 'no-talk' ]: checked
                         }]);
-                }});
-                options['smart-tn'] && toggleData.push({label: 'TN-animate', checked: options['tn-toggle-value'], onchange: function(checked) {
-                    optionSet('tn-toggle-value', checked);
-                    window.postMessage([
-                        'set_options',
-                        options
-                    ]);
-                }});
+                    }});
+                }
+                if (options['dont-delay-toggle']) {
+                    toggleData.push({label: 'Don\'t Delay', checked: false, onchange: function(checked) {
+                        window.postMessage(['set_socket_state', {
+                            [ 'dont-delay' ]: checked
+                        }]);
+                    }});
+                }
+                if (options['smart-tn']) {
+                    toggleData.push({label: 'TN-anim', checked: options['tn-toggle-value'], onchange: function(checked) {
+                        optionSet('tn-toggle-value', checked);
+                        window.postMessage([
+                            'set_options',
+                            options
+                        ]);
+                    }});
+                }
                 for (let i = 0; i < toggleData.length; i++) {
                     const { label, checked, onchange } = toggleData[i];
                     const toggle = createToggle(function(checked) {
@@ -922,8 +938,6 @@ function onLoad(options) {
 
                 optionsIcon.parentElement.parentElement.parentElement.parentElement.parentElement.prepend(toggles);
             }
-
-            break;
         }
 
         if (options['fullscreen-evidence']) {
@@ -2729,7 +2743,7 @@ function onLoad(options) {
 
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close'] || options['old-bubbles']) {
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['dont-delay-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close'] || options['old-bubbles']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         addMessageListener(window, 'loaded_utils', function() {
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
