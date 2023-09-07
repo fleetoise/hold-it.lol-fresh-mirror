@@ -1,6 +1,6 @@
 "use strict";
 
-const { addMessageListener, addMessageListenerAll, compareShallow, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting } = hilUtils;
+const { addMessageListener, addMessageListenerAll, compareShallow, setValue, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting } = hilUtils;
 
 function main() {
 
@@ -10,6 +10,7 @@ function main() {
     socketStates.optionsLoaded = new Promise(function (resolve, reject) {
         socketStates.optionsLoadedResolve = resolve;
     });
+    const modifierKeys = {};
     const muteCharacters = {
         defense: { characterId: 669437, poseId: 8525792 },
         prosecution: { characterId: 669438, poseId: 8525810 },
@@ -1179,6 +1180,36 @@ function main() {
         }
         app.__vue__.$watch('$store.state.assets.music.list', musicListListener);
         musicListListener(appState.assets.music.list);
+
+        
+        // Newline on shift+enter
+        if (socketStates.options['newlines']) {
+            const textArea = document.querySelector('textarea.frameTextarea');
+            const textAreaInstance = textArea.parentElement.parentElement.__vue__;
+            const origSend = textAreaInstance.send;
+            textAreaInstance.send = function() {
+                if (modifierKeys.shift) return;
+                origSend(...arguments);
+            }
+            
+            textArea.addEventListener('keydown', function (event) {
+                if (!event.shiftKey || event.keyCode != 13) return;
+                const start = textArea.selectionStart;
+                const end = textArea.selectionEnd;
+                const text = textArea.value.slice(0, start) + "\n" + textArea.value.slice(end);
+                setValue(textArea, text);
+                textArea.selectionEnd = end + 1;
+            })
+        }
+
+        // Modifier keys for any options that need them
+        if (socketStates.options['newlines']) {
+            function checkModifierKeys(event) {
+                modifierKeys.shift = event.shiftKey;
+            }
+            document.addEventListener('keydown', checkModifierKeys);
+            document.addEventListener('keyup', checkModifierKeys);
+        }
     });
 
 

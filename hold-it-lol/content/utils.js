@@ -236,4 +236,13 @@ hilUtils.fixTagNesting = function(text) {
     return newText
 }
 
+hilUtils.setValue = function(elem, text) {
+    elem.value = text;
+    elem.dispatchEvent(new Event('input'));
+}
+hilUtils.insertValue = function(elem, text, index) {
+    const value = elem.value;
+    setValue(elem, value.slice(0, index) + text + value.slice(index));
+}
+
 window.postMessage(['loaded_utils']);

@@ -2,7 +2,7 @@
 
 // Beware: spaghetti code, all mushed into a single file oh noes
 
-const { addMessageListener, injectScript, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure, setSlider, sliderListener } = hilUtils;
+const { addMessageListener, injectScript, setValue, insertValue, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure, setSlider, sliderListener } = hilUtils;
 
 const DEFAULT_TRANSITION = 'transition: .28s cubic-bezier(.4,0,.2,1);';
 
@@ -42,14 +42,6 @@ let optionsLoaded = new Promise(function(resolve, reject) {
 let wrapperLoaded;
 
 
-function setValue(elem, text) {
-    elem.value = text;
-    elem.dispatchEvent(new Event('input'));
-}
-function insertValue(elem, text, index) {
-    const value = elem.value;
-    setValue(elem, value.slice(0, index) + text + value.slice(index));
-}
 function insertReplaceValue(elem, text, index, index2 = null) {
     index2 = index2 ? index2 : index;
     setValue(elem, textArea.value.slice(0, index) + text + textArea.value.slice(index2));
