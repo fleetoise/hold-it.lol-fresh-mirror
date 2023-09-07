@@ -6,7 +6,6 @@ const { addMessageListener, injectScript, setValue, insertValue, getLabel, getTh
 
 const DEFAULT_TRANSITION = 'transition: .28s cubic-bezier(.4,0,.2,1);';
 
-const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
 const SELECTORS_MENU_HOVER = ['.menuable__content__active', 'div.v-sheet.secondary', 'button.v-app-bar__nav-icon', '.mb-2.col-sm-4.col-md-6.col-lg-3.col-6'];
 const PAUSE_PUNCTUATION = '.,!?:;';
 const URL_REGEX = /((?:http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+(?:[\-\.]{1}[a-z0-9]+)*\.[a-z]{1,5}(?::[0-9]{1,5})?(?:\/.*?)?\w)(\W*?(?:\s|$))/gi;
@@ -736,13 +735,6 @@ function onLoad(options) {
                 if (titleElem != null) {
                     const title = titleElem.innerText;
                     menuTitles[title] = menu;
-
-                    if (options['menu-auto-close'] && !MENUS_NOT_AUTO_CLOSE.includes(title)) {
-                        for (let button of menu.querySelectorAll('.v-btn:not(.success)')) {
-                            if (button.querySelector('span.v-btn__content').textContent.slice(0, 6) === 'Manage') continue;
-                            button.addEventListener('click', clickOff);
-                        }
-                    }
                 };
 
                 if (true) { // sound-search
@@ -2747,7 +2739,7 @@ function onLoad(options) {
 
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res']) {
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         addMessageListener(window, 'loaded_utils', function() {
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));

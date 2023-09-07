@@ -1210,6 +1210,26 @@ function main() {
             document.addEventListener('keydown', checkModifierKeys);
             document.addEventListener('keyup', checkModifierKeys);
         }
+
+        
+        if (socketStates.options['menu-auto-close']) {
+            const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
+            for (let menu of app.querySelectorAll(':scope > div[role="menu"]')) {
+                const titleElem = menu.querySelector('.v-list-item__title') || menu.querySelector('.v-label');
+                if (titleElem == null) continue;
+                
+                const title = titleElem.innerText;
+                if (!MENUS_NOT_AUTO_CLOSE.includes(title)) {
+                    for (let button of menu.querySelectorAll('.v-btn:not(.success)')) {
+                        if (button.querySelector('span.v-btn__content').textContent.slice(0, 6) === 'Manage') continue;
+                        button.addEventListener('click', function() {
+                            const comp = menu.__vue__.$parent.$parent;
+                            comp.isActive = !comp.isActive;
+                        });
+                    }
+                }
+            }
+        }
     });
 
 
