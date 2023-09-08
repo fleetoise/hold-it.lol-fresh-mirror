@@ -1329,8 +1329,13 @@ function onLoad(options) {
         const messageTextDiv = messageNode.querySelector('.chat-text');
         const messageText = messageTextDiv.innerText;
 
-        if (options['tts'] && states.ttsEnabled && states.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
-            chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
+        if (!messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
+            if (options['tts'] && states.ttsEnabled && states.ttsReadLogs) {
+                chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
+            }
+            if (options['extended-log']) {
+                window.postMessage(["log-message", {"text": messageNode.innerText}]);
+            }
         }
 
         // if (options['chat-fix']) {
