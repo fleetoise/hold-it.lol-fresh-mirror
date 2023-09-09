@@ -48,14 +48,6 @@ function insertReplaceValue(elem, text, index, index2 = null) {
     textArea.selectionStart = index + text.length;
     textArea.selectionEnd = textArea.selectionStart;
 }
-function insertTag(tag) {
-    const end = textArea.selectionEnd;
-    const text = textArea.value;
-    insertValue(textArea, tag, end);
-
-    textArea.selectionStart = textArea.selectionEnd = end + tag.length;
-    textArea.focus();
-}
 
 function optionSet(key, value) {
     options[key] = value;
@@ -153,7 +145,7 @@ function onLoad(options) {
     let createTabButton;
     let TabState;
     let createRow;
-    if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn'] || options['tts']) {
+    if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn'] || options['tts'] || options['quick-sfx']) {
         helperToggle = createIcon('dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
         row2.appendChild(helperToggle);
 
@@ -228,6 +220,7 @@ function onLoad(options) {
             TESTIMONY: {},
             TN: {},
             TTS: {},
+            QUICKSFX: {},
         }
         const tabRow = createRow(helperDiv);
 
@@ -687,6 +680,108 @@ function onLoad(options) {
                 addPatternInput(pattern);
             }
             addPatternInput('');
+        }
+
+
+        if (options['quick-sfx']) {
+            createTabButton(TabState.QUICKSFX, 'Quick Sounds');
+            const tabDiv = createTabDiv(TabState.QUICKSFX);
+            const soundRow = createRow(tabDiv);
+            soundRow.classList.add('hil-quick-sfx-row')
+
+            const editButton = document.createElement('button');
+            editButton.className = 'v-btn v-btn--has-bg hil-icon-button hil-themed ' + getTheme();
+            const icon = createIcon("pencil");
+            editButton.appendChild(icon);
+            soundRow.appendChild(editButton);
+
+            const SOUND_TAG_REGEX = /^(?:\[?(?:#?(?:b?(?:g?)))s)?([0-9]*)\]?$/g;
+            function addSoundInput(id = 0) {
+                const input = document.createElement('input');
+                input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
+                input.placeholder = '[#bgs1]';
+                if (id > 0) input.value = `[#bgs${id}]`;
+                input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
+                input.addEventListener('change', function() {
+                    if (!input.value.match(SOUND_TAG_REGEX) || input.value.replace(SOUND_TAG_REGEX, "$1") === "0") {
+                        input.value = "";
+                        return;
+                    }
+
+                    if (input.value.length > 0) input.value = input.value.replace(SOUND_TAG_REGEX, "[#bgs$1]");
+                    onSoundsEdit();
+                });
+                soundRow.appendChild(input);
+                return input;
+            }
+
+            let soundIDs = options['quick-sound-ids'] || [];
+            function onSoundsEdit() {
+                soundIDs = [];
+                const toRemove = [];
+                for (let input of soundRow.querySelectorAll('input')) {
+                    if (input.value === '') {
+                        toRemove.push(input);
+                        continue;
+                    }
+                    const id = input.value.replace(SOUND_TAG_REGEX, "$1");
+                    soundIDs.push(id);
+                }
+                toRemove.forEach(elem => elem.remove());
+                addSoundInput();
+
+                optionSet('quick-sound-ids', soundIDs);
+                window.postMessage([
+                    'set_options',
+                    options
+                ]);
+            }
+
+            function addSoundButton(id, name) {
+                const button = createButton(
+                    function() {
+                        textArea.focus();
+                        const pos = textArea.selectionEnd;
+                        const tag = `[#bgs${id}]`;
+                        insertValue(textArea, tag, pos);
+                    },
+                    name,
+                );
+                soundRow.appendChild(button);
+                return button;
+            }
+            async function addSoundButtons() {
+                for (let id of soundIDs) {
+                    if (editMode) return;
+                    const sound = await fetch('https://api.objection.lol/assets/sound/get?id=' + id).then(res => res.json());
+                    let name = sound.name;
+                    if (!sound.id) {
+                        const button = addSoundButton(id, "???");
+                        button.classList.add('hil-unknown-sound');
+                        continue;
+                    } else if (!sound.name) {
+                        name = "???";
+                    }
+                    addSoundButton(id, name);
+                }
+            }
+
+            let editMode = false;
+            editButton.addEventListener('click', function() {
+                editMode = !editMode;
+                while (soundRow.childElementCount > 1) {
+                    soundRow.removeChild(soundRow.lastElementChild);
+                }
+                if (editMode) {
+                    for (let id of soundIDs) {
+                        addSoundInput(id);
+                    }
+                    addSoundInput('');
+                } else {
+                    addSoundButtons();
+                }
+            });
+            addSoundButtons();
         }
     }
 

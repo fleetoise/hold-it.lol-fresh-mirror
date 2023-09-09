@@ -865,3 +865,24 @@ button.hil-log-colors-button {
     width: calc(100% - 32px);
     margin: 16px;
 }
+
+div.hil-quick-sfx-row {
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+div.hil-quick-sfx-row > button:nth-child(1) {
+    width: 30px;
+}
+
+div.hil-quick-sfx-row button.hil-unknown-sound {
+    background-color: #ff525277!important;
+}
+
+div.hil-quick-sfx-row button i.v-icon {
+    font-size: 18px;
+}
+
+div.hil-quick-sfx-row input {
+    max-width: 7rem;
+}
