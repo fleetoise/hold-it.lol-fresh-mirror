@@ -1406,6 +1406,13 @@ function main() {
             let lastSpeaker = null;
             let forceNewDiv = false;
             let nameColors = {};
+            function addSpaceBeforeBR(br) {
+                const space = document.createElement('span');
+                space.textContent = " ";
+                space.classList.add("hil-space");
+                if (br.classList.contains('hil-log-muted')) space.classList.add("hil-log-muted");
+                br.parentElement.insertBefore(space, br);
+            }
             function registerMessage(name, text, type, muted=false) {
                 let div;
                 let newDiv = false;
@@ -1493,8 +1500,10 @@ function main() {
                 }
 
                 if (spanMain.textContent.length > 0 || (type === LOG_TYPES.message && text.length > 0)) {
-                    div.appendChild(document.createElement('br'));
-                    if (mutedSpan) div.lastElementChild.classList.add("hil-log-muted");
+                    const br = document.createElement('br');
+                    div.appendChild(br);
+                    if (logDiv.classList.contains('hil-no-breaks')) addSpaceBeforeBR(br);
+                    if (mutedSpan) br.classList.add("hil-log-muted");
                 }
 
                 lastSpeaker = name;
@@ -1578,6 +1587,11 @@ function main() {
                     if (cls === "hil-no-breaks") {
                         for (let br of logDiv.querySelectorAll('br')) {
                             if (!br.previousElementSibling) continue;
+                            if (value) {
+                                if (br.previousElementSibling.classList.contains("hil-space")) br.previousElementSibling.remove();
+                            } else {
+                                addSpaceBeforeBR(br);
+                            }
                             if (value) br.previousElementSibling.textContent = br.previousElementSibling.textContent.trim();
                             else br.previousElementSibling.textContent += " ";
                         }
