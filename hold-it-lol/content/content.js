@@ -615,7 +615,7 @@ function onLoad(options) {
                 }
             }
             states.testimonyIndex = function(statement) {
-                if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
+                if (testimonyLocked && auto) {
                     let statementI = statement - 1;
                     if (red) statementI += 1;
                     let max = statements.length;
