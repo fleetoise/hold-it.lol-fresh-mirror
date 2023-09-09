@@ -29,7 +29,7 @@ const tabs = [
             { key: 'ctrl-effects', title: 'Effect hotkeys', description: 'Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.', preview: 'previews/ctrl-effects.webp' },
             { key: 'alt-colors', title: 'Color hotkeys', description: 'Quickly color selected text red, blue or green by pressing ALT + 1, ALT + 2, or ALT + 3.', preview: 'previews/alt-colors.webp' },
             { key: 'dual-button', title: 'Dual effect button', description: 'Insert both Flash and Shake at the same time.', preview: 'previews/dual-button.png' },
-            { key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching to a new pose, automatically plays the previous pose\'s "to normal" when available.<br>(Lags less without Preload Resources.)', preview: 'previews/smart-tn.webp' },
+            { key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching poses, automatically plays the last pose\'s "to normal" if available.<br>(Lags less without Preload Resources.)', preview: 'previews/smart-tn.webp' },
         ],
     },
     {
@@ -62,7 +62,8 @@ const tabs = [
             { key: 'testimony-mode', title: 'Roleplay testimony', description: 'A helpful witness testimony player for roleplay.', preview: 'previews/testimony-mode.png' },
             { key: 'bulk-evidence', title: 'Add evidence from table', description: 'Automatically add lots of evidence via a copy-pasted table from a document.<br>(Works with tables where each evidence takes up a row)', preview: 'previews/bulk-evidence.png' },
             //{key: 'dual-wield', title: 'Dual wield', description: 'Control two paired characters at the same time.', preview: 'previews/placeholder.png'},
-            { key: 'tts', title: 'Text-to-speech', description: 'Plays messages using wacky text-to-speech voices.', preview: 'previews/tts.png' },
+            { key: 'extended-log', title: 'Extended Log', description: 'A plainer, but longer and more detailed chat log mode. (Can be useful to stenograph RP cases)', preview: 'previews/extended-log.png' },
+            { key: 'tts', title: 'Text-to-speech', description: 'Everyone speaks in text-to-speech voices lol', preview: 'previews/tts.png' },
             { key: 'pose-icon-maker', title: 'Pose icon maker', description: 'Add pose icons to characters that lack them using an in-courtroom editor.', preview: 'previews/pose-icon-maker.png' },
             { key: 'export-cc-images', title: 'Custom character archiver', description: 'Download and preserve character images. (Warning: downloads will lag and may disconnect your current courtroom page.)', preview: 'previews/export-cc-images.png' },
         ],

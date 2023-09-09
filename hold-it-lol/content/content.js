@@ -1093,7 +1093,7 @@ function onLoad(options) {
         tabSpan.className = 'v-btn__content';
         tabSpan.textContent = 'Import From Table';
         const tabDiv = document.createElement('div');
-        tabDiv.className = 'hil-evidence-card hil-hide hil-themed ' + theme;
+        tabDiv.className = 'hil-card hil-evidence-card hil-hide hil-themed ' + theme;
         tabButton.appendChild(tabSpan);
         buttonRow.appendChild(tabButton);
         app.appendChild(tabDiv);
@@ -1682,7 +1682,7 @@ function onLoad(options) {
         charIconRow.appendChild(editButton);
 
         const editCard = htmlToElement(/*html*/`
-            <div class="hil-hide hil-pose-edit-card hil-themed ${getTheme()}">
+            <div class="hil-hide hil-pose-edit-card hil-card hil-themed ${getTheme()}">
                 <div>
                     <div class="d-flex">
                         <div class="headline hil-pose-title">Icon: </div>
@@ -2538,7 +2538,7 @@ function onLoad(options) {
             });
 
             exportCard = htmlToElement(/*html*/`
-                <div class="hil-hide hil-pose-edit-card hil-icon-export-card hil-themed ${getTheme()}">
+                <div class="hil-hide hil-pose-edit-card hil-card hil-icon-export-card hil-themed ${getTheme()}">
                     <div>
                         <div class="d-flex">
                             <div class="headline hil-pose-title">Export Options</div>
@@ -2753,6 +2753,12 @@ function onLoad(options) {
 
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['pose-icon-maker'] || options['export-cc-images']) injectScript(chrome.runtime.getURL('inject/jsZip.min.js'));
+    if (options['extended-log']) {
+        const link = document.createElement('link');
+        link.rel = "stylesheet";
+        link.href = chrome.runtime.getURL('toggle-switch.css');
+        document.head.appendChild(link);
+    }
     if (options['testimony-mode'] || options['no-talk-toggle'] || options['dont-delay-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close'] || options['old-bubbles']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         addMessageListener(window, 'loaded_utils', function() {

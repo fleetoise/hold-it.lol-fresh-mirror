@@ -40,7 +40,8 @@
                 "inject/vue-wrapper.js",
                 "inject/closest-match/closest-match.js",
                 "inject/jsZip.min.js",
-                "content/utils.js"
+                "content/utils.js",
+                "toggle-switch.css"
             ]
         }
     ],

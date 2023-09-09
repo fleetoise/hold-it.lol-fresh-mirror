@@ -236,6 +236,57 @@ hilUtils.fixTagNesting = function(text) {
     return newText
 }
 
+hilUtils.getHTMLOfSelection = function() { // https://stackoverflow.com/questions/5083682/get-selected-html-in-browser-via-javascript
+    let container = document.createElement('div');
+    let range;
+    if (document.selection && document.selection.createRange) {
+        range = document.selection.createRange();
+        html = range.htmlText;
+        container.innerHTML = html;
+    }
+    else if (window.getSelection) {
+        let selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            let clonedSelection = range.cloneContents();
+            container.appendChild(clonedSelection);
+        }
+    }
+    
+    return container;
+}
+
+hilUtils.createSwitch = function(onchange, def=false) {
+    const label = document.createElement('div');
+    label.className = 'hil-toggle';
+    const input = document.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.style.setProperty('display', 'none');
+
+    label.set = function(val) {
+        if (label.classList.contains('force-disabled')) return;
+        if (input.checked == Boolean(val)) return;
+        input.checked = val;
+        onchange(input.checked);
+    }
+    if (def) label.set(true);
+
+    label.addEventListener('mousedown', function (e) {
+        label.set(!input.checked);
+        e.preventDefault();
+    });
+
+    const span = document.createElement('span');
+    span.className = 'switch';
+    const handle = document.createElement('span');
+    handle.className = 'handle';
+
+    label.appendChild(input);
+    label.appendChild(span);
+    label.appendChild(handle);
+    return label;
+}
+
 hilUtils.setValue = function(elem, text) {
     elem.value = text;
     elem.dispatchEvent(new Event('input'));

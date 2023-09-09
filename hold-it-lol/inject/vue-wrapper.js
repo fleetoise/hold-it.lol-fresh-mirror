@@ -1,6 +1,6 @@
 "use strict";
 
-const { addMessageListener, addMessageListenerAll, compareShallow, setValue, getLabel, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting } = hilUtils;
+const { addMessageListener, addMessageListenerAll, compareShallow, setValue, getLabel, createButton, createIcon, createTooltip, setSlider, sliderListener, htmlToElement, wait, fixTagNesting, getHTMLOfSelection, createSwitch } = hilUtils;
 
 function main() {
 
@@ -683,6 +683,7 @@ function main() {
                             const username = messageNode.querySelector('.v-list-item__title').innerText;
                             if (username === userInstance.currentUser.username) {
                                 const paddingDiv = document.createElement('div');
+                                paddingDiv.className = 'hil-user-action-buttons';
                                 let buttonCount = 2;
                                 if (userInstance.isOwner) buttonCount += 1;
                                 if (userInstance.isOwner || userInstance.isMod) buttonCount += 1;
@@ -1253,11 +1254,12 @@ function main() {
         if (socketStates.options['old-bubbles']) {
 
             const buttonColumn = htmlToElement(/*html*/`
-                <div class="theme--dark mr-2 d-block v-btn-toggle primary--text"></div>
+                <div class="theme--dark mr-2 d-block v-btn-toggle primary--text hil-speech-bubble-column"></div>
             `);
 
             const speechBubbleDropdown = document.querySelector('.v-input.v-input--hide-details.v-text-field.v-text-field--solo-flat.v-select');
             speechBubbleDropdown.style.display = 'none';
+            speechBubbleDropdown.parentElement.style.position = 'relative';
             speechBubbleDropdown.parentElement.appendChild(buttonColumn);
 
             let activeButton = null;
@@ -1296,9 +1298,331 @@ function main() {
 
             speechBubbleDropdown.__vue__.$watch("selectedItems", function(selectedItems) {
                 if (selectedItems[0] && selectedItems[0].value !== 0) return;
-                activeButton.classList.remove('v-btn--active');
+                if (activeButton !== null) activeButton.classList.remove('v-btn--active');
                 activeButton = null;
             });
+        }
+
+        if (socketStates.options['extended-log']) {
+            
+            let settingsButton;
+            let logColors;
+            let saveColorsButton;
+
+            const toggleButton = document.createElement('button');
+            toggleButton.className = 'v-btn v-btn--has-bg hil-icon-button hil-expanded-log-button hil-themed ' + getTheme();
+            const icon = createIcon("console");
+            toggleButton.appendChild(icon);
+
+            toggleButton.addEventListener('mouseenter', function () {
+                if (toggleButton.tooltip === undefined) toggleButton.tooltip = createTooltip("Extended Log", toggleButton);
+                toggleButton.tooltip.realign();
+                toggleButton.tooltip.classList.remove('hil-hide');
+            });
+            toggleButton.addEventListener('mouseleave', () => toggleButton.tooltip.classList.add('hil-hide'));
+
+            const chat = document.querySelector('.chat');
+            const list = chat.querySelector('[role="list"]');
+
+            const logDiv = document.createElement('div');
+            logDiv.className = getTheme() + ` hil-themed hil-expanded-log hil-hide-muted`;
+            logDiv.style.display = "none";
+
+            const HIDABLE_CLASSES = {
+                ".hil-hide-timestamps": ".hil-log-timestamp",
+                ".hil-hide-plain": ".hil-log-plain",
+                ".hil-hide-muted": ".hil-log-muted",
+                ".hil-hide-tags": ".hil-log-tag",
+            }
+            logDiv.addEventListener("copy", function(e) {
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const selectionContents = getHTMLOfSelection();
+                console.log(selectionContents.innerHTML);
+
+                for (let hideClass in HIDABLE_CLASSES) {
+                    if (logDiv.matches(hideClass)) {
+                        for (let elem of selectionContents.querySelectorAll(HIDABLE_CLASSES[hideClass])) {
+                            elem.remove();
+                        }
+                    }
+                }
+                if (logDiv.matches('.hil-no-breaks')) {
+                    for (let elem of selectionContents.querySelectorAll('br')) {
+                        elem.remove();
+                    }
+                } else {
+                    for (let div of selectionContents.querySelectorAll(':scope > div')) {
+                        const br = document.createElement('br');
+                        div.appendChild(br);
+                    }
+                }
+
+                for (let elem of selectionContents.querySelectorAll('*')) {
+                    if (elem.style.color === "rgb(255, 255, 255)" || elem.style.color === "rgb(0, 0, 0)") elem.style.removeProperty('color');
+                }
+
+                console.log(selectionContents.innerHTML);
+                clipboardData.setData('text/html', selectionContents.innerHTML);
+                clipboardData.setData('text/plain', selectionContents.innerText);
+                e.preventDefault();
+            });
+            chat.appendChild(logDiv);
+
+            let extendedLog = false;
+            toggleButton.addEventListener('click', function() {
+                extendedLog = !extendedLog;
+                if (extendedLog) {
+
+                    list.style.display = "none";
+                    logDiv.style.display = "";
+                    toggleButton.tooltip.textContent = "Normal Chat Log";
+                    toggleButton.tooltip.realign();
+                    icon.classList.remove('mdi-console');
+                    icon.classList.add('mdi-list-box-outline');
+                    settingsButton.classList.add('hil-shown');
+                    
+                } else {
+
+                    logDiv.style.display = "none";
+                    list.style.display = "";
+                    toggleButton.tooltip.textContent = "Extended Log";
+                    toggleButton.tooltip.realign();
+                    icon.classList.remove('mdi-list-box-outline');
+                    icon.classList.add('mdi-console');
+                    settingsButton.classList.remove('hil-shown');
+
+                }
+            });
+
+            chat.parentElement.appendChild(toggleButton);
+
+
+            const LOG_TYPES = {
+                message: 0,
+                chatlog: 1,
+                info: 2,
+                shout: 3,
+            }
+            let lastSpeaker = null;
+            let forceNewDiv = false;
+            let nameColors = {};
+            function registerMessage(name, text, type, muted=false) {
+                let div;
+                let newDiv = false;
+                let mutedSpan = false;
+                if (forceNewDiv || name != lastSpeaker || type == LOG_TYPES.shout) {
+                    forceNewDiv = false;
+                    newDiv = true;
+                    div = document.createElement('div');
+
+                    if (muted) {
+                        div.classList.add('hil-log-muted');
+                    }
+
+                    if (type === LOG_TYPES.message) {
+                        div.dataset.name = name;
+                        if (nameColors[name]) div.style.color = nameColors[name];
+                    } else if (type == LOG_TYPES.chatlog || type == LOG_TYPES.info) {
+                        div.classList.add("hil-log-plain");
+                    } else if (type == LOG_TYPES.shout) {
+                        div.style.color = "#f44";
+                        div.classList.add('hil-log-shout');
+                        forceNewDiv = true;
+                    }
+                    
+                    logDiv.appendChild(div);
+                } else {
+                    div = logDiv.lastElementChild;
+                    if (muted) mutedSpan = true;
+                }
+
+                const spanMain = document.createElement('span');
+                if (newDiv && type != LOG_TYPES.shout) {
+
+                    const spanTimestamp = document.createElement('span');
+                    spanTimestamp.classList.add( "hil-log-timestamp");
+                    if (mutedSpan) spanTimestamp.classList.add( "hil-log-muted");
+                    const hours = String(new Date().getHours()).padStart(2, 0);
+                    const minutes = String(new Date().getMinutes()).padStart(2, 0);
+                    spanTimestamp.textContent = `(${hours}:${minutes}) `;
+                    div.appendChild(spanTimestamp);
+
+                    spanMain.textContent += `${name}`;
+                    if (type !== LOG_TYPES.info) spanMain.textContent += ":";
+                    spanMain.textContent += " ";
+
+                }
+
+                if (type !== LOG_TYPES.message) {
+                    spanMain.textContent += text;
+                    spanMain.textContent = spanMain.textContent.trim();
+                }
+
+                if (spanMain.textContent.length > 0) {
+                    if (mutedSpan) spanMain.classList.add("hil-log-muted");
+                    div.appendChild(spanMain);
+                }
+
+                if (type === LOG_TYPES.message) {
+                    const REGEX_TAG = /(\[\/#\])|(\[#.*?\])/g;
+                    const REGEX_COLOR_TAG = /\[#\/([0-9a-zA-Z]*?)\]$/g;
+                    const REGEX_UNCOLOR_TAG = /\[\/#\]$/g;
+                    let currentColor = null;
+                    for (let str of text.split(REGEX_TAG)) {
+                        if (!str) continue;
+                        const span = document.createElement('span');
+                        if (mutedSpan) span.classList.add("hil-log-muted");
+                        if (str.match(REGEX_TAG)) span.classList.add("hil-log-tag");
+
+                        if (str.match(REGEX_COLOR_TAG) && currentColor === null) {
+                            const color = str.replace(REGEX_COLOR_TAG, "$1");
+                            if (color == "r") currentColor = "#f77337";
+                            if (color == "g") currentColor = "#00f61c";
+                            if (color == "b") currentColor = "#6bc7f6";
+                            if (color[0] == "c") {
+                                color = color.slice(1);
+                                currentColor = "#" + color;
+                            }
+                        }
+
+                        if (currentColor !== null) span.style.color = currentColor;
+                        if (str.match(REGEX_UNCOLOR_TAG)) currentColor = null;
+                        span.textContent = str;
+                        div.appendChild(span);
+                    }
+                }
+
+                if (spanMain.textContent.length > 0 || (type === LOG_TYPES.message && text.length > 0)) {
+                    div.appendChild(document.createElement('br'));
+                    if (mutedSpan) div.lastElementChild.classList.add("hil-log-muted");
+                }
+
+                lastSpeaker = name;
+            }
+            addMessageListener(window, 'log-message', function(data) {
+                registerMessage('(Info)', data.text, LOG_TYPES.info);
+            });
+            addMessageListener(window, 'plain_message', function(data) {
+                const muted = muteInputInstance.selectedItems.find(item => item.id === data.userId);
+                registerMessage('(Chat) ' + data.username, data.text, LOG_TYPES.chatlog, muted);
+            });
+            addMessageListener(window, 'receive_message', function(data) {
+                const muted = muteInputInstance.selectedItems.find(item => item.id === data.userId);
+
+                const name = data.frame.username;
+                if (!(name in nameColors)) {
+                    nameColors[name] = "#ffffff";
+
+                    const colorRow = htmlToElement(/*html*/`
+                        <div class="hil-log-settings-row">
+                            <div class="hil-log-settings-color-name" data-name="${name}">Color: ${name}</div>
+                            <input type="color">
+                        </div>
+                    `);
+                    colorRow.querySelector('input').value = nameColors[name];
+                    logColors.appendChild(colorRow);
+                    saveColorsButton.classList.remove('v-btn--disabled');
+                }
+
+                if (data.frame.bubbleType) {
+                    let bubbleName = null;
+                    if (data.frame.bubbleType <= 5) {
+                        if (data.frame.bubbleType === 1) bubbleName = "OBJECTION!";
+                        if (data.frame.bubbleType === 2) bubbleName = "HOLD IT!";
+                        if (data.frame.bubbleType === 3) bubbleName = "TAKE THAT!";
+                        if (data.frame.bubbleType === 4) bubbleName = "GOTCHA!";
+                        if (data.frame.bubbleType === 5) bubbleName = "EUREKA!";
+                    } else if (frameInstance.customCharacters[data.frame.characterId]) {
+                        // registerMessage(data.frame.username, "", LOG_TYPES.default, muted);
+                        const bubble = frameInstance.customCharacters[data.frame.characterId].bubbles.find(bubble => bubble.id === data.frame.bubbleType);
+                        if (bubble) {
+                            bubbleName = bubble.name.toUpperCase();
+                        }
+                    }
+                    if (bubbleName !== null) registerMessage(data.frame.username, bubbleName, LOG_TYPES.shout, muted);
+                }
+                registerMessage(data.frame.username, data.frame.text, LOG_TYPES.message, muted);
+            });
+
+
+            settingsButton = document.createElement('button');
+            settingsButton.className = 'v-btn v-btn--has-bg hil-icon-button hil-expanded-log-button hil-expanded-log-settings-button hil-themed ' + getTheme();
+            settingsButton.appendChild(createIcon("cog"));
+
+            settingsButton.addEventListener('mouseenter', function () {
+                if (settingsButton.tooltip === undefined) settingsButton.tooltip = createTooltip("Log Settings", settingsButton);
+                settingsButton.tooltip.realign();
+                settingsButton.tooltip.classList.remove('hil-hide');
+            });
+            settingsButton.addEventListener('mouseleave', () => settingsButton.tooltip.classList.add('hil-hide'));
+            chat.parentElement.appendChild(settingsButton);
+
+            const settingsCard = htmlToElement(/*html*/`
+                <div class="hil-hide hil-card hil-log-settings hil-themed ${getTheme()}">
+                    <div class="hil-log-settings-row"><div>Show timestamps</div></div>
+                    <div class="hil-log-settings-row"><div>Show chat log messages</div></div>
+                    <div class="hil-log-settings-row"><div>Show tags</div></div>
+                    <div class="hil-log-settings-row"><div>Separate message lines</div></div>
+                    <div class="hil-log-settings-row"><div>Show muted messages</div></div>
+                    <hr class="v-divider hil-themed ${getTheme()}" style="margin-bottom: 0">
+                    <div class="hil-log-colors"></div>
+                </div>
+            `);
+
+            const TOGGLE_CLASSES = ["hil-hide-timestamps", "hil-hide-plain", "hil-hide-tags", "hil-no-breaks", "hil-hide-muted"];
+            for (let i = 0; i < TOGGLE_CLASSES.length; i++) {
+                const cls = TOGGLE_CLASSES[i];
+                const enabledDefault = (cls === "hil-hide-muted") ? false : true;
+                const swtch = createSwitch(function(value) {
+                    logDiv.classList[value ? "remove" : "add"](cls);
+                    if (cls === "hil-no-breaks") {
+                        for (let br of logDiv.querySelectorAll('br')) {
+                            if (!br.previousElementSibling) continue;
+                            if (value) br.previousElementSibling.textContent = br.previousElementSibling.textContent.trim();
+                            else br.previousElementSibling.textContent += " ";
+                        }
+                    }
+                }, enabledDefault);
+                settingsCard.children[i].appendChild(swtch);
+            }
+
+            logColors = settingsCard.querySelector('.hil-log-colors');
+            saveColorsButton = createButton(
+                function() {
+                    const updated = {};
+                    for (let row of logColors.children) {
+                        const name = row.querySelector('.hil-log-settings-color-name').dataset.name;
+                        const color = row.querySelector('input').value;
+                        if (nameColors[name] != color) {
+                            updated[name] = true;
+                        }
+                        nameColors[name] = color;
+                    }
+                    for (let div of logDiv.querySelectorAll('div[data-name]')) {
+                        if (updated[div.dataset.name]) div.style.color = nameColors[div.dataset.name];
+                    }
+                },
+                'Save Colors',
+                'hil-log-colors-button v-btn--disabled',
+            );
+            settingsCard.appendChild(saveColorsButton);
+            app.appendChild(settingsCard);
+
+            document.addEventListener('click', function () {
+                if (document.querySelector('.hil-log-settings:hover')) return;
+                if (document.querySelector('.hil-expanded-log-settings-button:hover')) return;
+                settingsCard.classList.add('hil-hide');
+            });
+
+            settingsButton.addEventListener('click', function() {
+                settingsCard.classList.toggle("hil-hide");
+                if (!settingsCard.classList.contains("hil-hide")) {
+                    settingsCard.style.right = 0;
+                    const rect = settingsButton.getClientRects()[0];
+                    settingsCard.style.top = (rect.y + rect.height + 17) + "px";
+                }
+            });
+
         }
     });
 
@@ -1343,6 +1667,10 @@ function main() {
                 });
             }
             socketStates['prev-message'] = data;
+            
+            if (socketStates.options['extended-log']) {
+                window.postMessage(['receive_message', data]);
+            }
 
         } else if (action === 'receive_plain_message') {
             window.postMessage(['plain_message', {

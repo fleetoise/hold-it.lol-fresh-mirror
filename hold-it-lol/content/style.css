@@ -184,15 +184,6 @@ button.hil-testiony-btn {
     font-weight: 400;
 }
 
-div.hil-toggle-thumb-lock {
-    transform: translateY(-3px) scale(1.5) !important;
-    color: #bdbdbd;
-}
-
-div.v-input--is-dirty div.hil-toggle-thumb-lock {
-    transform: translate(20px, -3px) scale(1.5) !important;
-}
-
 button.hil-icon-button {
     border-radius: 100%;
     background-color: #292929 !important;
@@ -255,22 +246,28 @@ div.hil-small-tooltip {
     z-index: 2000;
     transition: var(--default-transition);
     transition-property: opacity, visibility;
+    text-wrap: nowrap;
 }
 
-.hil-evidence-card {
-    z-index: 1;
+.hil-card {
+    z-index: 10;
     position: absolute;
     width: 400px;
-    transition: var(--default-transition);
+    height: fit-content;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);
+    transition: var(--default-transition);
 }
 
-.hil-evidence-card.theme--dark {
-    background-color: var(--color-d-bg-primary);
+.hil-card hr {
+    margin: 16px 0;
 }
 
-.hil-evidence-card.theme--light {
-    background-color: var(--color-l-bg-primary);
+.hil-card.theme--dark {
+    background: var(--color-d-bg-secondary);
+}
+
+.hil-card.theme--light {
+    background: var(--color-l-bg-secondary);
 }
 
 .hil-evidence-title {
@@ -353,24 +350,10 @@ div.hil-small-tooltip {
 }
 
 .hil-pose-edit-card {
-    position: absolute;
     width: 400px;
-    height: fit-content;
-    border-radius: 4px;
-    box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
     line-height: 1.2;
     font-size: 1rem;
     font-family: Roboto, sans-serif;
-    transition: var(--default-transition);
-    z-index: 2;
-}
-
-.hil-pose-edit-card.theme--dark {
-    background: var(--color-d-bg-secondary);
-}
-
-.hil-pose-edit-card.theme--light {
-    background: var(--color-l-bg-secondary);
 }
 
 .hil-pose-edit-card>div {
@@ -434,6 +417,7 @@ div.hil-small-tooltip {
 }
 
 .hil-pose-edit-card hr {
+    margin-top: 0;
     margin-bottom: 12px;
 }
 
@@ -797,4 +781,87 @@ div.hil-small-tooltip {
     border-style: solid;
     border-width: thin;
     box-shadow: none;
+}
+
+button.hil-expanded-log-button {
+    height: 48px;
+    position: absolute;
+    z-index: 2;
+    top: 17px;
+    right: 32px;
+}
+
+button.hil-expanded-log-settings-button {
+    z-index: 1;
+    transition: var(--default-transition);
+    transition-property: top;
+}
+
+button.hil-expanded-log-settings-button.hil-shown {
+    top: 82px;
+}
+
+div.hil-expanded-log {
+    padding: 16px;
+    font-size: 14px;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+
+    gap: 10px;
+}
+
+div.hil-expanded-log.hil-hide-timestamps .hil-log-timestamp {
+    display: none;
+}
+
+div.hil-expanded-log .hil-log-plain,div.hil-expanded-log .hil-log-timestamp {
+    color: #bbb;
+}
+
+div.hil-expanded-log .hil-log-plain .hil-log-timestamp {
+    color: #888;
+}
+
+div.hil-expanded-log.hil-hide-plain .hil-log-plain {
+    display: none;
+}
+
+div.hil-expanded-log.hil-no-breaks br {
+    display: none;
+}
+
+div.hil-expanded-log.hil-hide-muted .hil-log-muted {
+    display: none;
+}
+
+div.hil-expanded-log.hil-hide-tags .hil-log-tag {
+    display: none;
+}
+
+div.hil-speech-bubble-column {
+    position: absolute;
+    width: calc(100% - 8px);
+}
+
+div.hil-log-settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    margin-top: 16px;
+}
+
+div.hil-log-settings-row input[type="color"] {
+    width: 25%;
+}
+
+div.hil-log-settings-color-name {
+    opacity: 0.7;
+}
+
+button.hil-log-colors-button {
+    width: calc(100% - 32px);
+    margin: 16px;
 }
