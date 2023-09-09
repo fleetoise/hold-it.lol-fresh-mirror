@@ -688,6 +688,7 @@ function main() {
                                 if (userInstance.isOwner) buttonCount += 1;
                                 if (userInstance.isOwner || userInstance.isMod) buttonCount += 1;
                                 paddingDiv.style.width = buttonCount * 42 + "px";
+                                paddingDiv.removeWithTooltips = paddingDiv.remove;
                                 messageNode.appendChild(paddingDiv);
                             } else {
                                 const buttons = userActionButtonSet(() => username, true);
