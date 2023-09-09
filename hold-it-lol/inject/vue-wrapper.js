@@ -1845,6 +1845,10 @@ function main() {
             }
 
             data.frame.text = data.frame.text.replaceAll(/\[##.*?\]/g, '');
+            if (data.frame.text.length > 500) {
+                data.frame.text = data.frame.text.slice(0, 500);
+                toolbarInstance.$snotify.info('Your message ended up being above 500 character limit, and was cropped.');
+            }
         }
 
         if (delay === 0) origEmit.call(socket, action, data);
