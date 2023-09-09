@@ -1,6 +1,6 @@
 'use strict';
 
-// Beware: spaghetti code, all mushed into a single file oh noes
+// warning spaghetti code
 
 const { addMessageListener, injectScript, setValue, insertValue, getLabel, getTheme, getInputContent, createButton, primaryButton, iconToggleButton, clickOff, testRegex, kindaRandomChoice, htmlToElement, createIcon, createTooltip, verifyStructure, setSlider, sliderListener } = hilUtils;
 
