@@ -288,12 +288,24 @@ hilUtils.createSwitch = function(onchange, def=false) {
 }
 
 hilUtils.setValue = function(elem, text) {
-    elem.value = text;
-    elem.dispatchEvent(new Event('input'));
+    if (document.activeElement == elem) {
+        elem.selectionEnd = 9999999;
+        elem.selectionStart = 0;
+        document.execCommand("insertText", false, text);
+    } else {
+        elem.value = text;
+        elem.dispatchEvent(new Event('input'));
+    }
 }
 hilUtils.insertValue = function(elem, text, index) {
-    const value = elem.value;
-    setValue(elem, value.slice(0, index) + text + value.slice(index));
+    if (document.activeElement == elem) {
+        elem.selectionEnd = index;
+        elem.selectionStart = index;
+        document.execCommand("insertText", false, text);
+    } else {
+        const value = elem.value;
+        setValue(elem, value.slice(0, index) + text + value.slice(index));
+    }
 }
 
 window.postMessage(['loaded_utils']);
