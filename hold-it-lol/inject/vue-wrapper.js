@@ -1483,7 +1483,7 @@ function main() {
                         if (str.match(REGEX_TAG)) span.classList.add("hil-log-tag");
 
                         if (str.match(REGEX_COLOR_TAG) && currentColor === null) {
-                            const color = str.replace(REGEX_COLOR_TAG, "$1");
+                            let color = str.replace(REGEX_COLOR_TAG, "$1");
                             if (color == "r") currentColor = "#f77337";
                             if (color == "g") currentColor = "#00f61c";
                             if (color == "b") currentColor = "#6bc7f6";
@@ -1806,6 +1806,8 @@ function main() {
                 })();
             }
             if (socketStates.options['testimony-mode']) (function () {
+                if (data.frame.text.includes('[##ce]')) data.testimony = false;
+
                 const match = /\[##tmid([0-9]+?)\]/g.exec(data.frame.text);
                 if (match === null) return;
                 const statementId = parseInt(match[1]);

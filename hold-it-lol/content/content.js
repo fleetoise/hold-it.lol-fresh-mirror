@@ -512,7 +512,7 @@ function onLoad(options) {
                 } else if (crossExam) {
                     text = text.replaceAll(/\[#.*?\]/g, '');
                     text = text.replaceAll('[/#]', '');
-                    text = continueSound + '[##dd][#ts10][#/g]' + text + '[/#]';
+                    text = continueSound + '[##ce][##dd][#ts10][#/g]' + text + '[/#]';
                 }
 
                 if (!crossExam && statement == statements.length - 1) {
@@ -1399,8 +1399,8 @@ function onLoad(options) {
     const chatObserver = new MutationObserver(function (mutations) {
         for (let mutation of mutations) {
             for (let node of mutation.addedNodes) {
-                if (!node.classList.contains('v-list-item')) continue;
-                
+                if (!node.classList || !node.classList.contains('v-list-item')) continue;
+
                 if (options['convert-chat-urls']) {
                     for (let messageNode of chat.children) {
                         const messageIcon = messageNode.querySelector('i');
