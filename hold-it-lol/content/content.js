@@ -1396,72 +1396,48 @@ function onLoad(options) {
     }
 
 
-    const chatObserver = new MutationObserver(function () {
-        if (options['convert-chat-urls']) {
-            for (let messageNode of chat.children) {
+    const chatObserver = new MutationObserver(function (mutations) {
+        for (let mutation of mutations) {
+            for (let node of mutation.addedNodes) {
+                if (!node.classList.contains('v-list-item')) continue;
+                
+                if (options['convert-chat-urls']) {
+                    for (let messageNode of chat.children) {
+                        const messageIcon = messageNode.querySelector('i');
+                        if (!messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) continue;
+        
+                        const messageTextDiv = messageNode.querySelector('.chat-text');
+                        const html = messageTextDiv.innerHTML;
+                        if (html.includes('</a>')) continue;
+        
+                        const match = html.match(URL_REGEX);
+                        if (match === null) continue;
+        
+                        let url = match[0];
+                        if (url.match('http:\/\/') !== null) url = 'https' + url.slice(4);
+                        else if (url.match('https:\/\/') === null) url = 'https://' + url;
+                        messageTextDiv.innerHTML = html.replaceAll(
+                            URL_REGEX,
+                            '<a target="_blank" href="' + url + '">$1</a>$2',
+                        );
+                    }
+                }
+        
+                const messageNode = chat.lastElementChild;
                 const messageIcon = messageNode.querySelector('i');
-                if (!messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) continue;
-
                 const messageTextDiv = messageNode.querySelector('.chat-text');
-                const html = messageTextDiv.innerHTML;
-                if (html.includes('</a>')) continue;
-
-                const match = html.match(URL_REGEX);
-                if (match === null) continue;
-
-                let url = match[0];
-                if (url.match('http:\/\/') !== null) url = 'https' + url.slice(4);
-                else if (url.match('https:\/\/') === null) url = 'https://' + url;
-                messageTextDiv.innerHTML = html.replaceAll(
-                    URL_REGEX,
-                    '<a target="_blank" href="' + url + '">$1</a>$2',
-                );
+                const messageText = messageTextDiv.innerText;
+        
+                if (!messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
+                    if (options['tts'] && states.ttsEnabled && states.ttsReadLogs) {
+                        chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
+                    }
+                    if (options['extended-log']) {
+                        window.postMessage(["log-message", {"text": messageNode.innerText}]);
+                    }
+                }
             }
         }
-
-        const messageNode = chat.lastElementChild;
-        const messageIcon = messageNode.querySelector('i');
-        const messageTextDiv = messageNode.querySelector('.chat-text');
-        const messageText = messageTextDiv.innerText;
-
-        if (!messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
-            if (options['tts'] && states.ttsEnabled && states.ttsReadLogs) {
-                chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
-            }
-            if (options['extended-log']) {
-                window.postMessage(["log-message", {"text": messageNode.innerText}]);
-            }
-        }
-
-        // if (options['chat-fix']) {
-        //     if (chatBox.scrollTop + chatBox.clientHeight > chatBox.scrollHeight - 25) {
-        //         chatBox.scrollTop = chatBox.scrollHeight
-        //     } else {
-        //         chatBox.scrollTop -= messageNode.clientHeight
-        //     }
-
-        //     const baseNodeDiv = currentSelectionState.baseNodeDiv;
-        //     const extentNodeDiv = currentSelectionState.extentNodeDiv;
-        //     if (
-        //         chat.children.length == 100 &&
-        //         chat.contains(baseNodeDiv) &&
-        //         chat.contains(extentNodeDiv) &&
-        //         baseNodeDiv != null &&
-        //         baseNodeDiv.parentElement.parentElement.parentElement.parentElement == chatBox
-        //     ) {
-        //         const newBaseAndExtent = [];
-        //         for (let node of [baseNodeDiv, extentNodeDiv]) {
-        //             const isChatText = node.matches('.chat-text');
-        //             const prevMessage = node.parentElement.parentElement.previousElementSibling.lastElementChild;
-        //             if (isChatText && prevMessage.querySelector('.chat-text')) {
-        //                 newBaseAndExtent.push(prevMessage.querySelector('.chat-text').firstChild);
-        //             } else {
-        //                 newBaseAndExtent.push(prevMessage.firstElementChild.firstChild);
-        //             }
-        //         }
-        //         sel.setBaseAndExtent(newBaseAndExtent[0], currentSelectionState.baseOffset, newBaseAndExtent[1], currentSelectionState.extentOffset)
-        //     }
-        // }
     });
 
     chatObserver.observe(chat, {
