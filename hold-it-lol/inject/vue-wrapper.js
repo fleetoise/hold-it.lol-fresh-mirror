@@ -1303,6 +1303,8 @@ function main() {
                     if (char.bubbleTypes[3] == '1') addButton({name: "Gotcha!", id: 4});
                     if (char.bubbleTypes[4] == '1') addButton({name: "Eureka!", id: 5});
                 }
+                if (buttonColumn.childElementCount === 0) speechBubbleDropdown.style.removeProperty("display");
+                if (buttonColumn.childElementCount > 0) speechBubbleDropdown.style.display = "none";
             }
 
             updateBubbles();
