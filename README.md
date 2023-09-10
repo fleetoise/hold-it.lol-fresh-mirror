@@ -7,7 +7,7 @@ Quality of life [https://objection.lol/courtroom](objection.lol) courtroom featu
 
 Upon installation, there is a page of options with descriptions to personalize your courtroom experience and pick only the features you like.
 
-It can be accessed by clicking the extension icon in the top right (you may need to pin it in the extensions list). (Option preview images are currently... placeholders)
+It can be accessed by clicking the extension icon in the top right (you may need to pin it in the extensions list).
 
 <details>
 <summary><i>A full list of features provided by the extension</i></summary>
