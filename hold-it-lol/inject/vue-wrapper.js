@@ -1289,8 +1289,19 @@ function main() {
                 while (buttonColumn.lastElementChild) {
                     buttonColumn.removeChild(buttonColumn.lastElementChild);
                 }
-                for (let bubble of characterInstance.currentCharacter.bubbles) {
-                    addButton(bubble);
+                const char = characterInstance.currentCharacter;
+                if (char.id > 1000) {
+                    // custom character
+                    for (let bubble of characterInstance.currentCharacter.bubbles) {
+                        addButton(bubble);
+                    }
+                } else {
+                    // preset character
+                    if (char.bubbleTypes[0] == '1') addButton({name: "Objection!", id: 1});
+                    if (char.bubbleTypes[1] == '1') addButton({name: "Hold It!", id: 2});
+                    if (char.bubbleTypes[2] == '1') addButton({name: "Take That!", id: 3});
+                    if (char.bubbleTypes[3] == '1') addButton({name: "Gotcha!", id: 4});
+                    if (char.bubbleTypes[4] == '1') addButton({name: "Eureka!", id: 5});
                 }
             }
 
