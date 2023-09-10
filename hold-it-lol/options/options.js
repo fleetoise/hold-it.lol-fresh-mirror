@@ -14,7 +14,7 @@ const tabs = [
             // { key: 'merge-characters', title: 'Merge characters', description: 'Merge poses from multiple characters to work like a single character.', preview: 'previews/merge-characters.png' },
             { key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close formatting menus after you\'ve used them.', preview: 'previews/menu-auto-close.webp' },
             { key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them instead of clicking.', preview: 'previews/menu-hover.webp' },
-            { key: 'sound-insert', title: 'Sounds and music: Quick inserting', description: 'Add sounds just by clicking on them in the list (without pressing "insert tag")<br>(Hold "SHIFT" to suppress)', preview: 'previews/sound-insert.webp' },
+            { key: 'sound-insert', title: 'Quick sounds and music', description: 'Add sounds just by clicking on them in the list (without pressing "insert tag")<br>(Hold "SHIFT" to suppress)', preview: 'previews/sound-insert.webp' },
         ],
     },
     {
@@ -86,6 +86,33 @@ const tabs = [
         ],
     },
 ];
+
+function _readme() {
+    let s = '';
+    for (let category of tabs) {
+        s += `<details><summary>${category.title}</summary><br><blockquote><table>\n`;
+        // s += `<tr><td>${category.title}</td><td>Use Ace Attorney songs from any game in objection.lol beyond the default music.</td></tr>\n`;
+        if (category.title === 'Music Packs') {
+
+            let first = true;
+            for (let item of category.items) {
+                s += `<tr><td>${item.title}</td><td>`;
+                if (first) s += "Use Ace Attorney songs from any game in objection.lol beyond the default music.";
+                s += `</td></tr>\n`;
+                first = false;
+            }
+
+        } else {
+
+            for (let item of category.items) {
+                s += `<tr><td>${item.title}</td><td>${item.description}</td></tr>\n`
+            }
+
+        }
+        s += `</table></blockquote><br></details>\n`
+    }
+    return s;
+}
 
 function optionSet(key, value) {
     chrome.storage.local.get('options', function (result) {
