@@ -1334,6 +1334,7 @@ function main() {
                 ".hil-hide-plain": ".hil-log-plain",
                 ".hil-hide-muted": ".hil-log-muted",
                 ".hil-hide-tags": ".hil-log-tag",
+                ".hil-hide-names": ".hil-log-name",
             }
             logDiv.addEventListener("copy", function(e) {
                 const clipboardData = e.clipboardData || window.clipboardData;
@@ -1402,7 +1403,7 @@ function main() {
                 message: 0,
                 chatlog: 1,
                 info: 2,
-                shout: 3,
+                popup: 4,
             }
             let lastSpeaker = null;
             let forceNewDiv = false;
@@ -1414,11 +1415,11 @@ function main() {
                 if (br.classList.contains('hil-log-muted')) space.classList.add("hil-log-muted");
                 br.parentElement.insertBefore(space, br);
             }
-            function registerMessage(name, text, type, muted=false) {
+            function registerMessage(name, text, type, muted=false, logArgs=null) {
                 let div;
                 let newDiv = false;
                 let mutedSpan = false;
-                if (forceNewDiv || name != lastSpeaker || type == LOG_TYPES.shout) {
+                if (forceNewDiv || name != lastSpeaker || type == LOG_TYPES.popup) {
                     forceNewDiv = false;
                     newDiv = true;
                     div = document.createElement('div');
@@ -1432,8 +1433,8 @@ function main() {
                         if (nameColors[name]) div.style.color = nameColors[name];
                     } else if (type == LOG_TYPES.chatlog || type == LOG_TYPES.info) {
                         div.classList.add("hil-log-plain");
-                    } else if (type == LOG_TYPES.shout) {
-                        div.style.color = "#f44";
+                    } else if (type == LOG_TYPES.popup) {
+                        if (logArgs !== null) div.style.color = logArgs;
                         div.classList.add('hil-log-shout');
                         forceNewDiv = true;
                     }
@@ -1444,8 +1445,8 @@ function main() {
                     if (muted) mutedSpan = true;
                 }
 
-                const spanMain = document.createElement('span');
-                if (newDiv && type != LOG_TYPES.shout) {
+                const spanName = document.createElement('span');
+                if (newDiv && type != LOG_TYPES.popup) {
 
                     const spanTimestamp = document.createElement('span');
                     spanTimestamp.classList.add( "hil-log-timestamp");
@@ -1455,12 +1456,15 @@ function main() {
                     spanTimestamp.textContent = `(${hours}:${minutes}) `;
                     div.appendChild(spanTimestamp);
 
-                    spanMain.textContent += `${name}`;
-                    if (type !== LOG_TYPES.info) spanMain.textContent += ":";
-                    spanMain.textContent += " ";
+                    spanName.classList.add("hil-log-name");
+                    spanName.textContent += `${name}`;
+                    if (type !== LOG_TYPES.info) spanName.textContent += ":";
+                    spanName.textContent += " ";
+                    div.appendChild(spanName);
 
                 }
 
+                const spanMain = document.createElement('span');
                 if (type !== LOG_TYPES.message) {
                     spanMain.textContent += text;
                     spanMain.textContent = spanMain.textContent.trim();
@@ -1549,8 +1553,17 @@ function main() {
                             bubbleName = bubble.name.toUpperCase();
                         }
                     }
-                    if (bubbleName !== null) registerMessage(data.frame.username, bubbleName, LOG_TYPES.shout, muted);
+                    if (bubbleName !== null) registerMessage(data.frame.username, bubbleName, LOG_TYPES.popup, muted, "#f44");
                 }
+
+                if (data.frame.frameActions) for (let action of data.frame.frameActions) {
+                    if (action.actionId !== 7) continue;
+                    if (action.actionParam == "1") registerMessage(data.frame.username, "-- WITNESS TESTIMONY --", LOG_TYPES.popup, muted, "#2084ff");
+                    if (action.actionParam == "2") registerMessage(data.frame.username, "-- CROSS EXAMINATION --", LOG_TYPES.popup, muted, "#ff2133");
+                    if (action.actionParam == "4") registerMessage(data.frame.username, "-- GUILTY --", LOG_TYPES.popup, muted);
+                    if (action.actionParam == "5") registerMessage(data.frame.username, "-- NOT GUILTY --", LOG_TYPES.popup, muted);
+                }
+                
                 registerMessage(data.frame.username, data.frame.text, LOG_TYPES.message, muted);
             });
 
@@ -1570,6 +1583,7 @@ function main() {
             const settingsCard = htmlToElement(/*html*/`
                 <div class="hil-hide hil-card hil-log-settings hil-themed ${getTheme()}">
                     <div class="hil-log-settings-row"><div>Show timestamps</div></div>
+                    <div class="hil-log-settings-row"><div>Show names</div></div>
                     <div class="hil-log-settings-row"><div>Show chat log messages</div></div>
                     <div class="hil-log-settings-row"><div>Show tags</div></div>
                     <div class="hil-log-settings-row"><div>Separate message lines</div></div>
@@ -1579,7 +1593,7 @@ function main() {
                 </div>
             `);
 
-            const TOGGLE_CLASSES = ["hil-hide-timestamps", "hil-hide-plain", "hil-hide-tags", "hil-no-breaks", "hil-hide-muted"];
+            const TOGGLE_CLASSES = ["hil-hide-timestamps", "hil-hide-names", "hil-hide-plain", "hil-hide-tags", "hil-no-breaks", "hil-hide-muted"];
             for (let i = 0; i < TOGGLE_CLASSES.length; i++) {
                 const cls = TOGGLE_CLASSES[i];
                 const enabledDefault = (cls === "hil-hide-muted") ? false : true;

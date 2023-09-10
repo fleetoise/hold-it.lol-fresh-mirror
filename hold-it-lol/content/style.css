@@ -840,6 +840,10 @@ div.hil-expanded-log.hil-hide-tags .hil-log-tag {
     display: none;
 }
 
+div.hil-expanded-log.hil-hide-names .hil-log-name {
+    display: none;
+}
+
 div.hil-speech-bubble-column {
     position: absolute;
     width: calc(100% - 8px);
