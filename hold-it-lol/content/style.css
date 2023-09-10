@@ -858,11 +858,20 @@ div.hil-log-settings-row {
 }
 
 div.hil-log-settings-row input[type="color"] {
-    width: 25%;
+    width: 90px;
 }
 
 div.hil-log-settings-color-name {
     opacity: 0.7;
+}
+
+div.hil-log-settings-color {
+    display: flex;
+    gap: 8px;
+}
+
+div.hil-log-settings-color button i {
+    font-size: 18px;
 }
 
 button.hil-log-colors-button {

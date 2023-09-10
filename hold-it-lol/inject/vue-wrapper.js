@@ -1530,10 +1530,20 @@ function main() {
                     const colorRow = htmlToElement(/*html*/`
                         <div class="hil-log-settings-row">
                             <div class="hil-log-settings-color-name" data-name="${name}">Color: ${name}</div>
-                            <input type="color">
+                            <div class="hil-log-settings-color">
+                                <input type="color">
+                                <button class="v-btn v-btn--has-bg hil-icon-button hil-themed theme--dark"><i class="v-icon notranslate mdi hil-themed mdi-delete theme--dark"></i></button>
+                            </div>
                         </div>
                     `);
                     colorRow.querySelector('input').value = nameColors[name];
+                    colorRow.querySelector('button').addEventListener('click', function() {
+                        delete nameColors[name];
+                        colorRow.remove();
+                        for (let div of logDiv.querySelectorAll(`div[data-name="${name}"]`)) {
+                            div.style.removeProperty("color");
+                        }
+                    });
                     logColors.appendChild(colorRow);
                     saveColorsButton.classList.remove('v-btn--disabled');
                 }
@@ -1563,7 +1573,7 @@ function main() {
                     if (action.actionParam == "4") registerMessage(data.frame.username, "-- GUILTY --", LOG_TYPES.popup, muted);
                     if (action.actionParam == "5") registerMessage(data.frame.username, "-- NOT GUILTY --", LOG_TYPES.popup, muted);
                 }
-                
+
                 registerMessage(data.frame.username, data.frame.text, LOG_TYPES.message, muted);
             });
 
