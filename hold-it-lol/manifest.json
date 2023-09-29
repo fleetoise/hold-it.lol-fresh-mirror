@@ -1,6 +1,6 @@
 {
     "name": "holdit.lol (beta)",
-    "version": "0.7.4",
+    "version": "0.7.5",
     "description": "Handy objection.lol Courtroom features",
     "permissions": [
         "webNavigation",

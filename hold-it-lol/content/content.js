@@ -63,7 +63,7 @@ function optionSet(key, value) {
 function onLoad(options) {
 
 
-    console.log('holdit.lol v0.7.4 beta - running onLoad()');
+    console.log('holdit.lol v0.7.5 beta - running onLoad()');
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
@@ -2830,7 +2830,7 @@ function onLoad(options) {
         link.href = chrome.runtime.getURL('toggle-switch.css');
         document.head.appendChild(link);
     }
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['dont-delay-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close'] || options['old-bubbles']) {
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['dont-delay-toggle'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence'] || options['volume-sliders'] || options['pose-icon-maker'] || options['disable-testimony-shortcut'] || options['unblur-low-res'] || options['save-last-character'] || options['fix-tag-nesting'] || options['newlines'] || options['menu-auto-close'] || options['old-bubbles'] || socketStates.options['export-cc-images']) {
         injectScript(chrome.runtime.getURL('content/utils.js'));
         addMessageListener(window, 'loaded_utils', function() {
             injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
