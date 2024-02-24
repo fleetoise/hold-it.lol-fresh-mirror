@@ -82,7 +82,7 @@ If you have any questions, problems or suggestions regarding the extension, you 
 
 ## Installation instructions
 
-1. Download the top .zip file from the [latest release on Codeberg](https://codeberg.org/adamanti/hold-it-lol/releases/tag/v0.7.4).
+1. Download the top .zip file from the [latest release on Codeberg](https://codeberg.org/adamanti/hold-it-lol/releases/tag/v0.7.5).
 1. Unzip the file and you should have a folder named plainly `hold-it-lol`.
 1. In your Chrome-based browser go to the extensions page (for Chrome or Edge, `chrome://extensions` or `edge://extensions`).
 1. Enable Developer Mode in the top right.
@@ -90,6 +90,6 @@ If you have any questions, problems or suggestions regarding the extension, you 
 
 ## Known Issues
 
-Known bug warnings (as of v0.7.4 beta):
+Known bug warnings (as of v0.7.5 beta):
 
 - Due to the way the extension loads, spectating breaks some UI elements; you'll be prompted to reload and join without spectating.
