@@ -179,12 +179,12 @@ function onLoad(options) {
             div.style.cssText = 'width: 60%; text-align: center; margin: 0 auto; font-weight: 300;';
 
             const img = document.createElement('img');
-            img.src = 'https://cdn.discordapp.com/attachments/873624494810484817/916742603339341824/holdit.png';
+            img.src = 'https://file.garden/ZR29A3a-dUbt6ukN/_/objection.lol/Misc/hold%20it.lol/holdit.png';
             img.style.width = '100%';
             div.appendChild(img);
 
             if (!options['seen-tutorial']) div.innerHTML += '<span style="font-weight: 400;">Thank you for installing Hold It.lol!</span><br>';
-            div.innerHTML += '<span>Click on the </span><img src="https://cdn.discordapp.com/attachments/873624494810484817/916750432368480326/icon32.png" style="height: 24px;vertical-align: middle;user-select: all;"><span> icon in the </span><span style="font-weight: 400;">top-right of your browser</span><span> to check out your </span><span style="font-weight: 400;">Options</span><span>.</span>'
+            div.innerHTML += '<span>Click on the </span><img src="https://file.garden/ZR29A3a-dUbt6ukN/_/objection.lol/Misc/hold%20it.lol/icon32.png" style="height: 24px;vertical-align: middle;user-select: all;"><span> icon in the </span><span style="font-weight: 400;">top-right of your browser</span><span> to check out your </span><span style="font-weight: 400;">Options</span><span>.</span>'
 
             helperDiv.appendChild(div);
         };
