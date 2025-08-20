@@ -1,4 +1,8 @@
-# hold-it-lol
+# IMPORTANT
+
+It appears that objection.lol has moved away from Vue.js. This means most of the functionality will be need to be reimplemented for the new technologies the website uses.
+
+## hold-it-lol
 Quality of life [https://objection.lol/courtroom](objection.lol) courtroom features & tweaks, ranging from tiny UI changes to roleplay testimony UIs.
 
 **Important:** the extension is still in beta - some assets are unfinished.
