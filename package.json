@@ -1,0 +1,27 @@
+{
+  "name": "holdit.lol-fresh",
+  "version": "1.0.0",
+  "description": "Quality of life additions to objection.lol courtrooms",
+  "keywords": [
+    "objection.lol",
+    "ace-attorney",
+    "tool",
+    "extension"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/Fleetoise/holdit.lol-fresh.git"
+  },
+  "license": "MIT",
+  "author": "Fleetoise (M.K.)",
+  "type": "commonjs",
+  "main": "service-worker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "copyfiles -f node_modules/webextension-polyfill/dist/browser-polyfill.js hold-it-lol/lib/"
+  },
+  "devDependencies": {
+    "copyfiles": "2.4.1",
+    "webextension-polyfill": "0.12.0"
+  }
+}

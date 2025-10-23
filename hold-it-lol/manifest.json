@@ -1,13 +1,13 @@
 {
-    "name": "holdit.lol (beta)",
-    "version": "0.7.5",
+    "manifest_version": 2,
+    "name": "holdit.lol fresh",
+    "version": "1.0",
     "description": "Handy objection.lol Courtroom features",
     "permissions": [
         "webNavigation",
         "storage",
         "tabs",
         "contextMenus",
-        "tts",
         "unlimitedStorage"
     ],
     "host_permissions": [
@@ -24,7 +24,7 @@
             ],
             "js": [
                 "content/utils.js",
-                "content/content.js"
+                "content/main.js"
             ],
             "css": [
                 "content/style.css"
@@ -47,7 +47,7 @@
         }
     ],
     "background": {
-        "service_worker": "service-worker.js"
+        "scripts": ["service-worker.js"]
     },
     "options_page": "options/options.html",
     "icons": {
