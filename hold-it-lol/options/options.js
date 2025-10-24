@@ -115,11 +115,11 @@ function _readme() {
 }
 
 function optionSet(key, value) {
-    chrome.storage.local.get('options', function (result) {
+    browser.storage.local.get('options', function (result) {
         const options = result.options || {};
         options[key] = value;
         options['seen-tutorial'] = true;
-        chrome.storage.local.set({ 'options': options });
+        browser.storage.local.set({ 'options': options });
     });
 }
 
@@ -289,8 +289,8 @@ function error(text) {
 }
 
 let courtroomOpen = false;
-if (chrome.storage !== undefined) {
-    chrome.tabs.query(
+if (browser.storage !== undefined) {
+    browser.tabs.query(
         {
             "url": "*://objection.lol/courtroom/*"
         },
@@ -301,7 +301,7 @@ if (chrome.storage !== undefined) {
 }
 
 function main() {
-    if (chrome.storage === undefined) {
+    if (browser.storage === undefined) {
         error('Please open this page from the pop-up or chrome://extensions to change options.');
         return;
     }
@@ -325,7 +325,7 @@ function main() {
             optionSwitches[option.key] = optionRow.querySelector('input');
         }
     }
-    chrome.storage.local.get('options', function (result) {
+    browser.storage.local.get('options', function (result) {
         const options = result.options || {};
         for (let key of Object.keys(optionSwitches)) {
             const input = optionSwitches[key];

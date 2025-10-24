@@ -1,6 +1,6 @@
-const hilUtils = {}
+import 'webextension-polyfill';
 
-hilUtils.addMessageListenerAll = function(window, callback) {
+export function addMessageListenerAll(window, callback) {
     function listener(event) {
         let eventAction, eventData;
         try {
@@ -16,7 +16,17 @@ hilUtils.addMessageListenerAll = function(window, callback) {
     return listener;
 }
 
-hilUtils.addMessageListener = function(window, action, callback, once=false) {
+export function elementFromText(elementClass, str) {
+  let returnList = []
+  for (const item of document.querySelectorAll(`.${elementClass}`)) {
+    if (item.textContent.trim() == str) {
+      returnList.push(item);
+    }
+  }
+  return returnList;
+}
+
+export function addMessageListener(window, action, callback, once=false) {
     const listener = hilUtils.addMessageListenerAll(window, function(eventAction, eventData) {
         if (eventAction !== action) return;
         callback(eventData);
@@ -24,14 +34,14 @@ hilUtils.addMessageListener = function(window, action, callback, once=false) {
     });
 }
 
-hilUtils.clickOff = function() { document.getElementById('app').firstElementChild.click(); }
+export function clickOff() { document.getElementById('app').firstElementChild.click(); }
 
-hilUtils.testRegex = function(str, re) {
+export function testRegex(str, re) {
     const match = str.match(re);
     return match !== null && match[0] == match.input;
 }
 
-hilUtils.kindaRandomChoice = function(array, seed = null) {
+export function kindaRandomChoice(array, seed = null) {
     if (seed === null) seed = Math.random();
     const x = Math.sin(seed++) * 10000; 
     const random = x - Math.floor(x);
@@ -39,11 +49,11 @@ hilUtils.kindaRandomChoice = function(array, seed = null) {
     return array[i];
 }
 
-hilUtils.getLabel = function(innerText) {
+export function getLabel(innerText) {
     return [].find.call(document.querySelectorAll('label'), label => label.innerText === innerText);
 }
 
-hilUtils.getTheme = function() {
+export function getTheme() {
     const themeInput = (hilUtils.getLabel('Dark Mode') || hilUtils.getLabel('Light Mode')).parentElement.querySelector('input');
     if (themeInput.ariaChecked == "true") {
         return 'theme--dark';
@@ -52,11 +62,11 @@ hilUtils.getTheme = function() {
     }
 }
 
-hilUtils.getInputContent = function() {
+export function getInputContent() {
     return app.querySelector('.menuable__content__active:not([role="menu"])');
 }
 
-hilUtils.createButton = function(listener, text, classText, styleText) {
+export function createButton(listener, text, classText, styleText) {
     const button = document.createElement('button');
     button.className = 'v-btn v-btn--has-bg v-size--default hil-row-btn hil-themed ' + hilUtils.getTheme();
     if (classText) button.className += ' ' + classText;
@@ -68,7 +78,7 @@ hilUtils.createButton = function(listener, text, classText, styleText) {
     return button
 }
 
-hilUtils.primaryButton = function(listener, classText, styleText, child) {
+export function primaryButton(listener, classText, styleText, child) {
     const button = document.createElement('button');
     button.className = 'v-btn v-btn--depressed v-size--small primary ' + hilUtils.getTheme();
     if (classText) button.className += ' ' + classText;
@@ -80,7 +90,7 @@ hilUtils.primaryButton = function(listener, classText, styleText, child) {
     return button;
 }
 
-hilUtils.iconToggleButton = function(listenerCheck, text, classText, styleText, defaultEnabled = false) {
+export function iconToggleButton(listenerCheck, text, classText, styleText, defaultEnabled = false) {
     function toggle(enabled){
         if (enabled) {
             button.classList.add('success');
@@ -101,14 +111,14 @@ hilUtils.iconToggleButton = function(listenerCheck, text, classText, styleText, 
     return button;
 }
 
-hilUtils.injectScript = function(src, type = null) {
+export function injectScript(src, type = null) {
     const script = document.createElement('script');
     script.setAttribute("src", src);
     if (type) script.setAttribute("type", type);
     (document.head || document.documentElement).appendChild(script);
 }
 
-hilUtils.compareShallow = function(a, b, keys) {
+export function compareShallow(a, b, keys) {
     for (const key of keys) {
         if (a[key] !== b[key]) {
             return false;
@@ -117,7 +127,7 @@ hilUtils.compareShallow = function(a, b, keys) {
     return true;
 }
 
-hilUtils.createIcon = function(iconClass, fontPx = 24, styleText = '', classText = '') {
+export function createIcon(iconClass, fontPx = 24, styleText = '', classText = '') {
     const icon = document.createElement('i');
     icon.className = classText + ' v-icon notranslate mdi hil-themed ' + hilUtils.getTheme();
     icon.classList.add('mdi-' + iconClass);
@@ -126,7 +136,7 @@ hilUtils.createIcon = function(iconClass, fontPx = 24, styleText = '', classText
     return icon;
 }
 
-hilUtils.createTooltip = function(text, anchorElement) {
+export function createTooltip(text, anchorElement) {
     const tooltip = document.createElement('div');
     tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
     tooltip.textContent = text;
@@ -141,13 +151,13 @@ hilUtils.createTooltip = function(text, anchorElement) {
     return tooltip;
 }
 
-hilUtils.htmlToElement = function(html) {
+export function htmlToElement(html) {
     const template = document.createElement('template');
     template.innerHTML = html.trim();
     return template.content.firstChild;
 }
 
-hilUtils.verifyStructure = function(obj, structure) {
+export function verifyStructure(obj, structure) {
     if (!obj) obj = {};
     for (let key in structure) {
         let type = obj[key]?.constructor;
@@ -166,7 +176,7 @@ hilUtils.verifyStructure = function(obj, structure) {
     return obj;
 }
 
-hilUtils.setSlider = function(sliderContainer, value, min, max) {
+export function setSlider(sliderContainer, value, min, max) {
     if (value > max) value = max;
     else if (value < min) value = min;
     const percentage = (value-min)/(max-min) * 100;
@@ -175,7 +185,7 @@ hilUtils.setSlider = function(sliderContainer, value, min, max) {
     sliderContainer.querySelector('.v-slider__thumb-label span').textContent = value;
 }
 
-hilUtils.sliderListener = function(event, sliderContainer, min, max, callback) {
+export function sliderListener(event, sliderContainer, min, max, callback) {
     sliderContainer.querySelector('.v-slider__thumb-container').classList.add('v-slider__thumb-container--active');
     const adjust = function(e) {
         const sliderRect = sliderContainer.querySelector('.v-slider').getClientRects()[0];
@@ -194,15 +204,15 @@ hilUtils.sliderListener = function(event, sliderContainer, min, max, callback) {
     }, { once: true });
 }
 
-hilUtils.wait = function(duration = 0) {
+export function wait(duration = 0) {
     return new Promise(function(resolve) {
         setTimeout(resolve, duration);
     });
 }
 
-hilUtils.transparentGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+export const transparentGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
-hilUtils.fixTagNesting = function(text) {
+export function fixTagNesting(text) {
     REGEX_TAG = /\[#[^/[\]]*?\]$/
     REGEX_COLOR_TAG = /\[#\/[0-9a-zA-Z]*?\]$/
     REGEX_UNCOLOR_TAG = /\[\/#\]$/
@@ -236,7 +246,7 @@ hilUtils.fixTagNesting = function(text) {
     return newText
 }
 
-hilUtils.getHTMLOfSelection = function() { // https://stackoverflow.com/questions/5083682/get-selected-html-in-browser-via-javascript
+export function getHTMLOfSelection() { // https://stackoverflow.com/questions/5083682/get-selected-html-in-browser-via-javascript
     let container = document.createElement('div');
     let range;
     if (document.selection && document.selection.createRange) {
@@ -256,7 +266,7 @@ hilUtils.getHTMLOfSelection = function() { // https://stackoverflow.com/question
     return container;
 }
 
-hilUtils.createSwitch = function(onchange, def=false) {
+export function createSwitch(onchange, def=false) {
     const label = document.createElement('div');
     label.className = 'hil-toggle';
     const input = document.createElement('input');
@@ -287,7 +297,7 @@ hilUtils.createSwitch = function(onchange, def=false) {
     return label;
 }
 
-hilUtils.setValue = function(elem, text) {
+export function setValue(elem, text) {
     if (document.activeElement == elem) {
         elem.selectionEnd = 9999999;
         elem.selectionStart = 0;
@@ -297,7 +307,7 @@ hilUtils.setValue = function(elem, text) {
         elem.dispatchEvent(new Event('input'));
     }
 }
-hilUtils.insertValue = function(elem, text, index) {
+export function insertValue(elem, text, index) {
     if (document.activeElement == elem) {
         elem.selectionEnd = index;
         elem.selectionStart = index;

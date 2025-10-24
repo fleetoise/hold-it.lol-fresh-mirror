@@ -14,14 +14,18 @@
   },
   "license": "MIT",
   "author": "Fleetoise (M.K.)",
-  "type": "commonjs",
   "main": "service-worker.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "copyfiles -f node_modules/webextension-polyfill/dist/browser-polyfill.js hold-it-lol/lib/"
+    "build:chrome": "webpack --mode=production --env browser=chrome",
+    "build:firefox": "webpack --mode=production --env browser=firefox",
+    "watch:chrome": "webpack --mode=development --watch --env browser=chrome",
+    "watch:firefox": "webpack --mode=development --watch --env browser=firefox"
   },
   "devDependencies": {
+    "copy-webpack-plugin": "13.0.1",
     "copyfiles": "2.4.1",
-    "webextension-polyfill": "0.12.0"
+    "webextension-polyfill": "0.12.0",
+    "webpack": "5.102.1",
+    "webpack-cli": "6.0.1"
   }
 }

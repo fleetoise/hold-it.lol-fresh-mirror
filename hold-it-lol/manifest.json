@@ -23,13 +23,11 @@
                 "*://objection.lol/courtroom/*"
             ],
             "js": [
-                "content/utils.js",
                 "content/main.js"
             ],
             "css": [
                 "content/style.css"
-            ],
-            "run_at": "document_end"
+            ]
         }
     ],
     "web_accessible_resources": [

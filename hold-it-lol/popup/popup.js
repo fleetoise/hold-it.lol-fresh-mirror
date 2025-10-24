@@ -27,7 +27,7 @@ function main() {
   const btnOptions = document.getElementById('options');
   btnOptions.addEventListener('click', function() {
     setTimeout(function() {
-      chrome.runtime.openOptionsPage();
+      browser.runtime.openOptionsPage();
       window.close();
     }, shakeDuration);
   });
@@ -36,7 +36,7 @@ function main() {
 
   btnCourt.addEventListener('click', function() {
     setTimeout(function() {
-      chrome.tabs.create({url: 'https://objection.lol/courtroom'});
+      browser.tabs.create({url: 'https://objection.lol/courtroom'});
       window.close();
     }, shakeDuration);
   });

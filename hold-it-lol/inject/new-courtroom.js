@@ -8,11 +8,7 @@ function setValue(elem, text) {
 
 
 function main(options) {
-  
-  
   console.log(url, auth, title);
-  
-
 }
 
 

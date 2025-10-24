@@ -50,6 +50,7 @@ body {
   padding: 0 var(--main-padding);
 }
 
+/* TODO I don't like how this looks */
 .bubble-btn {
   background: url(bubble.svg);
   background-size: 100% 100%;
