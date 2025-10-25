@@ -7,7 +7,7 @@ module.exports = (env) => {
 
   return {
     mode: 'development',
-    devtool: 'cheap-module-source-map',
+    devtool: 'inline-source-map',
     context: path.resolve(__dirname, 'hold-it-lol'),
     entry: {
       'service-worker': './service-worker.js',

@@ -1,8 +1,6 @@
 'use strict';
 
-import 'webextension-polyfill';
-
-// TODO understand the service worker code
+import browser from 'webextension-polyfill';
 
 
 

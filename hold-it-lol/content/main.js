@@ -1,4 +1,4 @@
-import 'webextension-polyfill';
+import browser from 'webextension-polyfill';
 
 import * as hilUtils from "./utils.js"
 import * as convenience from "./convenience.js"

@@ -1,1 +1,1 @@
-import 'webextension-polyfill';
+import browser from 'webextension-polyfill';

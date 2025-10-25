@@ -1,4 +1,5 @@
 'use strict';
+import browser from 'webextension-polyfill';
 
 const animationDuration = 150;
 

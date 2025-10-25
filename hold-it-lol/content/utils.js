@@ -1,4 +1,4 @@
-import 'webextension-polyfill';
+import browser from 'webextension-polyfill';
 
 export function addMessageListenerAll(window, callback) {
     function listener(event) {
