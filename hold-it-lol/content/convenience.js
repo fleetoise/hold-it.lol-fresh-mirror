@@ -8,6 +8,8 @@ export function record() {
       for (const node of mutation.addedNodes) {
         if (node.textContent?.includes("Record")) {
           hilUtils.elementFromText("MuiMenuItem-root", "Record")[0].click();
+          observer.disconnect();
+          break;
         }
       }
     }
