@@ -4,9 +4,10 @@ const CopyPlugin = require('copy-webpack-plugin');
 module.exports = (env) => {
   const browser = env.browser || 'chrome';
   const manifestFile = `manifest.${browser}.json`;
+  const outputDirName = browser === 'chrome' ? 'chromium' : 'firefox';
 
   return {
-    mode: 'development',
+    mode: env.watch ? 'development' : 'production',
     devtool: 'inline-source-map',
     context: path.resolve(__dirname, 'hold-it-lol'),
     entry: {
@@ -16,7 +17,7 @@ module.exports = (env) => {
       'options/options': './options/options.js',
     },
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, 'dist', outputDirName),
       filename: '[name].js',
       clean: true,
     },
@@ -38,5 +39,11 @@ module.exports = (env) => {
         ],
       }),
     ],
+    resolve: {
+       modules: [
+         path.resolve(__dirname, 'node_modules'),
+         'node_modules'
+       ]
+     },
   };
 };

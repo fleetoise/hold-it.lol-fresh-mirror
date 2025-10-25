@@ -19,12 +19,14 @@
     "build:chrome": "webpack --mode=production --env browser=chrome",
     "build:firefox": "webpack --mode=production --env browser=firefox",
     "watch:chrome": "webpack --mode=development --watch --env browser=chrome",
-    "watch:firefox": "webpack --mode=development --watch --env browser=firefox"
+    "watch:firefox": "webpack --mode=development --watch --env browser=firefox",
+    "clean": "rimraf dist"
   },
   "devDependencies": {
     "copy-webpack-plugin": "13.0.1",
     "copyfiles": "2.4.1",
-    "webextension-polyfill": "^0.12.0",
+    "rimraf": "6.0.1",
+    "webextension-polyfill": "0.12.0",
     "webpack": "5.102.1",
     "webpack-cli": "6.0.1"
   }
