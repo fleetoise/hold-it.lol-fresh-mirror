@@ -1,5 +1,12 @@
 import browser from 'webextension-polyfill';
 
+
+export const transparentGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+
+export async function getOptions() {
+  return (await browser.storage.local.get('options')).options || {};
+}
+
 export function addMessageListenerAll(window, callback) {
     function listener(event) {
         let eventAction, eventData;
@@ -43,7 +50,7 @@ export function testRegex(str, re) {
 
 export function kindaRandomChoice(array, seed = null) {
     if (seed === null) seed = Math.random();
-    const x = Math.sin(seed++) * 10000; 
+    const x = Math.sin(seed++) * 10000;
     const random = x - Math.floor(x);
     const i = Math.floor(random * array.length);
     return array[i];
@@ -162,13 +169,13 @@ export function verifyStructure(obj, structure) {
     for (let key in structure) {
         let type = obj[key]?.constructor;
         const structureType = structure[key]?.constructor;
-        
+
         if (!(key in obj) || (type !== structureType)) {
             obj[key] = structure[key];
         }
-        
+
         type = obj[key]?.constructor;
-        
+
         if (type === Object) {
             verifyStructure(obj[key], structure[key]);
         }
@@ -210,7 +217,6 @@ export function wait(duration = 0) {
     });
 }
 
-export const transparentGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
 export function fixTagNesting(text) {
     REGEX_TAG = /\[#[^/[\]]*?\]$/
@@ -262,7 +268,7 @@ export function getHTMLOfSelection() { // https://stackoverflow.com/questions/50
             container.appendChild(clonedSelection);
         }
     }
-    
+
     return container;
 }
 

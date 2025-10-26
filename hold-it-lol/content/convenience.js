@@ -1,6 +1,10 @@
 import browser from 'webextension-polyfill';
 
-import * as hilUtils from "./utils.js"
+import * as hilUtils from "../lib/utils.js"
+
+export function initFeatureConvenience(root, options) {
+
+}
 
 export function record() {
   let menuObserver = new MutationObserver(function(mutations, observer) {

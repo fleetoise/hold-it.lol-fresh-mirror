@@ -1,5 +1,8 @@
 'use strict';
 
+import browser from 'webextension-polyfill';
+
+
 let toggleHovering = null;
 let optionChanged = false;
 const tabs = [
@@ -114,13 +117,11 @@ function _readme() {
     return s;
 }
 
-function optionSet(key, value) {
-    browser.storage.local.get('options', function (result) {
-        const options = result.options || {};
-        options[key] = value;
-        options['seen-tutorial'] = true;
-        browser.storage.local.set({ 'options': options });
-    });
+async function optionSet(key, value) {
+  const options = (await browser.storage.local.get('options')).options || {};
+  options[key] = value;
+  options['seen-tutorial'] = true;
+  browser.storage.local.set({ 'options': options });
 }
 
 function createSwitch(onchange) {
