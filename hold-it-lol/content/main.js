@@ -1,22 +1,22 @@
 import browser from 'webextension-polyfill';
 
 import * as hdata from "../lib/utils/hdata.js";
+import * as hstring from "../lib/utils/hstring.js";
 import * as fconvenience from "./convenience.js";
 import * as finterface from "./interface.js";
 import * as fmessages from "./messages.js";
 import * as fmusicPacks from "./music_packs.js";
-import * as fenhancements from "./new_features.js";
+import * as fenhancements from "./enhancements.js";
 import * as fmoderation from "./moderation.js";
 
 async function init() {
   let root = document.getElementById('root');
-  let options = await hdata.getOptions();
   new MutationObserver(function(mutations, observer) {
     for (const mutation of mutations) {
       for (const node of mutation.removedNodes) {
         if (node.textContent?.includes("Join Courtroom")) {
           console.log("joined courtroom");
-          main(root, options);
+          main(root);
           observer.disconnect();
           break;
         }
@@ -30,14 +30,14 @@ async function init() {
 }
 
 
-function main(root, options) {
+function main(root) {
   console.log("holdit.lol --- Ready");
   console.log(hilUtils.fixTagNesting("[#/r][#bgs1][/#]"));
-  fconvenience.initFeatureConvenience(root, options);
-  finterface.initFeatureInterface(root, options);
-  fmessages.initFeatureMessages(root, options);
-  fmoderation.initFeatureModeration(root, options);
-  fmusicPacks.initFeatureMusicPacks(root, options);
-  fenhancements.initFeatureEnhancements(root, options);
+  fconvenience.initFeatureConvenience(root);
+  finterface.initFeatureInterface(root);
+  fmessages.initFeatureMessages(root);
+  fmoderation.initFeatureModeration(root);
+  fmusicPacks.initFeatureMusicPacks(root);
+  fenhancements.initFeatureEnhancements(root);
 }
 init();

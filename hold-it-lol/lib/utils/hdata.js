@@ -4,7 +4,6 @@ export async function getOptions() {
   return (await browser.storage.local.get('options')).options || {};
 }
 
-
 export function kindaRandomChoice(array, seed = null) {
     if (seed === null) seed = Math.random();
     const x = Math.sin(seed++) * 10000;

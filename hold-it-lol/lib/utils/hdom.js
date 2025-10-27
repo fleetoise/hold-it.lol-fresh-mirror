@@ -39,7 +39,7 @@ export function elementFromText(elementClass, str) {
 }
 
 export function addMessageListener(window, action, callback, once=false) {
-  const listener = hilUtils.addMessageListenerAll(window, function(eventAction, eventData) {
+  const listener = addMessageListenerAll(window, function(eventAction, eventData) {
     if (eventAction !== action) return;
     callback(eventData);
     if (once) window.removeEventListener('message', listener);

@@ -3,7 +3,7 @@ export function testRegex(str, re) {
     return match !== null && match[0] == match.input;
 }
 
-export function fixTagNesting(text) {
+export function tagStringFixer(text) {
     const REGEX_TAG = /\[#[^/[\]]*?\]$/
     const REGEX_COLOR_TAG = /\[#\/[0-9a-zA-Z]*?\]$/
     const REGEX_UNCOLOR_TAG = /\[\/#\]$/
