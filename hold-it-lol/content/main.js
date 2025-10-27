@@ -1,15 +1,16 @@
 import browser from 'webextension-polyfill';
 
-import * as hilUtils from "../lib/utils.js";
+import * as hdata from "../lib/utils/hdata.js";
 import * as fconvenience from "./convenience.js";
 import * as finterface from "./interface.js";
 import * as fmessages from "./messages.js";
 import * as fmusicPacks from "./music_packs.js";
 import * as fenhancements from "./new_features.js";
+import * as fmoderation from "./moderation.js";
 
 async function init() {
   let root = document.getElementById('root');
-  let options = await getOptions();
+  let options = await hdata.getOptions();
   new MutationObserver(function(mutations, observer) {
     for (const mutation of mutations) {
       for (const node of mutation.removedNodes) {
@@ -31,6 +32,7 @@ async function init() {
 
 function main(root, options) {
   console.log("holdit.lol --- Ready");
+  console.log(hilUtils.fixTagNesting("[#/r][#bgs1][/#]"));
   fconvenience.initFeatureConvenience(root, options);
   finterface.initFeatureInterface(root, options);
   fmessages.initFeatureMessages(root, options);
