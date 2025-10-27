@@ -32,7 +32,6 @@ async function init() {
 
 function main(root) {
   console.log("holdit.lol --- Ready");
-  console.log(hilUtils.fixTagNesting("[#/r][#bgs1][/#]"));
   fconvenience.initFeatureConvenience(root);
   finterface.initFeatureInterface(root);
   fmessages.initFeatureMessages(root);

@@ -310,7 +310,7 @@ function main() {
     document.addEventListener('mouseup', function () {
         toggleHovering = null;
         document.body.style.cssText = '';
-        if (optionChanged && courtroomOpen) error('Reload your objection.lol/courtroom to see the changes.');
+        //if (optionChanged && courtroomOpen) error('Reload your objection.lol/courtroom to see the changes.');
     });
 
     const mainDiv = document.querySelector('.main');
