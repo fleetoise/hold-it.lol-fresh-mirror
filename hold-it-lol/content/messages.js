@@ -6,20 +6,22 @@ import * as hdata from "../lib/utils/hdata.js";
 let chatInputBox;
 
 function onOptionsUpdate(changes) {
-  const changedOptions = Object.keys(changes);
+  if (changes.options) {
+    const changedOptions = changes.options.newValue;
 
-  for (const option of changedOptions) {
-    switch (option) {
-      case "newlines":
-        break;
-      case "fix-tag-nesting":
-        if (changes[option].newValue) {
-          fixTagNestingOn();
-        } else {
-          fixTagNestingOff();
-        }
-      default:
-        break;
+    for (const option of Object.keys(changedOptions)) {
+      switch (option) {
+        case "newlines":
+          break;
+        case "fix-tag-nesting":
+        if (changedOptions[option]) {
+            fixTagNestingOn();
+          } else {
+            fixTagNestingOff();
+          }
+        default:
+          break;
+      }
     }
   }
 }
