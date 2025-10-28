@@ -120,7 +120,6 @@ function _readme() {
 async function optionSet(key, value) {
   const options = (await browser.storage.local.get('options')).options || {};
   options[key] = value;
-  options['seen-tutorial'] = true;
   browser.storage.local.set({ 'options': options });
 }
 
