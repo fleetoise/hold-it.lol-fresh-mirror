@@ -65,7 +65,7 @@ const disableTestimonyShortcut = {
     document.addEventListener("keydown", this.interceptShortcut, true);
   },
   disable: function () {
-    document.removeEventListener("keydown", interceptShortcut, true);
+    document.removeEventListener("keydown", this.interceptShortcut, true);
   }
 }
 
