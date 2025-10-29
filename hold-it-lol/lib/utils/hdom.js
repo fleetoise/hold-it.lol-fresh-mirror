@@ -1,3 +1,4 @@
+// this part is a little fragile, but it gets the job done for now. FIXME
 const _popperText = [
   "Insert Tag",
   "Small",
