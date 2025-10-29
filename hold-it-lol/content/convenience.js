@@ -55,10 +55,24 @@ const autoRecord = {
   disable: () => {},
 };
 
+const disableTestimonyShortcut = {
+  interceptShortcut: function (event) {
+    if (document.activeElement != hdom.getInputBox()) {
+      event.stopImmediatePropagation();
+    }
+  },
+  enable: function () {
+    document.addEventListener("keydown", this.interceptShortcut, true);
+  },
+  disable: function () {
+    document.removeEventListener("keydown", interceptShortcut, true);
+  }
+}
+
 const features = {
   "auto-record": autoRecord,
   "unblur-low-res": dummyObject,
-  "disable-testimony-shortcut": dummyObject,
+  "disable-testimony-shortcut": disableTestimonyShortcut,
   "now-playing": dummyObject,
   "menu-auto-close": dummyObject,
   "menu-hover": activateOnHover,
