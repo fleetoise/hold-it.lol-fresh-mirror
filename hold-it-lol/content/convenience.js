@@ -3,7 +3,7 @@ import * as hdom from "../lib/utils/hdom.js";
 import * as hdata from "../lib/utils/hdata.js";
 import { dummyObject } from "../lib/utils/hmisc.js";
 
-const activateOnHover = {
+const displayPlayingMusic = {
   enable: function () {},
 
   disable: function () {},
@@ -14,9 +14,23 @@ const autoCloseMenus = {
   disable: function () {},
 };
 
-const displayPlayingMusic = {
-  enable: function () {},
-  disable: function () {},
+const activateOnHover = {
+  _buttons: null,
+  buttonListener: function (event) {
+    event.target.click();
+    hdom.getInputBox().focus();
+  },
+  enable: function () {
+    this._buttons = document.querySelector("[data-testid=PaletteIcon]").parentElement.parentElement.querySelectorAll("button");
+    for (const button of this._buttons) {
+      button.addEventListener("mouseenter", this.buttonListener);
+    }
+  },
+  disable: function () {
+    for (const button of this._buttons) {
+      button.removeEventListener("mouseenter", this.buttonListener);
+    }
+  },
 };
 
 const autoRecord = {
@@ -47,12 +61,22 @@ const features = {
   "disable-testimony-shortcut": dummyObject,
   "now-playing": dummyObject,
   "menu-auto-close": dummyObject,
-  "menu-hover": dummyObject,
+  "menu-hover": activateOnHover,
 };
 
-// TODO
-function onOptionUpdate(changes) {
-  {
+function onOptionsUpdate(changes) {
+  if (changes.options) {
+    const changedOptions = changes.options.newValue;
+
+    for (const option in changedOptions) {
+      if (option in features) {
+        if (changedOptions[option]) {
+          features[option].enable();
+        } else {
+          features[option].disable();
+        }
+      }
+    }
   }
 }
 
@@ -66,7 +90,7 @@ async function stageOne() {
 }
 
 function stageTwo() {
-  browser.storage.onChanged.addListener(onOptionUpdate);
+  browser.storage.onChanged.addListener(onOptionsUpdate);
 }
 
 export async function initFeatureConvenience(root, staleOptions) {
