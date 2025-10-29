@@ -10,8 +10,41 @@ const displayPlayingMusic = {
 };
 
 const autoCloseMenus = {
-  enable: function () {},
-  disable: function () {},
+  _buttons: null,
+  _popObserver: null,
+  buttonListener: function (event) {
+    document.body.click();
+  },
+  enable: function () {
+    this._popObserver = new MutationObserver((mutations, observer) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (
+            node instanceof Element &&
+            node.classList.contains("MuiPopper-root")
+          ) {
+            this._buttons = hdom.getPopButtons(node);
+            for (const button of this._buttons) {
+              button.addEventListener("click", this.buttonListener);
+            }
+          }
+        }
+      }
+    });
+
+    this._popObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  },
+  disable: function () {
+    if (this._popObserver) {
+      this._popObserver.disconnect();
+      for (const button of this._buttons) {
+        button.removeEventListener("click", this.buttonListener);
+      }
+    }
+  },
 };
 
 const activateOnHover = {
@@ -21,14 +54,18 @@ const activateOnHover = {
     hdom.getInputBox().focus();
   },
   enable: function () {
-    this._buttons = document.querySelector("[data-testid=PaletteIcon]").parentElement.parentElement.querySelectorAll("button");
+    this._buttons = document
+      .querySelector("[data-testid=PaletteIcon]")
+      .parentElement.parentElement.querySelectorAll("button");
     for (const button of this._buttons) {
       button.addEventListener("mouseenter", this.buttonListener);
     }
   },
   disable: function () {
-    for (const button of this._buttons) {
-      button.removeEventListener("mouseenter", this.buttonListener);
+    if (this._buttons) {
+      for (const button of this._buttons) {
+        button.removeEventListener("mouseenter", this.buttonListener);
+      }
     }
   },
 };
@@ -66,15 +103,15 @@ const disableTestimonyShortcut = {
   },
   disable: function () {
     document.removeEventListener("keydown", this.interceptShortcut, true);
-  }
-}
+  },
+};
 
 const features = {
   "auto-record": autoRecord,
   "unblur-low-res": dummyObject,
   "disable-testimony-shortcut": disableTestimonyShortcut,
   "now-playing": dummyObject,
-  "menu-auto-close": dummyObject,
+  "menu-auto-close": autoCloseMenus,
   "menu-hover": activateOnHover,
 };
 
