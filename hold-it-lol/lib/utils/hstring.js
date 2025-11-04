@@ -1,7 +1,10 @@
+const BGM_TAG_REGEX = /\[#([a-zA-Z0-9]+)\]/g;
+
 export function testRegex(str, re) {
     const match = str.match(re);
     return match !== null && match[0] == match.input;
 }
+
 
 export function tagStringFixer(text) {
     const REGEX_TAG = /\[#[^/[\]]*?\]$/

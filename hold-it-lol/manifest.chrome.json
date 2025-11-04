@@ -22,9 +22,16 @@
     {
       "matches": ["*://objection.lol/courtroom/*"],
       "js": ["content/main.js"],
-      "css": ["content/style.css"]
+      "css": ["content/style.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://objection.lol/courtroom/*"],
+      "js": ["content/ws_patch.js"],
+      "run_at": "document_start"
     }
   ],
+  "run_at": "document_start",
   "web_accessible_resources": [
     {
       "matches": ["*://objection.lol/*"],

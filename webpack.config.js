@@ -26,6 +26,7 @@ module.exports = (env) => {
         patterns: [
           { from: manifestFile, to: 'manifest.json' },
 
+          { from: 'content/ws_patch.js', to: 'content/' },
           { from: 'assets', to: 'assets' },
           { from: 'popup/popup.html', to: 'popup/' },
           { from: 'popup/popup.css', to: 'popup/' },
