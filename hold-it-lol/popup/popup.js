@@ -42,7 +42,7 @@ function main() {
 
       bellTextInput.value = bellText;
 
-      if (options['message-bell'] === false) {
+      if (!options['message-bell']) {
         bellTextContainer.classList.add('disabled');
         bellTextInput.disabled = true;
         bellTextInput.placeholder = 'Message bell option is disabled.';
