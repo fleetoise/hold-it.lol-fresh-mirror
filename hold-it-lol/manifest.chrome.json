@@ -10,7 +10,8 @@
     "contextMenus",
     "unlimitedStorage",
     "tts",
-    "scripting"
+    "scripting",
+    "notifications"
   ],
   "host_permissions": [
     "*://objection.lol/courtroom/*",
@@ -29,7 +30,8 @@
     {
       "matches": ["*://objection.lol/courtroom/*"],
       "js": ["content/ws_patch.js"],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [

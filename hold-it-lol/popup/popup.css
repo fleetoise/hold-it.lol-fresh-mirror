@@ -104,6 +104,108 @@ body {
   transform: none;
 }
 
+
+.bell-text-section {
+  padding: 0 var(--main-padding) 8px;
+  margin-top: -4px;
+  text-align: right;
+}
+
+.bell-text-section h3 {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  text-align: left;
+}
+
+.input-container {
+  position: relative;
+}
+
+#bell-text-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-gray);
+  border-radius: 8px;
+  padding: 8px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  background-color: #FFF;
+  color: var(--color-text-primary);
+  resize: vertical;
+  min-height: 60px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+#bell-text-input:focus {
+  outline: none;
+  border-color: var(--color-btn-2);
+  box-shadow: 0 0 0 2px rgba(179, 229, 252, 0.5);
+}
+
+#bell-text-input::placeholder {
+  color: var(--color-gray);
+  opacity: 1;
+}
+
+/* Disabled state */
+.input-container.disabled {
+  cursor: not-allowed;
+}
+
+.input-container.disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(234, 230, 240, 0.6);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.input-container.disabled #bell-text-input {
+  background-color: var(--color-bg-secondary);
+  cursor: not-allowed;
+}
+
+/* New Save Button styles */
+.save-btn {
+  background-color: var(--color-btn-1); /* Use green button color */
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Roboto', sans-serif;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.save-btn:hover {
+  background-color: #b9e0ba;
+}
+
+.save-btn:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.save-btn:disabled {
+  background-color: var(--color-gray);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.save-btn.hidden {
+  display: none;
+}
+
 .discord-link {
   display: flex;
   align-items: center;

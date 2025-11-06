@@ -10,6 +10,7 @@ const tabs = [
         title: 'Convenience',
         items: [
             { key: 'auto-record', title: 'Auto-recording', description: 'Automatically start recording joined courtrooms (saving is manual).', preview: 'previews/auto-record.png' },
+          { key: 'message-bell', title: "Message Bell", description: "Whenever a specified text is encountered in message logs, a bell sound is played", preview: 'previews/placeholder.png'},
             { key: 'save-last-character', title: 'Remember last character', description: 'The last character you used (with the extension on) is selected by default in the next court.', preview: 'previews/save-last-character.png' },
             { key: 'unblur-low-res', title: 'Unblur pixel characters', description: 'Makes character poses with low resolutions sharp instead of blurry.', preview: 'previews/unblur-low-res.png' },
             { key: 'disable-testimony-shortcut', title: 'Disable T key', description: 'Turn off the "T" hotkey that toggles "give testimony".', preview: 'previews/disable-testimony-shortcut.png' },
@@ -290,14 +291,9 @@ function error(text) {
 
 let courtroomOpen = false;
 if (browser.storage !== undefined) {
-    browser.tabs.query(
-        {
-            "url": "*://objection.lol/courtroom/*"
-        },
-        function (tabs) {
-            if (tabs.length > 0) courtroomOpen = true;
-        }
-    );
+    browser.tabs.query({ url: "*://objection.lol/courtroom/*" }).then(tabs => {
+        if (tabs.length > 0) courtroomOpen = true;
+    });
 }
 
 function main() {

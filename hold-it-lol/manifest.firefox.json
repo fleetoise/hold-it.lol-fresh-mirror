@@ -10,7 +10,8 @@
     "contextMenus",
     "unlimitedStorage",
     "tts",
-    "scripting"
+    "scripting",
+    "notifications"
   ],
   "host_permissions": [
     "*://objection.lol/courtroom/*",

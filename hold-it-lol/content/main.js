@@ -35,16 +35,7 @@ async function init() {
 
 function main(root) {
   console.log("holdit.lol --- Ready");
-  if (!sessionStorage.getItem('ws_patched_reloaded')) {
-      console.log('Hil: WebSocket API has been patched. Reloading to apply');
-      window.location.reload();
-  }
 
-  window.onmessage = (event) => {
-    if (event.source === "hil-ws-sniffer") {
-      console.log(`Got ws message: $(event.data)`);
-    }
-  };
   fconvenience.initFeatureConvenience(root);
   finterface.initFeatureInterface(root);
   fmessages.initFeatureMessages(root);

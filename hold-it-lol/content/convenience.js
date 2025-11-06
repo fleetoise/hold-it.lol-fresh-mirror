@@ -92,6 +92,69 @@ const autoRecord = {
   disable: () => {},
 };
 
+const messageBell = {
+  _bellText: "",
+  _containsBellText: function (node) {
+    if (this._bellText && this._bellText.length > 0) {
+      return node.textContent?.includes(this._bellText);
+    }
+    return false;
+  },
+  _observer: null,
+  _storageListener: null,
+  enable: function () {
+    browser.storage.local.get(["bellText"]).then((result) => {
+      if (result.bellText) {
+        this._bellText = result.bellText;
+      }
+
+      this._observer = new MutationObserver((mutations, observer) => {
+        console.log("layer1");
+        for (const mutation of mutations) {
+          console.log("layer2");
+          for (const node of mutation.addedNodes) {
+            console.log(node.textContent);
+            console.log(this._containsBellText(node));
+            if (
+              node instanceof Element &&
+              node.classList.contains("MuiListItem-root") &&
+              this._containsBellText(node)
+            ) {
+              console.log("layer3");
+              browser.runtime.sendMessage({
+                type: "hil-notification",
+                title: "Holdit.lol Notification",
+                message: "Bell text found in courtroom chat log",
+              });
+            }
+          }
+        }
+      });
+
+      this._observer.observe(document.querySelector(".MuiList-root"), {
+        childList: true,
+        subtree: true,
+      });
+    });
+
+    this._storageListener = (changes, area) => {
+      if (area === "local" && changes.bellText) {
+        this._bellText = changes.bellText.newValue || "";
+      }
+    };
+    browser.storage.onChanged.addListener(this._storageListener);
+  },
+
+  disable: function () {
+    if (this._observer) {
+      this._observer.disconnect();
+    }
+    if (this._storageListener) {
+      browser.storage.onChanged.removeListener(this._storageListener);
+    }
+  },
+};
+
 const disableTestimonyShortcut = {
   interceptShortcut: function (event) {
     if (document.activeElement != hdom.getInputBox()) {
@@ -108,6 +171,7 @@ const disableTestimonyShortcut = {
 
 const features = {
   "auto-record": autoRecord,
+  "message-bell": messageBell,
   "unblur-low-res": dummyObject,
   "disable-testimony-shortcut": disableTestimonyShortcut,
   "now-playing": dummyObject,
