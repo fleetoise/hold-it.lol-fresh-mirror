@@ -1,4 +1,7 @@
-const patchCode = `
+
+try {
+  const script = document.createElement('script');
+  const patchCode = `
 (function() {
     const OriginalWebSocket = window.WebSocket;
 
@@ -10,7 +13,6 @@ const patchCode = `
         ws.addEventListener = function(type, listener, options) {
             if (type === 'message') {
                 const wrappedListener = function(event) {
-                    console.log(event.data);
                     window.postMessage({
                         source: 'hil-ws-sniffer',
                         direction: 'in',
@@ -37,16 +39,17 @@ const patchCode = `
 
     window.WebSocket = PatchedWebSocket;
 
-    console.log('Hil: WebSocket API has been patched');
+
 })();
 `;
 
-try {
-  const script = document.createElement('script');
   script.textContent = patchCode;
   (document.head || document.documentElement).appendChild(script);
 
   script.remove();
+  sessionStorage.setItem('ws_patched_reloaded', 'true');
+
+
 } catch (e) {
   console.error('Hold-it-lol: error injecting WebSocket patch:', e);
 }

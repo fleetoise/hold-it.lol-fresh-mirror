@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 
 import * as hdata from "../lib/utils/hdata.js";
+import * as hdom from "../lib/utils/hdom.js";
 import * as hstring from "../lib/utils/hstring.js";
 import * as fconvenience from "./convenience.js";
 import * as finterface from "./interface.js";
@@ -34,6 +35,16 @@ async function init() {
 
 function main(root) {
   console.log("holdit.lol --- Ready");
+  if (!sessionStorage.getItem('ws_patched_reloaded')) {
+      console.log('Hil: WebSocket API has been patched. Reloading to apply');
+      window.location.reload();
+  }
+
+  window.onmessage = (event) => {
+    if (event.source === "hil-ws-sniffer") {
+      console.log(`Got ws message: $(event.data)`);
+    }
+  };
   fconvenience.initFeatureConvenience(root);
   finterface.initFeatureInterface(root);
   fmessages.initFeatureMessages(root);
@@ -41,4 +52,11 @@ function main(root) {
   fmusicPacks.initFeatureMusicPacks(root);
   fenhancements.initFeatureEnhancements(root);
 }
+
+browser.runtime.onMessage.addListener((request) => {
+  if (request.type === "PING") {
+    return Promise.resolve({ type: "PONG" });
+  }
+});
+
 init();

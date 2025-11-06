@@ -2,10 +2,32 @@
 
 import browser from 'webextension-polyfill';
 
+function injectScripts(tabId) {
+  console.log(`Injecting hil into ${tabId}`);
 
+  browser.scripting.insertCSS({
+    target: { tabId: tabId },
+    files: ["content/style.css"]
+  });
 
-browser.webNavigation.onHistoryStateUpdated.addListener(e => {
-    browser.tabs.sendMessage( e.tabId, ["courtroom_state_loaded"] );
+  browser.scripting.executeScript({
+    target: { tabId: tabId },
+    files: ["content/main.js"]
+  });
+}
+
+browser.webNavigation.onHistoryStateUpdated.addListener(event => {
+  browser.tabs.sendMessage( event.tabId, {type: "PING"} )
+         .then(response => {
+           if (response && response.type === "PONG") {
+             return;
+           }
+
+           injectScripts(event.tabId);
+         }).catch((e) => {
+           console.log(e);
+           injectScripts(event.tabId);
+         });
 }, {url: [{urlMatches: ".*objection\\.lol\\/courtroom\\/..*"}]});
 
 
