@@ -10,6 +10,22 @@ const _popperText = [
   "Stop sounds tag",
 ];
 
+export function chatMessageObserver(callback) {
+  let _observer = new MutationObserver((mutations, observer) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        callback(node);
+      }
+    }
+  });
+
+  _observer.observe(document.querySelector(".MuiList-root"), {
+    childList: true,
+    subtree: true,
+  });
+  return _observer;
+}
+
 export function htmlToElement(html) {
   const template = document.createElement("template");
   template.innerHTML = html.trim();
