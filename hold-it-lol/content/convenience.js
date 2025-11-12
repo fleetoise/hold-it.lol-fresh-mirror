@@ -107,12 +107,11 @@ const messageBell = {
     }
   },
   enable: function () {
-    let result = browser.storage.local.get(["bellText"]).then((result) => {
-      return result;
+    browser.storage.local.get(["bellText"]).then((result) => {
+      if (result.bellText) {
+        this._bellText = result.bellText || "";
+      }
     });
-    if (result.bellText) {
-      this._bellText = result.bellText || "";
-    }
 
     browser.storage.onChanged.addListener(this._storageListener.bind(this));
 

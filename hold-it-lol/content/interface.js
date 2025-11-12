@@ -1,17 +1,30 @@
 import browser from "webextension-polyfill";
+import Autolinker from "autolinker";
 import * as hstring from "../lib/utils/hstring.js";
 import * as hdom from "../lib/utils/hdom.js";
 import * as hdata from "../lib/utils/hdata.js";
 import * as hmisc from "../lib/utils/hmisc.js";
 
+
 const clickableChatLinks = {
-  enable: function() {
-
+  _observer: null,
+  _autolinker: new Autolinker(),
+  enable: function () {
+    this._observer = hdom.chatMessageObserver((node) => {
+      if (
+        node instanceof Element &&
+        node.classList.contains("MuiListItem-root")
+      ) {
+        node.querySelectorAll("p")[1].innerHTML = this._autolinker.link(node.querySelectorAll("p")[1].innerHTML);
+      }
+    });
   },
-  disable: function() {
-
-  }
-}
+  disable: function () {
+    if (this._observer) {
+      this._observer.disconnect();
+    }
+  },
+};
 
 const features = {
   "old-toggles": hmisc.dummyObject,
@@ -45,11 +58,12 @@ function onOptionsUpdate(changes) {
 async function stageOne() {
   let options = await hdata.getOptions();
   for (const option in options) {
-    if (option in Object.keys(features)) {
+    if (option in features) {
       if (options[option]) features[option].enable();
     }
   }
 }
+
 
 function stageTwo() {
   browser.storage.onChanged.addListener(onOptionsUpdate);
