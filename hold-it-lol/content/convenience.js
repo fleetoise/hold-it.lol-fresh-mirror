@@ -55,7 +55,7 @@ const activateOnHover = {
   },
   enable: function () {
     this._buttons = document
-      .querySelector("[data-testid=PaletteIcon]")
+      .querySelector("[data-testid=PaletteIcon]") // xd
       .parentElement.parentElement.querySelectorAll("button");
     for (const button of this._buttons) {
       button.addEventListener("mouseenter", this.buttonListener);
@@ -152,6 +152,15 @@ const disableTestimonyShortcut = {
   },
 };
 
+const quickSoundsAndMusic = {
+  enable: function () {
+
+  },
+  disable: function () {
+
+  }
+}
+
 const features = {
   "auto-record": autoRecord,
   "message-bell": messageBell,
@@ -160,6 +169,7 @@ const features = {
   "now-playing": dummyObject,
   "menu-auto-close": autoCloseMenus,
   "menu-hover": activateOnHover,
+  "sound-insert": quickSoundsAndMusic,
 };
 
 function onOptionsUpdate(changes) {
