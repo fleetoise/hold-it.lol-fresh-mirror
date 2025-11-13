@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holdit.lol Timeline</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #64748b;
+            --accent-done: #10b981; /* Emerald */
+            --accent-todo: #475569; /* Slate */
+            --line-color: #334155;
+            --font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* horizontal Scroll Container */
+        .timeline-wrapper {
+            width: 100%;
+            height: 450px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            box-sizing: border-box;
+
+            scrollbar-width: thin;
+            scrollbar-color: var(--line-color) var(--bg-color);
+        }
+
+        .timeline-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+        .timeline-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        .timeline-wrapper::-webkit-scrollbar-thumb {
+            background-color: var(--line-color);
+            border-radius: 4px;
+        }
+
+        .timeline-item {
+            position: relative;
+            min-width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            border-top: 2px solid var(--line-color);
+        }
+
+        .timeline-item.status-done {
+            border-top-color: var(--accent-done);
+            opacity: 1;
+        }
+        .timeline-item.status-todo {
+            opacity: 0.8;
+        }
+
+        .timeline-node {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            border: 2px solid var(--accent-todo);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item.status-done .timeline-node {
+            background-color: var(--accent-done);
+            border-color: var(--accent-done);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .card {
+            position: absolute;
+            width: 180px;
+            padding: 12px;
+            border-radius: 6px;
+            background: var(--card-bg);
+            font-size: 0.85rem;
+            transition: transform 0.2s;
+            border: 1px solid #334155;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            z-index: 10;
+            border-color: var(--text-secondary);
+        }
+
+        .timeline-item:nth-child(odd) .card {
+            bottom: 30px;
+        }
+        .timeline-item:nth-child(odd)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            height: 30px;
+            background: linear-gradient(to top, var(--line-color), transparent);
+            opacity: 0.5;
+        }
+
+        .timeline-item:nth-child(even) .card {
+            top: 30px; /* Push down from line */
+        }
+        .timeline-item:nth-child(even)::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 1px;
+            height: 30px;
+            background: linear-gradient(to bottom, var(--line-color), transparent);
+            opacity: 0.5;
+        }
+
+        /* Text Styling */
+        .date {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: monospace;
+        }
+
+        .title {
+            font-weight: 500;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .status-done .date { color: var(--accent-done); }
+        .status-todo .title { color: var(--text-secondary); }
+
+        .mini-check {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+            opacity: 0.8;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+<h1>Holdit.lol Fresh, Project Roadmap</h1>
+
+<div class="timeline-wrapper" id="roadmap">
+    </div>
+
+<script>
+    const rawData = [
+        { id: -9, title: "Cross-browser support (Firefox/Chrome)", date: "22/10/25", done: true },
+        { id: -8, title: "Changed Popup UI", date: "24/10/25", done: true },
+        { id: -7, title: "Modularized code", date: "26/10/25", done: true },
+        { id: -6, title: "option hot-loading", date: "26/10/25", done: true },
+        { id: -5, title: "Fix tags inside color tags", date: "29/10/25", done: true },
+        { id: -4, title: "Open menus by hovering", date: "30/10/25", done: true },
+        { id: -3, title: "Option to disable testimony shortcut", date: "30/10/25", done: true },
+        { id: -2, title: "Auto close menus", date: "30/10/25", done: true },
+        { id: -1, title: "Bell text", date: "10/11/25", done: true },
+        { id: 0, title: "Clickable chat links", date: "13/11/25", done: true },
+        { id: 1, title: "Quick sounds and music", date: "14/11/25", done: false },
+        { id: 2, title: "More color tags", date: "16/11/25", done: false },
+        { id: 3, title: "Quickly typing pauses", date: "17/11/25", done: false },
+        { id: 4, title: "Classic toggles", date: "19/11/25", done: false },
+        { id: 5, title: "Classic speech bubbles", date: "19/11/25", done: false },
+        { id: 6, title: "Don't delay dialogue toggle", date: "20/11/25", done: false },
+        { id: 7, title: "No talking toggle", date: "20/11/25", done: false },
+        { id: 8, title: "Fullscreen evidence button", date: "22/11/25", done: false },
+        { id: 9, title: "Extended chat log", date: "28/11/25", done: false },
+        { id: 10, title: "Quick sound effects", date: "30/11/25", done: false },
+        { id: 11, title: "Color hotkeys", date: "30/11/25", done: false },
+        { id: 12, title: "Multiple bell texts", date: "05/12/25", done: false },
+        { id: 13, title: "Effect hotkeys", date: "05/12/25", done: false },
+        { id: 14, title: "Separate volume sliders", date: "15/12/25", done: false },
+        { id: 15, title: "Preload resources spectating", date: "20/12/25", done: false },
+        { id: 16, title: "Reload custom characters", date: "20/12/25", done: false },
+        { id: 17, title: "Custom character archiver", date: "07/01/26", done: false },
+        { id: 18, title: "Music packs", date: "10/01/26", done: false },
+        { id: 19, title: "Unblur pixel characters", date: "15/01/26", done: false },
+        { id: 20, title: "Roleplay testimony", date: "18/01/26", done: false },
+        { id: 21, title: "Pose icon maker", date: "20/01/26", done: false },
+        { id: 22, title: "Display playing music", date: "20/01/26", done: false },
+        { id: 23, title: "Dual effect button", date: "23/01/26", done: false },
+        { id: 24, title: "Smart 'to normal' poses", date: "30/01/26", done: false },
+        { id: 25, title: "Add evidence from GDocs", date: "31/01/26", done: false },
+    ];
+
+    const container = document.getElementById('roadmap');
+
+    // https://uxwing.com/small-check-mark-icon
+    const checkSVG = `<svg width="12" height="10" viewBox="0 0 122.88 102.97" fill="#10a64a"><path d="M4.82,69.68c-14.89-16,8-39.87,24.52-24.76,5.83,5.32,12.22,11,18.11,16.27L92.81,5.46c15.79-16.33,40.72,7.65,25.13,24.07l-57,68A17.49,17.49,0,0,1,48.26,103a16.94,16.94,0,0,1-11.58-4.39c-9.74-9.1-21.74-20.32-31.86-28.9Z"/></svg>`;
+    function renderTimeline() {
+        rawData.forEach(item => {
+            const itemEl = document.createElement('div');
+            const statusClass = item.done ? 'status-done' : 'status-todo';
+
+            itemEl.className = `timeline-item ${statusClass}`;
+
+            const checkMark = item.done ? checkSVG : '';
+
+            itemEl.innerHTML = `
+                <div class="timeline-node"></div>
+                <div class="card">
+                    <div class="date">
+                        ${checkMark}
+                        <span>${item.date}</span>
+                    </div>
+                    <p class="title">${item.title}</p>
+                </div>
+            `;
+
+            container.appendChild(itemEl);
+        });
+
+        // scroll to the first unfinished item or end of completed list
+        setTimeout(() => {
+            const firstTodo = document.querySelector('.status-todo');
+            if(firstTodo) {
+                // scroll so the transition point is somewhat centered
+                container.scrollLeft = firstTodo.offsetLeft - (container.clientWidth / 2) + 100;
+            }
+        }, 100);
+    }
+
+    renderTimeline();
+</script>
+</body>
+</html>
