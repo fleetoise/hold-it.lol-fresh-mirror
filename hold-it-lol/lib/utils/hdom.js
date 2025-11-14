@@ -61,12 +61,23 @@ export function getPopButtons(node) {
   return buttons.filter((button) => _popperText.includes(button.textContent));
 }
 
-export function elementFromText(elementClass, str) {
+// Search parents as in search the parents of the node provided to the function
+export function elementFromText(elementClass, str, node, searchParents) {
+  function filterElements(nodeList, node, searchParents) {
+    if (searchParents) {
+      return nodeList.filter((n) => n.contains(node));
+    } else {
+      return nodeList.filter((n) => node.contains(n));
+    }
+  }
   let returnList = [];
   for (const item of document.querySelectorAll(`.${elementClass}`)) {
     if (item.textContent.trim() == str) {
       returnList.push(item);
     }
+  }
+  if (node) {
+    returnList = filterElements(returnList, node, searchParents);
   }
   return returnList;
 }

@@ -134,7 +134,9 @@ const messageBell = {
     if (this._storageListener) {
       browser.storage.onChanged.removeListener(this._storageListener);
     }
-    this._observer.disconnect();
+    if (this._observer) {
+      this._observer.disconnect();
+    }
   },
 };
 
@@ -153,13 +155,22 @@ const disableTestimonyShortcut = {
 };
 
 const quickSoundsAndMusic = {
+  interceptClick: function (event) {
+    if (event.target.closest(".MuiAutocomplete-listbox")) { // MuiPopper-root MuiButtonBase-root
+      const parentPopper = [...document.querySelectorAll(".MuiPopper-root")].filter((n) => n.querySelector('button') != null)[0]
+      this.hdom.elementFromText("MuiButtonBase-root", "Insert Tag", parentPopper)[0].click();
+      document.body.click();
+    }
+  },
   enable: function () {
-
+    this.hdom = hdom;
+    this._interceptClick = this.interceptClick.bind(this);
+    document.addEventListener("click", this._interceptClick);
   },
   disable: function () {
-
-  }
-}
+    document.removeEventListener("click", this._interceptClick);
+  },
+};
 
 const features = {
   "auto-record": autoRecord,
