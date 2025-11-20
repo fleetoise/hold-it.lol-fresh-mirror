@@ -11,7 +11,6 @@ import * as fenhancements from "./enhancements.js";
 import * as fmoderation from "./moderation.js";
 
 
-
 async function init() {
   let root = document.getElementById('root');
   new MutationObserver(function(mutations, observer) {

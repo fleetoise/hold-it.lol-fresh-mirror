@@ -6,6 +6,65 @@ import * as hmisc from "../lib/utils/hmisc.js";
 
 let chatInputBox;
 
+const colorHotkeys = {
+  applyColorTag: function (color) {
+    const start = chatInputBox.selectionStart;
+    const end = chatInputBox.selectionEnd;
+    const _value = chatInputBox.value;
+
+    const event = new Event('input', { bubbles: true });
+
+    const openTag = `[#/${color}]`;
+    const closeTag = `[/#]`;
+
+    if (start == end) {
+      chatInputBox.value =
+        _value.substring(0, start) + openTag + closeTag + _value.substring(end);
+
+      chatInputBox.dispatchEvent(event); // could I technically just add this after the if block instead of repeating twice?
+      // maybe.  But currently I'm lazy and would rather not think, instead inserting this unnecessarily long comment
+    } else {
+      chatInputBox.value =
+        _value.substring(0, start) +
+        openTag +
+        _value.substring(start, end) +
+        closeTag +
+        _value.substring(end);
+
+        chatInputBox.dispatchEvent(event);
+    }
+  },
+
+  handleHotKey: function (event) {
+    if (!event.altKey) return;
+
+    const colorMap = {
+      "1": "r",
+      "2": "g",
+      "3": "b",
+    };
+
+    const color = colorMap[event.key];
+
+    if (color) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.applyColorTag(color);
+    }
+  },
+
+  enable: function () {
+    this._handleHotKey = this.handleHotKey.bind(this);
+    chatInputBox.addEventListener("keydown", this._handleHotKey, true);
+  },
+  disable: function () {
+    if (this._handleHotKey) {
+      chatInputBox.removeEventListener("keydown", this._handleHotKey, true);
+    }
+  },
+};
+
 const fixTagNesting = {
   insertFixedTags: function (event) {
     chatInputBox.value = hstring.tagStringFixer(chatInputBox.value);
@@ -28,7 +87,7 @@ const features = {
   "dont-delay-toggle": hmisc.dummyObject,
   "comma-pause": hmisc.dummyObject,
   "ctrl-effects": hmisc.dummyObject,
-  "alt-colors": hmisc.dummyObject,
+  "alt-colors": colorHotkeys,
   "dual-button": hmisc.dummyObject,
   "smart-tn": hmisc.dummyObject,
 };
@@ -52,7 +111,7 @@ function onOptionsUpdate(changes) {
 async function stageOne() {
   let options = await hdata.getOptions();
   for (const option in options) {
-    if (option in Object.keys(features)) {
+    if (option in features) {
       if (options[option]) features[option].enable();
     }
   }
