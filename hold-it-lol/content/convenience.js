@@ -96,7 +96,7 @@ const messageBell = {
   _bellText: "",
   _containsBellText: function (node) {
     if (this._bellText && this._bellText.length > 0) {
-      return node.textContent?.includes(this._bellText);
+      return node.innerText?.substring([node.innerText.indexOf("\n") + 2]).includes(this._bellText);
     }
     return false;
   },
