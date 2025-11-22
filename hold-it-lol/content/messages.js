@@ -3,11 +3,13 @@ import * as hstring from "../lib/utils/hstring.js";
 import * as hdom from "../lib/utils/hdom.js";
 import * as hdata from "../lib/utils/hdata.js";
 import * as hmisc from "../lib/utils/hmisc.js";
+import * as hui from "../lib/utils/hui.js";
 
-let chatInputBox;
 
 const colorHotkeys = {
+  chatInputBox: null,
   applyColorTag: function (color) {
+    const chatInputBox = self.chatInputBox;
     const start = chatInputBox.selectionStart;
     const end = chatInputBox.selectionEnd;
     const _value = chatInputBox.value;
@@ -55,12 +57,13 @@ const colorHotkeys = {
   },
 
   enable: function () {
+    self.chatInputBox = hdom.getInputBox();
     this._handleHotKey = this.handleHotKey.bind(this);
-    chatInputBox.addEventListener("keydown", this._handleHotKey, true);
+    self.chatInputBox.addEventListener("keydown", this._handleHotKey, true);
   },
   disable: function () {
     if (this._handleHotKey) {
-      chatInputBox.removeEventListener("keydown", this._handleHotKey, true);
+      self.chatInputBox.removeEventListener("keydown", this._handleHotKey, true);
     }
   },
 };
@@ -92,37 +95,7 @@ const features = {
   "smart-tn": hmisc.dummyObject,
 };
 
-function onOptionsUpdate(changes) {
-  if (changes.options) {
-    const changedOptions = changes.options.newValue;
-
-    for (const option in changedOptions) {
-      if (option in features) {
-        if (changedOptions[option]) {
-          features[option].enable();
-        } else {
-          features[option].disable();
-        }
-      }
-    }
-  }
-}
-
-async function stageOne() {
-  let options = await hdata.getOptions();
-  for (const option in options) {
-    if (option in features) {
-      if (options[option]) features[option].enable();
-    }
-  }
-}
-
-function stageTwo() {
-  browser.storage.onChanged.addListener(onOptionsUpdate);
-}
 
 export async function initFeatureMessages(root) {
-  chatInputBox = hdom.getInputBox();
-  await stageOne();
-  stageTwo();
+  await hmisc.featureInitialize(features);
 }
