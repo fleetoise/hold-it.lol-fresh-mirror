@@ -3,6 +3,7 @@ import browser from 'webextension-polyfill';
 
 const animationDuration = 150;
 
+
 function makeCourtURL() {
     const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
@@ -12,29 +13,17 @@ function makeCourtURL() {
     return result;
 }
 
-function main() {
-
-  const btnOptions = document.getElementById('options');
-  btnOptions.addEventListener('click', function() {
-    setTimeout(function() {
-      browser.runtime.openOptionsPage();
-      window.close();
-    }, animationDuration);
-  });
-
-  const btnCourt = document.getElementById('new-court');
-
-  btnCourt.addEventListener('click', function() {
-    setTimeout(function() {
-      browser.tabs.create({url: 'https://objection.lol/courtroom'});
-      window.close();
-    }, animationDuration);
-  });
-
+function handleBellText() {
   const bellTextContainer = document.getElementById('bell-text-container');
   const bellTextInput = document.getElementById('bell-text-input');
   const saveButton = document.getElementById('save-bell-text');
 
+  initBellText(bellTextInput, bellTextContainer)
+  setupBellTextUIEventListeners(bellTextInput, saveButton);
+  saveBellText(bellTextInput, saveButton);
+}
+
+function initBellText(bellTextInput, bellTextContainer) {
   browser.storage.local.get(['options', 'bellText'])
     .then((result) => {
       const options = result.options || {};
@@ -53,7 +42,10 @@ function main() {
       bellTextInput.placeholder = 'Error loading options.';
       bellTextInput.disabled = true;
     });
+}
 
+function setupBellTextUIEventListeners(bellTextInput, saveButton) {
+  
   bellTextInput.addEventListener('focus', () => {
     if (!bellTextInput.disabled) {
       saveButton.classList.remove('hidden');
@@ -65,7 +57,9 @@ function main() {
       saveButton.classList.add('hidden');
     }
   });
+}  
 
+function saveBellText(bellTextInput, saveButton) {
   saveButton.addEventListener('click', () => {
     const text = bellTextInput.value;
 
@@ -91,5 +85,42 @@ function main() {
       });
   });
 }
+
+
+
+function initBtnOptions(btnOptions) {
+  btnOptions.addEventListener('click', function () {
+    setTimeout(function () {
+      browser.runtime.openOptionsPage();
+      window.close();
+    }, animationDuration);
+  });
+}
+
+function handleMainButtons() {
+  const btnOptions = document.getElementById('options');
+  const btnCourt = document.getElementById('new-court');
+  const btnTestimony = document.getElementById('testimony-mode');
+
+  initBtnOptions(btnOptions);
+
+  btnCourt.addEventListener('click', function () {
+    setTimeout(function () {
+      browser.tabs.create({ url: 'https://objection.lol/courtroom' });
+      window.close();
+    }, animationDuration);
+  });
+  
+  btnTestimony.addEventListener('click', function () {
+    // TODO
+  });
+}
+
+function main() {
+  handleMainButtons();
+  handleBellText();
+}
+
+
 
 main();

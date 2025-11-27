@@ -1,4 +1,4 @@
-import getLabel from "./hdom.js";
+import { getLabel } from "./hdom.js";
 
 export function getTheme() {
     const themeInput = (getLabel('Dark Mode') || getLabel('Light Mode')).parentElement.querySelector('input');

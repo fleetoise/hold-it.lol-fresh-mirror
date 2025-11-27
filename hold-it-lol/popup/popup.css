@@ -7,6 +7,7 @@
   --color-text-primary: #333333;
   --color-btn-1: #C8E6C9; /* Pastel Green */
   --color-btn-2: #B3E5FC; /* Pastel Blue */
+  --color-btn-3: #cfcfc4; /* Pastel Gray  */
   --color-discord: #C5CAE9; /* Pastel Indigo */
   --color-gray: #D1D1D1;
   --color-error: #ff5252;
@@ -79,6 +80,10 @@ body {
 
 #options {
   background-color: var(--color-btn-2);
+}
+
+#testimony-mode {
+    background-color: var(--color-btn-3);
 }
 
 .bubble-btn .button-text {
