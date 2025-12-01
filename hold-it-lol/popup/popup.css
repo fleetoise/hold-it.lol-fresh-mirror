@@ -16,6 +16,19 @@
   --main-padding: 8px;
 }
 
+.hidden {
+  display: none !important;
+}
+
+#main-menu, #testimony-menu {
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+#main-menu.transparent, #testimony-mode.transparent {
+    opacity: 0; 
+}
+
 html {
   color: var(--color-text-primary);
   font-family: 'Roboto', sans-serif;
@@ -207,9 +220,7 @@ body {
   opacity: 0.7;
 }
 
-.save-btn.hidden {
-  display: none;
-}
+
 
 .discord-link {
   display: flex;
