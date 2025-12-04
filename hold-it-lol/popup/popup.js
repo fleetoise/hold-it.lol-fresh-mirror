@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill';
 import { initMainMenu } from './main_menu.js';
 import { initTestimonyMenu } from './testimony_mode.js';
 
+
 export function saveMenuState(menu) {
   browser.storage.local.set({ lastMenu: menu });
 }
@@ -13,14 +14,22 @@ function main() {
           const testimonyMenu = document.getElementById("testimony-menu");
   
           if (lastMenu === "testimony") {
-              mainMenu.classList.add("hidden");
-              mainMenu.classList.add("transparent"); 
+            document.body.classList.add("testimony-body");
+            document.body.offsetWidth;
+            
+            mainMenu.classList.add("hidden");
+            mainMenu.classList.add("transparent");
           
-          } else {            
+          } else if (lastMenu === "main") {
+            document.body.classList.add("main-body");
+            document.body.offsetWidth;
+            
             testimonyMenu.classList.add("hidden");
             testimonyMenu.classList.add("transparent");
           }
-      }); 
+      });
+  initMainMenu();
+  initTestimonyMenu();
 }
 
 main();

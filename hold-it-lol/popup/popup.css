@@ -12,8 +12,14 @@
   --color-gray: #D1D1D1;
   --color-error: #ff5252;
   --header-height: 24px;
-  --body-width: 300px;
   --main-padding: 8px;
+}
+
+.testimony-body {
+    width: 600px !important;
+}
+.main-body {
+    width: 300px !important;
 }
 
 .hidden {
@@ -29,6 +35,76 @@
     opacity: 0; 
 }
 
+#testimony-box {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+    white-space: nowrap;
+    
+    background: #FAF8F6;
+    padding: 4px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+#testimonies {
+    display: flex;
+    gap: 4px;
+}
+
+
+.testimony {
+    resize: none;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.testimony-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.testimony, #add-testimony {
+    width: 120px;
+    height: 120px;
+    font-size: medium;
+    padding: 4px;
+    box-sizing: border-box;
+    
+    border: 1px solid #999;
+    border-radius: 4px;
+    transition: width 0.15s ease, height 0.15s ease, font-size 0.15s eas;
+}
+
+
+.testimony:focus {
+  width: 120px;
+  height: 150px;
+  font-size: large;
+}
+
+
+.remove-btn {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+
+    width: 14px;
+    height: 14px;
+
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0,0,0,0.15);
+
+    background-color: #f4b6b6; 
+}
+
+.remove-btn:hover {
+    background: #ef9f9f;      /* slightly stronger pastel red */
+}
+
 html {
   color: var(--color-text-primary);
   font-family: 'Roboto', sans-serif;
@@ -38,7 +114,6 @@ body {
   background-color: var(--color-bg-primary);
   margin: 0px !important;
   padding-bottom: 4px;
-  width: var(--body-width);
 }
 
 .weight-200 {

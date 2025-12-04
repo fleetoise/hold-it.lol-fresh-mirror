@@ -30,7 +30,7 @@ module.exports = (env) => {
           { from: 'assets', to: 'assets' },
           { from: 'popup/popup.html', to: 'popup/' },
           { from: 'popup/popup.css', to: 'popup/' },
-          { from: 'popup/*.svg', to: 'popup/[name][ext]' },
+          { from: 'popup/assets/*', to: 'popup/assets/[name][ext]' },
           { from: 'options/options.html', to: 'options/' },
           { from: 'options/options.css', to: 'options/' },
           { from: 'options/previews', to: 'options/previews' },

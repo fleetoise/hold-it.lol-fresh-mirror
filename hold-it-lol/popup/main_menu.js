@@ -87,8 +87,6 @@ function saveBellText(bellTextInput, saveButton) {
   });
 }
 
-
-
 function initBtnOptions(btnOptions) {
   btnOptions.addEventListener('click', function () {
     setTimeout(function () {
@@ -123,10 +121,11 @@ function handleMainButtons() {
       
       mainMenu.classList.add("hidden");
       testimonyMenu.classList.remove("hidden");
-      
+     
+      document.body.classList.remove("main-body");
+      document.body.classList.add("testimony-body"); 
       testimonyMenu.offsetWidth;
-      
-      testimonyMenu.classList.remove("transparent");  
+      testimonyMenu.classList.remove("transparent");
       
     }, 200);
     

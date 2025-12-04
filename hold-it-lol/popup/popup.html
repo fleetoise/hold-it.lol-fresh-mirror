@@ -90,9 +90,29 @@
             </a>
         </div>
         
-        <div id="testimony-menu" class="hidden transparent">
+        <div id="testimony-menu">
             <div id="testimony-top-bar">
                 <button id="testimony-selector" class="dropdown-button">No Testimony Loaded</button>
+                <button id="mode-switch">Testimony Mode</button>
+            </div>
+            
+            <div id="testimony-box">  
+                <template id="testimony-template">
+                    <div class="testimony-wrapper">
+                        <textarea class="testimony"></textarea>
+                        <button class="remove-btn"></button>
+                    </div>
+                </template>
+
+                <div id="start-testimony"></div>
+                <div id="testimonies">
+                    <div class="testimony-wrapper">
+                        <textarea class="testimony"></textarea>
+                        <button class="remove-btn"></button>
+                    </div>
+                    <button id="add-testimony">New</button>
+                </div>                
+                <div id="end-testimony"></div>
             </div>
             
             <div id=testimony-bottom-bar"> 
