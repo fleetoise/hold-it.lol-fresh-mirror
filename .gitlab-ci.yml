@@ -1,6 +1,6 @@
 # The Docker image that will be used to build your app
 image: centos:centos8
-create-pages:
+pages:
   script:
     - echo "Deploying to GitLab Pages.."
     - mkdir -p public
