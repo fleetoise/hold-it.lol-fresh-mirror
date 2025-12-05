@@ -1,10 +1,14 @@
 # The Docker image that will be used to build your app
 image: centos:centos8
 create-pages:
-  pages:
-    # The folder that contains the files to be exposed at the Page URL
-    publish: public
-  rules:
-    # This ensures that only pushes to the default branch will trigger
-    # a pages deploy
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+pages:
+  stage: deploy
+  script:
+    - echo "Deploying to GitLab Pages.."
+    - mkdir -p public
+    - cp index.html public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - pages
