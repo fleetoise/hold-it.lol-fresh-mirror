@@ -1,47 +1,72 @@
 <!doctype html>
 <html>
     <head>
+        <meta charset="utf-8">
         <link rel="stylesheet" href="popup.css" />
     </head>
     <body>
         <svg width="0" height="0" style="display: none">
-            <symbol
-                id="icon-plus"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
+            <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </symbol>
-            <symbol
-                id="icon-testimony"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
+            <symbol id="icon-testimony" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="4" rx="1"></rect>
                 <path d="M7 8l1 12h8l1-12"></path>
             </symbol>
-            <symbol
-                id="icon-settings"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
+            <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
-                <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-                ></path>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </symbol>
+            <symbol id="icon-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </symbol>
+            <symbol id="icon-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15"></polyline>
+            </symbol>
+            <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </symbol>
+            <symbol id="icon-pause" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+            </symbol>
+            <symbol id="icon-stop" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <rect x="4" y="4" width="16" height="16"></rect>
+            </symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </symbol>
+            <symbol id="icon-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+            </symbol>
+            <symbol id="icon-file-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="11" x2="12" y2="17"></line>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+            </symbol>
+            <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </symbol>
+             <symbol id="icon-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.55 0 1-.45 1-1 0-2-1-3-3-3a1 1 0 0 1-1-1c0-.55 2-4 4-5 .55 0 1 .45 1 1 0 2-1 3-3 3-5-3-5-3-5z"></path>
+            </symbol>
+            <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </symbol>
+             <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
             </symbol>
         </svg>
 
@@ -64,68 +89,145 @@
             <div class="bell-text-section">
                 <h3>Bell Text</h3>
                 <div id="bell-text-container" class="input-container">
-                    <textarea
-                        id="bell-text-input"
-                        rows="3"
-                        placeholder="Enter message here..."
-                    ></textarea>
+                    <textarea id="bell-text-input" rows="3" placeholder="Enter message here..."></textarea>
                 </div>
-                <button id="save-bell-text" class="save-btn hidden">
-                    Apply
-                </button>
+                <button id="save-bell-text" class="save-btn hidden">Apply</button>
             </div>
 
-            <a
-                href="https://discord.gg/u92NRgSTSy"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="discord-link"
-            >
-                <img
-                    src="../assets/Discord-Symbol-Black.svg"
-                    alt="Discord Icon"
-                    class="discord-icon-img"
-                />
+            <a href="https://discord.gg/u92NRgSTSy" target="_blank" rel="noopener noreferrer" class="discord-link">
+                <img src="../assets/Discord-Symbol-Black.svg" alt="Discord Icon" class="discord-icon-img" />
                 <span>Join our Discord!</span>
             </a>
         </div>
         
         <div id="testimony-menu">
-            <div id="testimony-top-bar">
-                <button id="testimony-selector" class="dropdown-button">No Testimony Loaded</button>
-                <button id="mode-switch">Testimony Mode</button>
-            </div>
-            
-            <div id="testimony-box">  
-                <template id="testimony-template">
-                    <div class="testimony-wrapper">
-                        <textarea class="testimony"></textarea>
-                        <button class="remove-btn"></button>
+             <div class="main main-testimony-layout">
+                <div id="testimony-top-bar">
+                    
+                    <div class="dropdown-container" id="testimony-dropdown-container">
+                        <button id="testimony-selector-btn" class="pastel-btn selector-btn">
+                            <span id="selected-testimony-text" contenteditable="true" spellcheck="false">No Testimony Loaded</span>
+                            <svg class="icon-sm chevron-down"><use href="#icon-chevron-down"></use></svg>
+                            <svg class="icon-sm chevron-up hidden"><use href="#icon-chevron-up"></use></svg>
+                        </button>
+                        
+                        <div class="dropdown-content hidden" id="testimony-dropdown-content">
+                            <div class="dropdown-controls">
+                                <button id="create-new-testimony-btn">
+                                    <svg class="icon-sm" style="width:16px; height:16px;"><use href="#icon-file-plus"></use></svg>
+                                    New Blank Testimony
+                                </button>
+                                <button id="delete-testimony-btn" class="delete-btn-dropdown">
+                                    <svg class="icon-sm" style="width:16px; height:16px;"><use href="#icon-trash"></use></svg>
+                                </button>
+                            </div>
+                            <div class="dropdown-search-container">
+                                <input type="text" id="testimony-search" placeholder="Search testimonies..." autocomplete="off">
+                            </div>
+                            <ul id="testimony-list">
+                                <!-- DEFAULTS will be populated by JS -->
+                            </ul>
+                        </div>
                     </div>
-                </template>
 
-                <div id="start-testimony"></div>
-                <div id="testimonies">
-                    <div class="testimony-wrapper">
-                        <textarea class="testimony"></textarea>
-                        <button class="remove-btn"></button>
-                    </div>
-                    <button id="add-testimony">New</button>
-                </div>                
-                <div id="end-testimony"></div>
-            </div>
+                    <button id="mode-switch-btn" class="pastel-btn mode-btn">Testimony Mode</button>
+                </div>
             
-            <div id=testimony-bottom-bar"> 
-                <button id="back-to-main-menu">Main Menu</button>
+                <div class="editable-block-container">
+                     <div class="block-header">
+                        <label for="start-testimony" class="block-label">Start Statement:</label>
+                        <div class="block-controls">
+                            <div class="pause-control">
+                                <svg class="icon-xs" style="stroke: #888;"><use href="#icon-clock"></use></svg>
+                                <input type="number" id="start-pause" class="pause-input" placeholder="1000" min="0">
+                            </div>
+
+                            <button id="start-color-btn" class="color-cycle-btn color-none" title="Change Color"></button>
+                            
+                            <div style="width: 1px; height: 16px; background: #ddd; margin: 0 4px;"></div>
+                            
+                            <label class="switch">
+                                <input type="checkbox" id="toggle-start" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                     </div>
+                    <div id="start-testimony" class="editable-block" contenteditable="true"> test </div>
+                </div>
+
+                 <div id="testimony-box">  
+                    <template id="testimony-template">
+                        <div class="testimony-wrapper" draggable="true">
+                            <textarea class="testimony"></textarea>
+                            <button class="remove-btn">
+                                <svg class="icon-xs"><use href="#icon-close"></use></svg>
+                            </button>
+                            <button class="color-cycle-btn bubble-color-btn color-none" title="Change Color"></button>
+                            
+                            <div class="pause-control bubble-pause">
+                                <input type="number" class="pause-input" placeholder="1000" min="0">
+                            </div>
+                        </div>
+                    </template>
+
+                    <div id="testimonies">
+                         <!-- items injected here -->
+                         <button id="add-testimony">New</button>
+                    </div>                
+                </div>            
+                
+                 <div class="editable-block-container">
+                     <div class="block-header">
+                        <label for="end-testimony" class="block-label">End Statement:</label>
+                        <div class="block-controls">
+                             <!-- End Pause Input -->
+                            <div class="pause-control">
+                                <svg class="icon-xs" style="stroke: #888;"><use href="#icon-clock"></use></svg>
+                                <input type="number" id="end-pause" class="pause-input" placeholder="1000" min="0">
+                            </div>
+
+                            <button id="end-color-btn" class="color-cycle-btn color-none" title="Change Color"></button>
+
+                            <div style="width: 1px; height: 16px; background: #ddd; margin: 0 4px;"></div>
+                            
+                            <label class="switch">
+                                <input type="checkbox" id="toggle-end" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                     </div>
+                    <div id="end-testimony" class="editable-block" contenteditable="true"> test </div>
+                </div>
+                
+                 <div id="testimony-controls">
+                    <button id="activate-testimony" class="control-btn play-btn"> 
+                        <svg class="icon-control"><use href="#icon-play"></use></svg> 
+                    </button>
+                    <button id="pause-testimony" class="control-btn pause-btn"> 
+                        <svg class="icon-control"><use href="#icon-pause"></use></svg> 
+                    </button>
+                    <button id="deactivate-testimony" class="control-btn stop-btn"> 
+                        <svg class="icon-control"><use href="#icon-stop"></use></svg> 
+                    </button>
+                </div>
+                
+                 <div id="testimony-bottom-bar"> 
+                    <button id="back-to-main-menu" class="pastel-btn back-btn">Main Menu</button>
+                    <button id="copy-json" class="pastel-btn copy-btn" title="Copy JSON">
+                        <svg class="icon-sm"><use href="#icon-copy"></use></svg>
+                    </button>
+                    <button id="save-testimony" class="pastel-btn save-testimony-btn">
+                        <svg class="icon-sm" style="margin-right: 6px;"><use href="#icon-save"></use></svg>
+                        Save
+                    </button>
+                </div>
             </div>
         </div>
 
         <div class="footer">
-            <span class="footer-text"
-                >Hold It.lol Fresh&nbsp;<span class="weight-200"
-                    >(a1 pre-alpha)</span
-                ></span
-            >
+            <span class="footer-text" style="color: darkslategray">
+                Hold It.lol <span style="color: #52575D">(a1 pre-alpha)</span>
+            </span>
         </div>
 
         <script src="popup.js"></script>
