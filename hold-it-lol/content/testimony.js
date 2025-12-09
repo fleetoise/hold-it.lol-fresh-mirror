@@ -7,7 +7,7 @@ let currentIndex = 0;
 let isPlaying = false;
 let loopTimeout = null;
 let crossExamObserver = null;
-let mode = "TESTIMONY"; // "CROSS_EXAM" is the other mode
+let mode = "TESTIMONY";
 
 export function initFeatureTestimony() {
     browser.runtime.onMessage.addListener((message) => {
@@ -285,14 +285,26 @@ function sendMessage(text) {
     chatInputBox.dispatchEvent(inputEvent);
 
     setTimeout(() => {
-        const enterEvent = new KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'Enter',
-            code: 'Enter',
-            keyCode: 13,
-            which: 13
-        });
-        chatInputBox.dispatchEvent(enterEvent);
+        let sendBtn = null;
+        if (chatInputBox.parentElement) {
+            const sendIcon = chatInputBox.parentElement.querySelector('svg[data-testid="SendIcon"]');
+            if (sendIcon) {
+                sendBtn = sendIcon.closest('button');
+            }
+        }
+
+        if (sendBtn) {
+            sendBtn.click();
+        } else {
+             const enterEvent = new KeyboardEvent('keydown', {
+                bubbles: true,
+                cancelable: true,
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13
+            });
+            chatInputBox.dispatchEvent(enterEvent);
+        }
     }, 50);
 }
