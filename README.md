@@ -1,6 +1,6 @@
 # IMPORTANT
 
-A rewrite has begun. It's still in development. [See the hard-fork branch](https://codeberg.org/Fleetoise/holdit.lol-fresh/src/branch/hard-fork)
+The rewrite is still in development. Any contributions are greatly appreciated.
 
 ## hold-it-lol
 Quality of life [https://objection.lol/courtroom](objection.lol) courtroom features & tweaks, ranging from tiny UI changes to roleplay testimony UIs.
