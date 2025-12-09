@@ -530,7 +530,6 @@ input:checked + .slider:before {
     z-index: 3;
 }
 
-/* Switch Specifics */
 .switch-label-text {
     font-size: 10px;
     color: #888;
@@ -547,11 +546,10 @@ input:checked + .slider:before {
     background: var(--color-bg-secondary);
     padding: 8px;
     border-radius: 8px;
-    /* box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); */
     border: 1px solid var(--color-gray);
 }
 
-#testimonies { display: flex; gap: 6px; }
+#testimonies { display: flex; gap: 12px; }
 
 .testimony-wrapper {
     position: relative;
@@ -581,7 +579,11 @@ input:checked + .slider:before {
     overflow-wrap: break-word;
 }
 
-/* a handle for dragging could be better */
+.testimony {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
 .testimony-wrapper {
     cursor: grab;
 }
@@ -686,7 +688,6 @@ input:checked + .slider:before {
     border: 2px solid #FF8A65;
 }
 
-/* ensure hover doesn't break active look too much */
 .control-btn.active:hover {
     transform: translateY(1px); 
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.25);
@@ -721,7 +722,7 @@ input:checked + .slider:before {
     font-weight: 500;
 }
 
-.pause-control {
+.pause-control, .pose-control {
     display: flex;
     align-items: center;
     gap: 2px;
@@ -731,36 +732,46 @@ input:checked + .slider:before {
     padding: 1px 3px;
     border: 1px solid transparent;
 }
-.pause-control:hover {
+.pause-control:hover, .pose-control:hover {
     background-color: #fff;
     border-color: #ddd;
 }
-.pause-input {
+.pause-input, .pose-input {
     width: 40px;
     border: none;
     background: transparent;
     font-size: 10px;
     font-family: 'Roboto', sans-serif;
     color: #555;
-    text-align: right;
     outline: none;
     -moz-appearance: textfield;
 }
+.pause-input { text-align: right; }
+.pose-input { width: 50px; text-align: left; }
+
 .pause-input::-webkit-outer-spin-button,
 .pause-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.pause-input:focus {
+.pause-input:focus, .pose-input:focus {
     color: #333;
 }
-.pause-input::placeholder {
+.pause-input::placeholder, .pose-input::placeholder {
     color: #aaa;
 }
 .bubble-pause {
     position: absolute;
     bottom: 4px;
     right: 4px;
+    z-index: 3;
+    margin: 0;
+    padding: 1px 2px;
+}
+.bubble-pose {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
     z-index: 3;
     margin: 0;
     padding: 1px 2px;

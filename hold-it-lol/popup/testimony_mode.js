@@ -59,7 +59,7 @@ async function syncToContentScript() {
             });
         }
     } catch (e) {
-        console.warn("could not sync to content script (popup might be detached or script not ready)", e);
+        console.warn("Could not sync to content script (popup might be detached or script not ready)", e);
     }
 }
 
@@ -70,7 +70,7 @@ async function sendCommand(action, payload = {}) {
             await browser.tabs.sendMessage(tabs[0].id, { action, ...payload });
         }
     } catch (e) {
-        console.warn("could not send command", e);
+        console.warn("Could not send command", e);
     }
 }
 
@@ -96,7 +96,7 @@ function initListeners() {
               setTimeout(() => { saveBtn.innerHTML = originalText; }, 1000);
           } catch (e) {
               if (e.message === "Invalid Title") {
-                  alert("Please provide a valid title for the testimony");
+                  alert("Please provide a valid title for the testimony.");
               } else {
                   console.error(e);
               }
@@ -116,7 +116,7 @@ function initListeners() {
               });
           } catch (e) {
               console.error(e);
-              if (e.message === "Invalid Title") alert("Please ensure testimony has a title before copying");
+              if (e.message === "Invalid Title") alert("Please ensure testimony has a title before copying.");
           }
       });
   }
@@ -207,6 +207,8 @@ function initDropdown() {
              }
              if(testimonyManager.startPauseInput) testimonyManager.startPauseInput.value = "";
              if(testimonyManager.endPauseInput) testimonyManager.endPauseInput.value = "";
+             if(testimonyManager.startPoseInput) testimonyManager.startPoseInput.value = "";
+             if(testimonyManager.endPoseInput) testimonyManager.endPoseInput.value = "";
 
              testimonyManager.add();
              toggleDropdown();

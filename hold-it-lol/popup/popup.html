@@ -68,6 +68,10 @@
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
             </symbol>
+            <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </symbol>
         </svg>
 
         <div id="main-menu">
@@ -125,7 +129,6 @@
                                 <input type="text" id="testimony-search" placeholder="Search testimonies..." autocomplete="off">
                             </div>
                             <ul id="testimony-list">
-                                <!-- DEFAULTS will be populated by JS -->
                             </ul>
                         </div>
                     </div>
@@ -137,9 +140,14 @@
                      <div class="block-header">
                         <label for="start-testimony" class="block-label">Start Statement:</label>
                         <div class="block-controls">
-                            <div class="pause-control">
+                            <div class="pause-control" title="Pause duration (ms)">
                                 <svg class="icon-xs" style="stroke: #888;"><use href="#icon-clock"></use></svg>
                                 <input type="number" id="start-pause" class="pause-input" placeholder="1000" min="0">
+                            </div>
+
+                             <div class="pose-control" title="Pose Name">
+                                <svg class="icon-xs" style="stroke: #888;"><use href="#icon-user"></use></svg>
+                                <input type="text" id="start-pose" class="pose-input" placeholder="Pose">
                             </div>
 
                             <button id="start-color-btn" class="color-cycle-btn color-none" title="Change Color"></button>
@@ -164,6 +172,10 @@
                             </button>
                             <button class="color-cycle-btn bubble-color-btn color-none" title="Change Color"></button>
                             
+                            <div class="pose-control bubble-pose">
+                                <input type="text" class="pose-input" placeholder="Pose">
+                            </div>
+
                             <div class="pause-control bubble-pause">
                                 <input type="number" class="pause-input" placeholder="1000" min="0">
                             </div>
@@ -171,7 +183,6 @@
                     </template>
 
                     <div id="testimonies">
-                         <!-- items injected here -->
                          <button id="add-testimony">New</button>
                     </div>                
                 </div>            
@@ -180,10 +191,14 @@
                      <div class="block-header">
                         <label for="end-testimony" class="block-label">End Statement:</label>
                         <div class="block-controls">
-                             <!-- End Pause Input -->
-                            <div class="pause-control">
+                            <div class="pause-control" title="Pause duration (ms)">
                                 <svg class="icon-xs" style="stroke: #888;"><use href="#icon-clock"></use></svg>
                                 <input type="number" id="end-pause" class="pause-input" placeholder="1000" min="0">
+                            </div>
+
+                             <div class="pose-control" title="Pose Name">
+                                <svg class="icon-xs" style="stroke: #888;"><use href="#icon-user"></use></svg>
+                                <input type="text" id="end-pose" class="pose-input" placeholder="Pose">
                             </div>
 
                             <button id="end-color-btn" class="color-cycle-btn color-none" title="Change Color"></button>

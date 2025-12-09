@@ -10,10 +10,15 @@ function wrapPause(text, pauseVal) {
     return `${text}[#p${pauseVal}]`;
 }
 
+function wrapPose(text, poseVal) {
+    if (!poseVal || poseVal === "") return text;
+    return `[#ps${poseVal}]${text}`;
+}
+
 export const DEFAULTS = {
     "ema": {
         id: "ema",
-        title: "(Ema) Two Years Ago",
+        title: "(Ema) Two Years Ago | PRESET(unchangeable)",
         startStatement: { text: "[#/g]Witness Testimony[/#]" }, 
         endStatement: { text: "" },
         statements: [
@@ -26,7 +31,7 @@ export const DEFAULTS = {
     },
     "sahwit": {
         id: "sahwit",
-        title: "(Sahwit) Witness’s Account",
+        title: "(Sahwit) Witness’s Account | PRESET(unchangeable)",
         startStatement: { text: "[#/g]Witness Testimony[/#]" },
         endStatement: { text: "" },
         statements: [
@@ -44,7 +49,7 @@ export const DEFAULTS = {
     },
     "white": {
         id: "white",
-        title: "(White) The Wiretapping",
+        title: "(White) The Wiretapping | PRESET(unchangeable)",
         startStatement: { text: "[#/g]Witness Testimony[/#]" },
         endStatement: { text: "" },
         statements: [
@@ -93,9 +98,16 @@ function updateColorBtn(btn, colorCode) {
 }
 
 function parseText(rawText) {
-    let pause = null;
     let cleanText = rawText;
     
+    let pose = "";
+    const poseMatch = cleanText.match(/\[#ps(.*?)\]/);
+    if (poseMatch) {
+        pose = poseMatch[1];
+        cleanText = cleanText.replace(poseMatch[0], '');
+    }
+
+    let pause = null;
     const pauseMatch = cleanText.match(/\[#p(\d+)\]/);
     if (pauseMatch) {
         pause = pauseMatch[1];
@@ -110,9 +122,10 @@ function parseText(rawText) {
     }
 
     return {
-        color: color,
+        color,
         text: cleanText,
-        pause: pause
+        pause,
+        pose
     };
 }
 
@@ -125,11 +138,13 @@ export class Testimony {
         this.start = document.getElementById("start-testimony");
         this.startColorBtn = document.getElementById("start-color-btn");
         this.startPauseInput = document.getElementById("start-pause");
+        this.startPoseInput = document.getElementById("start-pose");
         this.startToggle = document.getElementById("toggle-start");
         
         this.end = document.getElementById("end-testimony");
         this.endColorBtn = document.getElementById("end-color-btn");
         this.endPauseInput = document.getElementById("end-pause");
+        this.endPoseInput = document.getElementById("end-pose");
         this.endToggle = document.getElementById("toggle-end");
 
         this.statements = Array.from(this.container.querySelectorAll('.testimony-wrapper'));
@@ -173,11 +188,13 @@ export class Testimony {
         const clone = template.content.cloneNode(true);
         const wrapper = clone.querySelector(".testimony-wrapper");
         const textarea = wrapper.querySelector(".testimony");
-        const pauseInput = wrapper.querySelector(".pause-input");
+        const pauseInput = wrapper.querySelector(".bubble-pause .pause-input");
+        const poseInput = wrapper.querySelector(".bubble-pose .pose-input");
         
-        const { color, text, pause } = parseText(textData);
+        const { color, text, pause, pose } = parseText(textData);
         textarea.value = text;
         if (pause && pauseInput) pauseInput.value = pause;
+        if (pose && poseInput) poseInput.value = pose;
 
         const colorBtn = wrapper.querySelector(".color-cycle-btn");
         updateColorBtn(colorBtn, color);
@@ -200,6 +217,8 @@ export class Testimony {
         
         if (this.startPauseInput) this.startPauseInput.value = "";
         if (this.endPauseInput) this.endPauseInput.value = "";
+        if (this.startPoseInput) this.startPoseInput.value = "";
+        if (this.endPoseInput) this.endPoseInput.value = "";
     }
 
     load(data) {
@@ -213,12 +232,14 @@ export class Testimony {
         if (this.start) this.start.innerText = parsedStart.text;
         if (this.startColorBtn) updateColorBtn(this.startColorBtn, parsedStart.color);
         if (this.startPauseInput && parsedStart.pause) this.startPauseInput.value = parsedStart.pause;
+        if (this.startPoseInput && parsedStart.pose) this.startPoseInput.value = parsedStart.pose;
 
         const endRaw = data.endStatement ? data.endStatement.text : "";
         const parsedEnd = parseText(endRaw);
         if (this.end) this.end.innerText = parsedEnd.text;
         if (this.endColorBtn) updateColorBtn(this.endColorBtn, parsedEnd.color);
         if (this.endPauseInput && parsedEnd.pause) this.endPauseInput.value = parsedEnd.pause;
+        if (this.endPoseInput && parsedEnd.pose) this.endPoseInput.value = parsedEnd.pose;
 
         if (data.statements && Array.isArray(data.statements)) {
             data.statements.forEach(text => this.add(text));
@@ -254,27 +275,34 @@ export class Testimony {
         const statementValues = this.statements.map(wrapper => {
             const raw = wrapper.querySelector('.testimony').value;
             const color = wrapper.querySelector('.color-cycle-btn').dataset.color;
-            const pause = wrapper.querySelector('.pause-input').value;
+            const pause = wrapper.querySelector('.bubble-pause .pause-input').value;
+            const pose = wrapper.querySelector('.bubble-pose .pose-input').value;
             
             let result = wrap(raw, color);
             result = wrapPause(result, pause);
+            result = wrapPose(result, pose);
             return result;
         });
 
         const newId = this.generateId(currentTitle);
         const startColor = this.startColorBtn ? this.startColorBtn.dataset.color : 'none';
         const startPause = this.startPauseInput ? this.startPauseInput.value : '';
+        const startPose = this.startPoseInput ? this.startPoseInput.value : '';
+        
         const endColor = this.endColorBtn ? this.endColorBtn.dataset.color : 'none';
         const endPause = this.endPauseInput ? this.endPauseInput.value : '';
+        const endPose = this.endPoseInput ? this.endPoseInput.value : '';
 
         const startEnabled = this.startToggle ? this.startToggle.checked : true;
         const endEnabled = this.endToggle ? this.endToggle.checked : true;
 
         let startText = wrap(this.start.innerText, startColor);
         startText = wrapPause(startText, startPause);
+        startText = wrapPose(startText, startPose);
 
         let endText = wrap(this.end.innerText, endColor);
         endText = wrapPause(endText, endPause);
+        endText = wrapPose(endText, endPose);
 
         return {
             id: newId,
