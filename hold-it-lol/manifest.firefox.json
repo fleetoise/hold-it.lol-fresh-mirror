@@ -20,17 +20,13 @@
     "*://www.court-records.net/*",
     "*://user-images.githubusercontent.com/*"
   ],
+
   "content_scripts": [
     {
       "matches": ["*://objection.lol/courtroom/*"],
       "js": ["content/main.js"],
       "css": ["content/style.css"],
       "run_at": "document_end"
-    },
-    {
-      "matches": ["*://objection.lol/courtroom/*"],
-      "js": ["content/ws_patch.js"],
-      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
@@ -69,7 +65,10 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "fleetoise@protonmail.com"
+      "id": "fleetoise@protonmail.com",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   }
 }
